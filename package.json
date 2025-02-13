@@ -7,10 +7,9 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint": "eslint \"**/*.{js,jsx,ts,tsx}\"",
     "typescript": "tsc --noEmit",
-    "test": "jest",
-    "prepare": "husky install"
+    "test": "jest --passWithNoTests"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.1.1",
@@ -29,11 +28,15 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^13.0.1",
     "@types/jest": "^29.5.14",
     "@types/react": "~18.3.12",
-    "eslint": "^9.20.1",
-    "eslint-config-universe": "^14.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.24.0",
+    "@typescript-eslint/parser": "^8.24.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
     "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-expo": "^52.0.3",
