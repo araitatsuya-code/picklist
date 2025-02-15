@@ -9,7 +9,8 @@
     "web": "expo start --web",
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\"",
     "typescript": "tsc --noEmit",
-    "test": "jest --passWithNoTests"
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.1.1",

@@ -1,7 +1,11 @@
 import { View, Text, Pressable, TextInput, StyleSheet } from 'react-native';
-import { usePicklistStore } from '../../src/stores/usePicklistStore';
+import {
+  usePicklistStore,
+  PicklistItem,
+} from '../../src/stores/usePicklistStore';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { DraggableList } from '../../src/components/DraggableList';
 
 /**
  * 個別の買い物リスト画面
@@ -16,7 +20,7 @@ export default function ListScreen() {
   const picklist = usePicklistStore((state) =>
     state.picklists.find((list) => list.id === id)
   );
-  const { addItem, removeItem, toggleItem } = usePicklistStore();
+  const { addItem, removeItem, toggleItem, reorderItems } = usePicklistStore();
 
   // リストが見つからない場合
   if (!picklist) {
@@ -42,6 +46,42 @@ export default function ListScreen() {
       setNewItemName('');
     }
   };
+
+  // アイテムのレンダリング関数
+  const renderItem = (item: PicklistItem) => {
+    // itemが存在することを確認
+    if (!item) return null;
+
+    return (
+      <View style={styles.itemRow}>
+        <Pressable
+          style={styles.checkbox}
+          onPress={() => toggleItem(id, item.id)}
+        >
+          <Text>{item.isChecked ? '☑' : '☐'}</Text>
+        </Pressable>
+        <Text style={[styles.itemName, item.isChecked && styles.checkedItem]}>
+          {item.name}
+        </Text>
+        <Pressable
+          style={styles.deleteButton}
+          onPress={() => removeItem(id, item.id)}
+        >
+          <Text style={styles.deleteButtonText}>削除</Text>
+        </Pressable>
+      </View>
+    );
+  };
+
+  // ソート済みのアイテムリストを作成
+  const sortedItems = useMemo(() => {
+    if (!picklist.items || picklist.items.length === 0) {
+      return [];
+    }
+    return [...picklist.items]
+      .filter((item): item is PicklistItem => item !== null)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }, [picklist.items]);
 
   return (
     <View style={styles.container}>
@@ -69,35 +109,16 @@ export default function ListScreen() {
 
       {/* アイテムリスト */}
       <View style={styles.listContainer}>
-        {picklist.items.length === 0 ? (
+        {!sortedItems.length ? (
           <Text style={styles.emptyText}>アイテムを追加してください</Text>
         ) : (
-          picklist.items
-            .sort((a, b) => a.order - b.order)
-            .map((item) => (
-              <View key={item.id} style={styles.itemRow}>
-                <Pressable
-                  style={styles.checkbox}
-                  onPress={() => toggleItem(id, item.id)}
-                >
-                  <Text>{item.isChecked ? '☑' : '☐'}</Text>
-                </Pressable>
-                <Text
-                  style={[
-                    styles.itemName,
-                    item.isChecked && styles.checkedItem,
-                  ]}
-                >
-                  {item.name}
-                </Text>
-                <Pressable
-                  style={styles.deleteButton}
-                  onPress={() => removeItem(id, item.id)}
-                >
-                  <Text style={styles.deleteButtonText}>削除</Text>
-                </Pressable>
-              </View>
-            ))
+          <DraggableList
+            items={sortedItems}
+            onReorder={(fromIndex, toIndex) =>
+              reorderItems(id, fromIndex, toIndex)
+            }
+            renderItem={renderItem}
+          />
         )}
       </View>
     </View>

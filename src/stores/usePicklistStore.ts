@@ -41,8 +41,8 @@ interface PicklistStore {
   toggleItem: (picklistId: string, itemId: string) => void; // アイテムのチェック状態切り替え
   reorderItems: (
     picklistId: string,
-    startIndex: number,
-    endIndex: number
+    fromIndex: number,
+    toIndex: number
   ) => void; // アイテムの並び替え
 }
 
@@ -81,13 +81,14 @@ export const usePicklistStore = create<PicklistStore>()(
         set((state) => ({
           picklists: state.picklists.map((list) => {
             if (list.id !== picklistId) return list;
+            const newId = `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
             return {
               ...list,
               items: [
                 ...list.items,
                 {
                   ...item,
-                  id: Date.now().toString(),
+                  id: newId,
                   order: list.items.length,
                 },
               ],
@@ -127,24 +128,60 @@ export const usePicklistStore = create<PicklistStore>()(
         })),
 
       // ドラッグ&ドロップによるアイテムの並び替え
-      reorderItems: (picklistId, startIndex, endIndex) =>
-        set((state) => ({
-          picklists: state.picklists.map((list) => {
-            if (list.id !== picklistId) return list;
-            const newItems = [...list.items];
-            const [removed] = newItems.splice(startIndex, 1);
-            newItems.splice(endIndex, 0, removed);
+      reorderItems: (picklistId, fromIndex, toIndex) =>
+        set((state) => {
+          // 対象のリストを見つける
+          const targetList = state.picklists.find(
+            (list) => list.id === picklistId
+          );
+          if (!targetList) return state;
+
+          // 並び替え前のアイテムの配列をコピー
+          const items = [...targetList.items];
+
+          // インデックスの範囲チェック
+          if (
+            fromIndex < 0 ||
+            fromIndex >= items.length ||
+            toIndex < 0 ||
+            toIndex >= items.length
+          ) {
+            return state;
+          }
+
+          try {
+            // アイテムの移動
+            const [movedItem] = items.splice(fromIndex, 1);
+            items.splice(toIndex, 0, movedItem);
+
+            // orderの再計算
+            const updatedItems = items.map((item, index) => ({
+              ...item,
+              order: index,
+            }));
+
+            // 新しい状態を返す
             return {
-              ...list,
-              items: newItems.map((item, index) => ({ ...item, order: index })),
-              updatedAt: new Date(),
+              picklists: state.picklists.map((list) =>
+                list.id === picklistId
+                  ? {
+                      ...list,
+                      items: updatedItems,
+                      updatedAt: new Date(),
+                    }
+                  : list
+              ),
             };
-          }),
-        })),
+          } catch (error) {
+            // エラーが発生した場合は現在の状態を維持
+            console.error('Reorder error:', error);
+            return state;
+          }
+        }),
     }),
     {
-      name: 'picklist-storage', // ストレージのキー名
-      storage: createJSONStorage(() => AsyncStorage), // AsyncStorageを使用した永続化
+      name: 'picklist-storage',
+      storage: createJSONStorage(() => AsyncStorage),
     }
   )
 );
