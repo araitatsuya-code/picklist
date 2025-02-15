@@ -29,7 +29,7 @@ export interface Picklist {
 /**
  * 買い物リストの状態管理とアクションを定義するインターフェース
  */
-interface PicklistStore {
+export interface PicklistStore {
   picklists: Picklist[]; // 全ての買い物リスト
   addPicklist: (name: string) => void; // 新規リスト追加
   removePicklist: (id: string) => void; // リスト削除
