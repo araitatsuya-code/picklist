@@ -5,13 +5,9 @@ import Animated, {
   withSpring,
   runOnJS,
 } from 'react-native-reanimated';
-import {
-  GestureDetector,
-  Gesture,
-  Directions,
-} from 'react-native-gesture-handler';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { PicklistItem } from '../stores/usePicklistStore';
-import { useEffect, useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useMemo, useRef } from 'react';
 
 interface DraggableListProps {
   items: PicklistItem[];
@@ -58,12 +54,9 @@ export function DraggableList({
   onReorder,
   renderItem,
 }: DraggableListProps) {
-  if (!items || items.length === 0) {
-    return null;
-  }
-
   const activeIndex = useSharedValue<number | null>(null);
-  const positions = useSharedValue<number[]>(items.map((_, i) => i * 60));
+  const positions = useSharedValue<number[]>([]);
+  const itemsRef = useRef(items);
 
   // メモ化されたアイテムリスト
   const itemsWithKeys = useMemo(
@@ -93,7 +86,12 @@ export function DraggableList({
 
   useEffect(() => {
     positions.value = items.map((_, i) => i * 60);
-  }, [items.length]);
+    itemsRef.current = items;
+  }, [items, positions]);
+
+  if (!items || items.length === 0) {
+    return null;
+  }
 
   const panGesture = Gesture.Pan()
     .onStart((event) => {
