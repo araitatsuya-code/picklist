@@ -15,13 +15,20 @@ export default function ListScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [newItemName, setNewItemName] = useState('');
-  const [items, setItems] = useState<PicklistItem[]>([]);
 
   // Zustandストアからデータとアクションを取得
   const picklist = usePicklistStore((state) =>
     state.picklists.find((list) => list.id === id)
   );
   const { addItem, removeItem, toggleItem, reorderItems } = usePicklistStore();
+
+  // ソート済みのアイテムリストを作成
+  const sortedItems = useMemo(() => {
+    if (!picklist?.items) return [];
+    return [...picklist.items]
+      .filter((item): item is PicklistItem => item !== null)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }, [picklist?.items]);
 
   // リストが見つからない場合
   if (!picklist) {
@@ -73,14 +80,6 @@ export default function ListScreen() {
       </View>
     );
   };
-
-  // ソート済みのアイテムリストを作成
-  const sortedItems = useMemo(() => {
-    if (!items) return [];
-    return [...items]
-      .filter((item): item is PicklistItem => item !== null)
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  }, [items]);
 
   return (
     <View style={styles.container}>
