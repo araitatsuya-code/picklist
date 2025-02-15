@@ -1,11 +1,11 @@
 import { create } from 'zustand';
-import { PicklistStore } from './usePicklistStore';
+import type { PicklistStore } from './usePicklistStore';
 
 // テスト用の簡易ストア
 const createTestStore = () =>
   create<PicklistStore>((set) => ({
     picklists: [],
-    addPicklist: (name) =>
+    addPicklist: (name: string) =>
       set((state) => ({
         picklists: [
           ...state.picklists,
@@ -18,11 +18,22 @@ const createTestStore = () =>
           },
         ],
       })),
-    removePicklist: (id) =>
+    removePicklist: (id: string) =>
       set((state) => ({
         picklists: state.picklists.filter((list) => list.id !== id),
       })),
-    // ... 他のアクションは必要に応じて追加
+    addItem: () => {
+      throw new Error('Not implemented in test');
+    },
+    removeItem: () => {
+      throw new Error('Not implemented in test');
+    },
+    toggleItem: () => {
+      throw new Error('Not implemented in test');
+    },
+    reorderItems: () => {
+      throw new Error('Not implemented in test');
+    },
   }));
 
 describe('usePicklistStore', () => {
