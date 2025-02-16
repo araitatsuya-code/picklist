@@ -1,52 +1,75 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { usePicklistStore } from '../src/stores/usePicklistStore';
-import { Link } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  StyleSheet,
+  Pressable,
+  Image,
+} from 'react-native';
+import { useFrequentProductStore } from '../src/stores/useFrequentProductStore';
+import { Link, router } from 'expo-router';
+import * as imageUtils from '../src/utils/imageUtils';
 
 /**
  * 買い物リスト一覧を表示するホーム画面
  */
 export default function HomeScreen() {
-  const picklists = usePicklistStore((state) => state.picklists);
-  const { addPicklist, removePicklist } = usePicklistStore();
+  const [searchQuery, setSearchQuery] = useState('');
+  const { products, searchProducts } = useFrequentProductStore();
+
+  const filteredProducts = searchQuery ? searchProducts(searchQuery) : products;
+
+  const renderProductImage = (imageKey: string | null | undefined) => {
+    if (!imageKey) {
+      return <View style={styles.imagePlaceholder} />;
+    }
+
+    return (
+      <Image
+        source={{ uri: imageKey }}
+        style={styles.productImage}
+        defaultSource={require('../assets/placeholder.png')}
+      />
+    );
+  };
 
   return (
     <View style={styles.container}>
-      {/* ヘッダー */}
-      <View style={styles.header}>
-        <Text style={styles.title}>買い物リスト</Text>
-        <Pressable
-          style={styles.addButton}
-          onPress={() => addPicklist('新しいリスト')}
-        >
-          <Text style={styles.addButtonText}>＋ 新規作成</Text>
-        </Pressable>
-      </View>
+      <TextInput
+        style={styles.searchInput}
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        placeholder="商品を検索"
+      />
 
-      {/* リスト一覧 */}
-      <View style={styles.listContainer}>
-        {picklists.length === 0 ? (
-          <Text style={styles.emptyText}>買い物リストを作成してください</Text>
-        ) : (
-          picklists.map((list) => (
-            <View key={list.id} style={styles.listItem}>
-              <Link href={`/list/${list.id}`} asChild>
-                <Pressable style={styles.listContent}>
-                  <Text style={styles.listName}>{list.name}</Text>
-                  <Text style={styles.itemCount}>
-                    {list.items.length}個のアイテム
-                  </Text>
-                </Pressable>
-              </Link>
-              <Pressable
-                style={styles.deleteButton}
-                onPress={() => removePicklist(list.id)}
-              >
-                <Text style={styles.deleteButtonText}>削除</Text>
-              </Pressable>
+      <Link href="/add-product" asChild>
+        <Pressable style={styles.addButton}>
+          <Text style={styles.addButtonText}>商品を追加</Text>
+        </Pressable>
+      </Link>
+
+      <FlatList
+        data={filteredProducts}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <Pressable
+            style={styles.productItem}
+            onPress={() => {
+              router.push(`/edit-product?id=${item.id}`);
+            }}
+          >
+            {renderProductImage(item.imageUrl)}
+            <View style={styles.productInfo}>
+              <Text style={styles.productName}>{item.name}</Text>
+              {item.category && (
+                <Text style={styles.productCategory}>{item.category}</Text>
+              )}
             </View>
-          ))
+          </Pressable>
         )}
-      </View>
+      />
     </View>
   );
 }
@@ -54,66 +77,58 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
     backgroundColor: '#fff',
   },
-  header: {
-    padding: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  searchInput: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 16,
   },
   addButton: {
-    backgroundColor: '#3b82f6',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    backgroundColor: '#007AFF',
+    padding: 12,
     borderRadius: 8,
+    marginBottom: 16,
   },
   addButtonText: {
     color: '#fff',
-    fontWeight: 'bold',
-  },
-  listContainer: {
-    flex: 1,
-    padding: 16,
-  },
-  emptyText: {
     textAlign: 'center',
-    color: '#6b7280',
-    marginTop: 24,
+    fontSize: 16,
+    fontWeight: '600',
   },
-  listItem: {
+  productItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
     flexDirection: 'row',
-    backgroundColor: '#f3f4f6',
-    borderRadius: 8,
-    marginBottom: 12,
+    alignItems: 'center',
   },
-  listContent: {
+  productInfo: {
     flex: 1,
-    padding: 16,
+    marginLeft: 12,
   },
-  listName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 4,
+  productName: {
+    fontSize: 16,
+    fontWeight: '500',
   },
-  itemCount: {
-    color: '#6b7280',
+  productCategory: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
   },
-  deleteButton: {
-    padding: 16,
-    justifyContent: 'center',
-    backgroundColor: '#fee2e2',
-    borderTopRightRadius: 8,
-    borderBottomRightRadius: 8,
+  productImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 4,
   },
-  deleteButtonText: {
-    color: '#ef4444',
-    fontWeight: 'bold',
+  imagePlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 4,
+    backgroundColor: '#f0f0f0',
   },
 });

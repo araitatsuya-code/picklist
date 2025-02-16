@@ -9,13 +9,25 @@ export default function Layout() {
         <Stack.Screen
           name="index"
           options={{
-            title: 'Picklist',
+            title: 'よく買う商品',
           }}
         />
         <Stack.Screen
-          name="list/[id]"
+          name="add-product"
           options={{
-            headerShown: false,
+            title: '商品を追加',
+          }}
+        />
+        <Stack.Screen
+          name="edit-product"
+          options={{
+            title: '商品を編集',
+          }}
+        />
+        <Stack.Screen
+          name="lists/index"
+          options={{
+            title: '買い物リスト',
           }}
         />
         <Stack.Screen

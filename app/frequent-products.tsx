@@ -6,15 +6,31 @@ import {
   FlatList,
   StyleSheet,
   Pressable,
+  Image,
 } from 'react-native';
 import { useFrequentProductStore } from '../src/stores/useFrequentProductStore';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
+import * as imageUtils from '../src/utils/imageUtils';
 
 export default function FrequentProductsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const { products, searchProducts, deleteProduct } = useFrequentProductStore();
 
   const filteredProducts = searchQuery ? searchProducts(searchQuery) : products;
+
+  const renderProductImage = (imageKey: string | null | undefined) => {
+    if (!imageKey) {
+      return <View style={styles.imagePlaceholder} />;
+    }
+
+    return (
+      <Image
+        source={{ uri: imageKey }}
+        style={styles.productImage}
+        defaultSource={require('../assets/placeholder.png')}
+      />
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -38,9 +54,10 @@ export default function FrequentProductsScreen() {
           <Pressable
             style={styles.productItem}
             onPress={() => {
-              /* 商品の編集画面へ遷移 */
+              router.push(`/edit-product?id=${item.id}`);
             }}
           >
+            {renderProductImage(item.imageUrl)}
             <View style={styles.productInfo}>
               <Text style={styles.productName}>{item.name}</Text>
               {item.category && (
@@ -84,9 +101,12 @@ const styles = StyleSheet.create({
     padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   productInfo: {
     flex: 1,
+    marginLeft: 12,
   },
   productName: {
     fontSize: 16,
@@ -96,5 +116,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginTop: 4,
+  },
+  productImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 4,
+  },
+  imagePlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 4,
+    backgroundColor: '#f0f0f0',
   },
 });

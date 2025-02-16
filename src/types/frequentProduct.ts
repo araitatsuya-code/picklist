@@ -1,8 +1,7 @@
 export type FrequentProduct = {
   id: string;
   name: string;
-  barcode?: string;
-  imageUrl?: string;
+  imageUrl?: string | null;
   category?: string;
   defaultQuantity?: number;
   unit?: string;
