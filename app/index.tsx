@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,19 +7,58 @@ import {
   StyleSheet,
   Pressable,
   Image,
+  ScrollView,
 } from 'react-native';
 import { useFrequentProductStore } from '../src/stores/useFrequentProductStore';
 import { Link, router } from 'expo-router';
-import * as imageUtils from '../src/utils/imageUtils';
+import { Ionicons } from '@expo/vector-icons';
+import { Menu } from 'react-native-paper';
 
 /**
  * 買い物リスト一覧を表示するホーム画面
  */
 export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const [menuVisible, setMenuVisible] = useState(false);
   const { products, searchProducts } = useFrequentProductStore();
 
-  const filteredProducts = searchQuery ? searchProducts(searchQuery) : products;
+  // 全カテゴリーのリストを取得
+  const categories = useMemo(() => {
+    const categorySet = new Set<string>();
+    products.forEach((product) => {
+      if (product.category) {
+        categorySet.add(product.category);
+      }
+    });
+    return Array.from(categorySet).sort();
+  }, [products]);
+
+  // 検索とカテゴリーフィルターを組み合わせて商品をフィルタリング
+  const filteredProducts = useMemo(() => {
+    let filtered = searchQuery ? searchProducts(searchQuery) : products;
+    
+    if (selectedCategories.size > 0) {
+      filtered = filtered.filter(
+        (product) =>
+          product.category && selectedCategories.has(product.category)
+      );
+    }
+    
+    return filtered;
+  }, [products, searchQuery, selectedCategories, searchProducts]);
+
+  const toggleCategory = (category: string) => {
+    setSelectedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(category)) {
+        next.delete(category);
+      } else {
+        next.add(category);
+      }
+      return next;
+    });
+  };
 
   const renderProductImage = (imageKey: string | null | undefined) => {
     if (!imageKey) {
@@ -37,39 +76,111 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.searchInput}
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        placeholder="商品を検索"
-      />
-
-      <Link href="/add-product" asChild>
-        <Pressable style={styles.addButton}>
-          <Text style={styles.addButtonText}>商品を追加</Text>
-        </Pressable>
-      </Link>
-
-      <FlatList
-        data={filteredProducts}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Pressable
-            style={styles.productItem}
-            onPress={() => {
-              router.push(`/edit-product?id=${item.id}`);
-            }}
+      <View style={styles.header}>
+        <TextInput
+          style={styles.searchInput}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="商品を検索"
+        />
+        
+        {categories.length > 0 && (
+          <Menu
+            visible={menuVisible}
+            onDismiss={() => setMenuVisible(false)}
+            anchor={
+              <Pressable
+                style={styles.filterButton}
+                onPress={() => setMenuVisible(true)}
+              >
+                <Ionicons
+                  name={selectedCategories.size > 0 ? "filter" : "filter-outline"}
+                  size={24}
+                  color="#007AFF"
+                />
+                {selectedCategories.size > 0 && (
+                  <View style={styles.filterBadge}>
+                    <Text style={styles.filterBadgeText}>
+                      {selectedCategories.size}
+                    </Text>
+                  </View>
+                )}
+              </Pressable>
+            }
           >
-            {renderProductImage(item.imageUrl)}
-            <View style={styles.productInfo}>
-              <Text style={styles.productName}>{item.name}</Text>
-              {item.category && (
-                <Text style={styles.productCategory}>{item.category}</Text>
-              )}
-            </View>
-          </Pressable>
+            {categories.map((category) => (
+              <Menu.Item
+                key={category}
+                onPress={() => toggleCategory(category)}
+                title={category}
+                leadingIcon={
+                  selectedCategories.has(category) ? "check" : undefined
+                }
+              />
+            ))}
+          </Menu>
         )}
-      />
+      </View>
+
+      {categories.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryScrollContent}
+          style={styles.categoryScroll}
+        >
+          {categories.map((category) => (
+            <Pressable
+              key={category}
+              style={[
+                styles.categoryChip,
+                selectedCategories.has(category) && styles.categoryChipSelected,
+              ]}
+              onPress={() => toggleCategory(category)}
+            >
+              <Text
+                style={[
+                  styles.categoryChipText,
+                  selectedCategories.has(category) && styles.categoryChipTextSelected,
+                ]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {category}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
+
+      <View style={styles.listContainer}>
+        <Link href="/add-product" asChild>
+          <Pressable style={styles.addButton}>
+            <Text style={styles.addButtonText}>商品を追加</Text>
+          </Pressable>
+        </Link>
+
+        <FlatList
+          data={filteredProducts}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <Pressable
+              style={styles.productItem}
+              onPress={() => {
+                router.push(`/edit-product?id=${item.id}`);
+              }}
+            >
+              {renderProductImage(item.imageUrl)}
+              <View style={styles.productInfo}>
+                <Text style={styles.productName}>{item.name}</Text>
+                {item.category && (
+                  <Text style={styles.productCategory}>{item.category}</Text>
+                )}
+              </View>
+            </Pressable>
+          )}
+        />
+      </View>
     </View>
   );
 }
@@ -80,13 +191,19 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#fff',
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
   searchInput: {
+    flex: 1,
     height: 40,
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 12,
-    marginBottom: 16,
   },
   addButton: {
     backgroundColor: '#007AFF',
@@ -130,5 +247,64 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 4,
     backgroundColor: '#f0f0f0',
+  },
+  filterButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+  },
+  filterBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#007AFF',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  categoryScroll: {
+    maxHeight: 40,
+    marginBottom: 8,
+  },
+  categoryScrollContent: {
+    paddingHorizontal: 16,
+  },
+  categoryChip: {
+    height: 36,
+    paddingHorizontal: 16,
+    marginRight: 8,
+    borderRadius: 18,
+    backgroundColor: '#f3f4f6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  categoryChipSelected: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+  },
+  categoryChipText: {
+    fontSize: 14,
+    color: '#374151',
+    maxWidth: 100,
+  },
+  categoryChipTextSelected: {
+    color: '#fff',
+  },
+  listContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
   },
 });
