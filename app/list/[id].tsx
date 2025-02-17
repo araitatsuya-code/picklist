@@ -1,124 +1,169 @@
-import { View, Text, Pressable, TextInput, StyleSheet } from 'react-native';
+import React, { useState, useMemo } from 'react';
 import {
-  usePicklistStore,
-  PicklistItem,
-} from '../../src/stores/usePicklistStore';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState, useMemo } from 'react';
-import { DraggableList } from '../../src/components/DraggableList';
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Pressable,
+  TextInput,
+} from 'react-native';
+import { useLocalSearchParams, router } from 'expo-router';
+import { usePicklistStore } from '../../src/stores/usePicklistStore';
+import { Ionicons } from '@expo/vector-icons';
 
 /**
  * 個別の買い物リスト画面
  * リストの詳細表示と編集機能を提供
  */
-export default function ListScreen() {
+export default function ListDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
-  const [newItemName, setNewItemName] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [listName, setListName] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Zustandストアからデータとアクションを取得
-  const picklist = usePicklistStore((state) =>
-    state.picklists.find((list) => list.id === id)
+  const { picklists, updatePicklist, toggleItemCompletion, removeItem, removePicklist } =
+    usePicklistStore();
+
+  const list = useMemo(
+    () => picklists.find((l) => l.id === id),
+    [picklists, id]
   );
-  const { addItem, removeItem, toggleItem, reorderItems } = usePicklistStore();
 
-  // ソート済みのアイテムリストを作成
-  const sortedItems = useMemo(() => {
-    if (!picklist?.items) return [];
-    return [...picklist.items]
-      .filter((item): item is PicklistItem => item !== null)
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  }, [picklist?.items]);
-
-  // リストが見つからない場合
-  if (!picklist) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>リストが見つかりません</Text>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>戻る</Text>
-        </Pressable>
-      </View>
-    );
+  if (!list) {
+    router.back();
+    return null;
   }
 
-  // 新しいアイテムを追加
-  const handleAddItem = () => {
-    if (newItemName.trim()) {
-      addItem(id, {
-        name: newItemName.trim(),
-        quantity: 1,
-        unit: '個',
-        isChecked: false,
-      });
-      setNewItemName('');
+  const handleToggleComplete = (itemId: string) => {
+    toggleItemCompletion(id, itemId);
+  };
+
+  const handleRemoveItem = (itemId: string) => {
+    removeItem(id, itemId);
+  };
+
+  const handleSaveListName = () => {
+    if (listName.trim()) {
+      updatePicklist(id, { name: listName.trim() });
+      setEditMode(false);
     }
   };
 
-  // アイテムのレンダリング関数
-  const renderItem = (item: PicklistItem) => {
-    // itemが存在することを確認
-    if (!item) return null;
-
-    return (
-      <View style={styles.itemRow}>
-        <Pressable
-          style={styles.checkbox}
-          onPress={() => toggleItem(id, item.id)}
-        >
-          <Text>{item.isChecked ? '☑' : '☐'}</Text>
-        </Pressable>
-        <Text style={[styles.itemName, item.isChecked && styles.checkedItem]}>
-          {item.name}
-        </Text>
-        <Pressable
-          style={styles.deleteButton}
-          onPress={() => removeItem(id, item.id)}
-        >
-          <Text style={styles.deleteButtonText}>削除</Text>
-        </Pressable>
-      </View>
-    );
+  const handleDeleteList = () => {
+    removePicklist(id);
+    router.replace('/lists');  // リスト一覧画面に戻る
   };
 
   return (
     <View style={styles.container}>
-      {/* ヘッダー */}
       <View style={styles.header}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>←</Text>
-        </Pressable>
-        <Text style={styles.title}>{picklist.name}</Text>
+        <View style={styles.headerContent}>
+          {editMode ? (
+            <View style={styles.editNameContainer}>
+              <TextInput
+                style={styles.nameInput}
+                value={listName}
+                onChangeText={setListName}
+                placeholder="リスト名を入力"
+                autoFocus
+              />
+              <Pressable
+                style={styles.saveButton}
+                onPress={handleSaveListName}
+              >
+                <Text style={styles.saveButtonText}>保存</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Pressable
+              style={styles.titleContainer}
+              onPress={() => {
+                setListName(list.name);
+                setEditMode(true);
+              }}
+            >
+              <Text style={styles.title}>{list.name}</Text>
+              <Ionicons name="pencil" size={20} color="#666" />
+            </Pressable>
+          )}
+
+          <Pressable
+            style={styles.deleteListButton}
+            onPress={() => setShowDeleteConfirm(true)}
+          >
+            <Ionicons name="trash-outline" size={24} color="#FF3B30" />
+          </Pressable>
+        </View>
       </View>
 
-      {/* 新規アイテム追加フォーム */}
-      <View style={styles.addForm}>
-        <TextInput
-          style={styles.input}
-          value={newItemName}
-          onChangeText={setNewItemName}
-          placeholder="新しいアイテムを追加"
-          onSubmitEditing={handleAddItem}
-        />
-        <Pressable style={styles.addButton} onPress={handleAddItem}>
-          <Text style={styles.addButtonText}>追加</Text>
-        </Pressable>
-      </View>
+      <FlatList
+        data={list.items}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.itemContainer}>
+            <Pressable
+              style={styles.checkbox}
+              onPress={() => handleToggleComplete(item.id)}
+            >
+              <Ionicons
+                name={item.completed ? 'checkmark-circle' : 'ellipse-outline'}
+                size={24}
+                color={item.completed ? '#007AFF' : '#666'}
+              />
+            </Pressable>
 
-      {/* アイテムリスト */}
-      <View style={styles.listContainer}>
-        {!sortedItems.length ? (
-          <Text style={styles.emptyText}>アイテムを追加してください</Text>
-        ) : (
-          <DraggableList
-            items={sortedItems}
-            onReorder={(fromIndex, toIndex) =>
-              reorderItems(id, fromIndex, toIndex)
-            }
-            renderItem={renderItem}
-          />
+            <View style={styles.itemInfo}>
+              <Text
+                style={[
+                  styles.itemName,
+                  item.completed && styles.itemNameCompleted,
+                ]}
+              >
+                {item.name}
+              </Text>
+              <Text style={styles.itemQuantity}>
+                {item.quantity} {item.unit || '個'}
+                {item.maxPrice && ` (${item.maxPrice}円まで)`}
+              </Text>
+              {item.note && <Text style={styles.itemNote}>{item.note}</Text>}
+            </View>
+
+            <Pressable
+              style={styles.deleteButton}
+              onPress={() => handleRemoveItem(item.id)}
+            >
+              <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+            </Pressable>
+          </View>
         )}
-      </View>
+      />
+
+      {/* 削除確認モーダル */}
+      {showDeleteConfirm && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>買い物リストを削除</Text>
+            <Text style={styles.modalMessage}>
+              「{list.name}」を削除してもよろしいですか？
+              {'\n'}この操作は取り消せません。
+            </Text>
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={[styles.modalButton, styles.modalCancelButton]}
+                onPress={() => setShowDeleteConfirm(false)}
+              >
+                <Text style={styles.modalCancelButtonText}>キャンセル</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalButton, styles.modalDeleteButton]}
+                onPress={handleDeleteList}
+              >
+                <Text style={styles.modalDeleteButtonText}>削除</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -130,84 +175,133 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  backButton: {
-    marginRight: 16,
-  },
-  backButtonText: {
-    fontSize: 24,
-    color: '#3b82f6',
+    gap: 8,
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
-  addForm: {
-    padding: 16,
+  editNameContainer: {
     flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    alignItems: 'center',
+    gap: 8,
   },
-  input: {
+  nameInput: {
     flex: 1,
-    marginRight: 8,
-    padding: 8,
+    height: 40,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#ddd',
     borderRadius: 8,
+    paddingHorizontal: 12,
   },
-  addButton: {
-    backgroundColor: '#3b82f6',
+  saveButton: {
+    backgroundColor: '#007AFF',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
-    justifyContent: 'center',
   },
-  addButtonText: {
+  saveButtonText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
-  listContainer: {
-    flex: 1,
-    padding: 16,
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: '#6b7280',
-    marginTop: 24,
-  },
-  errorText: {
-    textAlign: 'center',
-    color: '#ef4444',
-    marginTop: 24,
-  },
-  itemRow: {
+  itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#eee',
   },
   checkbox: {
-    marginRight: 8,
+    marginRight: 12,
+  },
+  itemInfo: {
+    flex: 1,
   },
   itemName: {
-    flex: 1,
     fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
   },
-  checkedItem: {
+  itemNameCompleted: {
     textDecorationLine: 'line-through',
-    color: '#6b7280',
+    color: '#999',
+  },
+  itemQuantity: {
+    fontSize: 14,
+    color: '#666',
+  },
+  itemNote: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
   },
   deleteButton: {
-    marginLeft: 8,
-    padding: 4,
+    padding: 8,
   },
-  deleteButtonText: {
-    color: '#ef4444',
+  deleteListButton: {
+    padding: 8,
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 24,
+    width: '80%',
+    maxWidth: 320,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  modalMessage: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  modalButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  modalCancelButton: {
+    backgroundColor: '#f0f0f0',
+  },
+  modalDeleteButton: {
+    backgroundColor: '#FF3B30',
+  },
+  modalCancelButtonText: {
+    color: '#333',
+    fontWeight: '600',
+  },
+  modalDeleteButtonText: {
+    color: '#fff',
+    fontWeight: '600',
   },
 });

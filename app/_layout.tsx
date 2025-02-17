@@ -48,6 +48,12 @@ export default function Layout() {
             }}
           />
           <Stack.Screen
+            name="list/[id]"
+            options={{
+              title: '買い物リストの詳細',
+            }}
+          />
+          <Stack.Screen
             name="scanner"
             options={{
               title: 'バーコードスキャナー',

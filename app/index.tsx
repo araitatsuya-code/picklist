@@ -13,6 +13,7 @@ import { useFrequentProductStore } from '../src/stores/useFrequentProductStore';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Menu } from 'react-native-paper';
+import { FrequentProduct } from '../src/types/frequentProduct';
 
 /**
  * 買い物リスト一覧を表示するホーム画面
@@ -24,6 +25,10 @@ export default function HomeScreen() {
   );
   const [menuVisible, setMenuVisible] = useState(false);
   const { products, searchProducts } = useFrequentProductStore();
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
+    new Set()
+  );
 
   // 全カテゴリーのリストを取得
   const categories = useMemo(() => {
@@ -62,6 +67,37 @@ export default function HomeScreen() {
     });
   };
 
+  const toggleSelectionMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    setSelectedProducts(new Set());
+  };
+
+  const toggleProductSelection = (productId: string) => {
+    setSelectedProducts((prev) => {
+      const next = new Set(prev);
+      if (next.has(productId)) {
+        next.delete(productId);
+      } else {
+        next.add(productId);
+      }
+      return next;
+    });
+  };
+
+  const handleProductPress = (product: FrequentProduct) => {
+    if (isSelectionMode) {
+      toggleProductSelection(product.id);
+    } else {
+      router.push(`/edit-product?id=${product.id}`);
+    }
+  };
+
+  const handleAddToList = () => {
+    if (selectedProducts.size === 0) return;
+    const selectedIds = Array.from(selectedProducts).join(',');
+    router.push(`/add-to-list?selectedIds=${selectedIds}`);
+  };
+
   const renderProductImage = (imageKey: string | null | undefined) => {
     if (!imageKey) {
       return <View style={styles.imagePlaceholder} />;
@@ -85,6 +121,14 @@ export default function HomeScreen() {
           onChangeText={setSearchQuery}
           placeholder="商品を検索"
         />
+
+        <Pressable style={styles.modeButton} onPress={toggleSelectionMode}>
+          <Ionicons
+            name={isSelectionMode ? 'checkmark-circle' : 'add-circle-outline'}
+            size={24}
+            color="#007AFF"
+          />
+        </Pressable>
 
         {categories.length > 0 && (
           <Menu
@@ -159,22 +203,54 @@ export default function HomeScreen() {
       )}
 
       <View style={styles.listContainer}>
-        <Link href="/add-product" asChild>
-          <Pressable style={styles.addButton}>
-            <Text style={styles.addButtonText}>商品を追加</Text>
-          </Pressable>
-        </Link>
+        {isSelectionMode ? (
+          <View style={styles.selectionHeader}>
+            <Text style={styles.selectionCount}>
+              {selectedProducts.size}個選択中
+            </Text>
+            <Pressable
+              style={[
+                styles.addToListButton,
+                selectedProducts.size === 0 && styles.addToListButtonDisabled,
+              ]}
+              onPress={handleAddToList}
+              disabled={selectedProducts.size === 0}
+            >
+              <Text style={styles.addToListButtonText}>買い物リストに追加</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <Link href="/add-product" asChild>
+            <Pressable style={styles.addButton}>
+              <Text style={styles.addButtonText}>商品を追加</Text>
+            </Pressable>
+          </Link>
+        )}
 
         <FlatList
           data={filteredProducts}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <Pressable
-              style={styles.productItem}
-              onPress={() => {
-                router.push(`/edit-product?id=${item.id}`);
-              }}
+              style={[
+                styles.productItem,
+                selectedProducts.has(item.id) && styles.productItemSelected,
+              ]}
+              onPress={() => handleProductPress(item)}
             >
+              {isSelectionMode && (
+                <View style={styles.checkbox}>
+                  <Ionicons
+                    name={
+                      selectedProducts.has(item.id)
+                        ? 'checkmark-circle'
+                        : 'ellipse-outline'
+                    }
+                    size={24}
+                    color={selectedProducts.has(item.id) ? '#007AFF' : '#999'}
+                  />
+                </View>
+              )}
               {renderProductImage(item.imageUrl)}
               <View style={styles.productInfo}>
                 <Text style={styles.productName}>{item.name}</Text>
@@ -311,5 +387,43 @@ const styles = StyleSheet.create({
   listContainer: {
     flex: 1,
     paddingHorizontal: 16,
+  },
+  modeButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+  },
+  selectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  selectionCount: {
+    fontSize: 16,
+    color: '#666',
+  },
+  addToListButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  addToListButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  addToListButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  productItemSelected: {
+    backgroundColor: '#f0f9ff',
+  },
+  checkbox: {
+    marginRight: 12,
   },
 });
