@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FrequentProduct } from '../types/frequentProduct';
 
@@ -18,46 +18,53 @@ export const useFrequentProductStore = create<FrequentProductState>()(
     (set, get) => ({
       products: [],
 
-      addProduct: (product) =>
-        set((state) => {
-          const now = Date.now();
-          const newProduct: FrequentProduct = {
-            ...product,
-            id: `product_${now}`,
-            createdAt: now,
-            updatedAt: now,
-          };
-          return { products: [...state.products, newProduct] };
-        }),
+      addProduct: (product) => {
+        const now = Date.now();
+        const newProduct: FrequentProduct = {
+          id: now.toString(),
+          ...product,
+          createdAt: now,
+          updatedAt: now,
+        };
 
-      updateProduct: (id, updates) =>
+        set((state) => ({
+          products: [...state.products, newProduct],
+        }));
+      },
+
+      updateProduct: (id, updates) => {
         set((state) => ({
           products: state.products.map((product) =>
             product.id === id
               ? { ...product, ...updates, updatedAt: Date.now() }
               : product
           ),
-        })),
+        }));
+      },
 
-      deleteProduct: (id) =>
+      deleteProduct: (id) => {
         set((state) => ({
           products: state.products.filter((product) => product.id !== id),
-        })),
+        }));
+      },
 
       searchProducts: (query) => {
         const { products } = get();
-        const lowerQuery = query.toLowerCase();
+        const normalizedQuery = query.toLowerCase().trim();
+
         return products.filter(
           (product) =>
-            product.name.toLowerCase().includes(lowerQuery) ||
-            product.barcode?.includes(query) ||
-            product.category?.toLowerCase().includes(lowerQuery)
+            product.name.toLowerCase().includes(normalizedQuery) ||
+            product.category?.toLowerCase().includes(normalizedQuery)
         );
       },
     }),
     {
       name: 'frequent-products-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: () => (state) => {
+        console.log('State hydrated:', state?.products.length ?? 0, 'products');
+      },
     }
   )
 );

@@ -19,7 +19,9 @@ import { Menu } from 'react-native-paper';
  */
 export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
+    new Set()
+  );
   const [menuVisible, setMenuVisible] = useState(false);
   const { products, searchProducts } = useFrequentProductStore();
 
@@ -37,14 +39,14 @@ export default function HomeScreen() {
   // 検索とカテゴリーフィルターを組み合わせて商品をフィルタリング
   const filteredProducts = useMemo(() => {
     let filtered = searchQuery ? searchProducts(searchQuery) : products;
-    
+
     if (selectedCategories.size > 0) {
       filtered = filtered.filter(
         (product) =>
           product.category && selectedCategories.has(product.category)
       );
     }
-    
+
     return filtered;
   }, [products, searchQuery, selectedCategories, searchProducts]);
 
@@ -83,7 +85,7 @@ export default function HomeScreen() {
           onChangeText={setSearchQuery}
           placeholder="商品を検索"
         />
-        
+
         {categories.length > 0 && (
           <Menu
             visible={menuVisible}
@@ -94,7 +96,9 @@ export default function HomeScreen() {
                 onPress={() => setMenuVisible(true)}
               >
                 <Ionicons
-                  name={selectedCategories.size > 0 ? "filter" : "filter-outline"}
+                  name={
+                    selectedCategories.size > 0 ? 'filter' : 'filter-outline'
+                  }
                   size={24}
                   color="#007AFF"
                 />
@@ -114,7 +118,7 @@ export default function HomeScreen() {
                 onPress={() => toggleCategory(category)}
                 title={category}
                 leadingIcon={
-                  selectedCategories.has(category) ? "check" : undefined
+                  selectedCategories.has(category) ? 'check' : undefined
                 }
               />
             ))}
@@ -141,7 +145,8 @@ export default function HomeScreen() {
               <Text
                 style={[
                   styles.categoryChipText,
-                  selectedCategories.has(category) && styles.categoryChipTextSelected,
+                  selectedCategories.has(category) &&
+                    styles.categoryChipTextSelected,
                 ]}
                 numberOfLines={1}
                 ellipsizeMode="tail"
