@@ -38,3 +38,7 @@ yarn-error.*
 # docs
 docs/handover.md
 docs/requirements.md
+
+# cursor
+.cursorrules
+.cursorignore
