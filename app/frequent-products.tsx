@@ -1,71 +1,21 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  FlatList,
-  StyleSheet,
-  Pressable,
-  Image,
-} from 'react-native';
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { router } from 'expo-router';
 import { useFrequentProductStore } from '../src/stores/useFrequentProductStore';
-import { Link, router } from 'expo-router';
-import * as imageUtils from '../src/utils/imageUtils';
+import { ProductList } from '../src/components/ProductList';
+import { FAB } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function FrequentProductsScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const { products, searchProducts, deleteProduct } = useFrequentProductStore();
-
-  const filteredProducts = searchQuery ? searchProducts(searchQuery) : products;
-
-  const renderProductImage = (imageKey: string | null | undefined) => {
-    if (!imageKey) {
-      return <View style={styles.imagePlaceholder} />;
-    }
-
-    return (
-      <Image
-        source={{ uri: imageKey }}
-        style={styles.productImage}
-        defaultSource={require('../assets/placeholder.png')}
-      />
-    );
-  };
+  const products = useFrequentProductStore((state) => state.products);
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.searchInput}
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        placeholder="商品を検索"
-      />
-
-      <Link href="/add-product" asChild>
-        <Pressable style={styles.addButton}>
-          <Text style={styles.addButtonText}>商品を追加</Text>
-        </Pressable>
-      </Link>
-
-      <FlatList
-        data={filteredProducts}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Pressable
-            style={styles.productItem}
-            onPress={() => {
-              router.push(`/edit-product?id=${item.id}`);
-            }}
-          >
-            {renderProductImage(item.imageUrl)}
-            <View style={styles.productInfo}>
-              <Text style={styles.productName}>{item.name}</Text>
-              {item.category && (
-                <Text style={styles.productCategory}>{item.category}</Text>
-              )}
-            </View>
-          </Pressable>
-        )}
+      <ProductList products={products} />
+      <FAB
+        icon={(props) => <Ionicons name="add" {...props} />}
+        style={styles.fab}
+        onPress={() => router.push('/add-product')}
       />
     </View>
   );
@@ -127,5 +77,11 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 4,
     backgroundColor: '#f0f0f0',
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 0,
   },
 });

@@ -35,7 +35,7 @@ export default function AddProductScreen() {
         ? Number(productData.defaultQuantity)
         : undefined,
       unit: productData.unit.trim(),
-      imageUrl: productData.imageUrl,
+      imageUrl: productData.imageUrl || undefined,
     });
 
     router.back();

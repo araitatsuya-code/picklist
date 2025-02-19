@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Image,
@@ -26,17 +26,17 @@ export function ImagePicker({
   const [loading, setLoading] = React.useState(false);
   const [imageUri, setImageUri] = React.useState<string | null>(null);
 
+  const loadImage = useCallback(async () => {
+    if (!imageKey) return;
+    const uri = await imageUtils.loadImage(imageKey);
+    setImageUri(uri);
+  }, [imageKey]);
+
   React.useEffect(() => {
     if (imageKey) {
       loadImage();
     }
-  }, [imageKey]);
-
-  const loadImage = async () => {
-    if (!imageKey) return;
-    const uri = await imageUtils.loadImage(imageKey);
-    setImageUri(uri);
-  };
+  }, [imageKey, loadImage]);
 
   const handleSelectImage = async () => {
     Alert.alert('画像を選択', '画像の取得方法を選択してください', [
@@ -65,6 +65,7 @@ export function ImagePicker({
         setImageUri(uri);
       }
     } catch (error) {
+      console.error('Camera error:', error);
       Alert.alert('エラー', '画像の撮影に失敗しました');
     } finally {
       setLoading(false);
@@ -81,6 +82,7 @@ export function ImagePicker({
         setImageUri(uri);
       }
     } catch (error) {
+      console.error('Gallery error:', error);
       Alert.alert('エラー', '画像の選択に失敗しました');
     } finally {
       setLoading(false);

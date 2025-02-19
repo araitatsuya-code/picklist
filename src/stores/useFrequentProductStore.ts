@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FrequentProduct } from '../types/frequentProduct';
 
 interface FrequentProductState {
   products: FrequentProduct[];
@@ -68,3 +67,14 @@ export const useFrequentProductStore = create<FrequentProductState>()(
     }
   )
 );
+
+export type FrequentProduct = {
+  id: string;
+  name: string;
+  category?: string;
+  imageUrl?: string;
+  createdAt: number;
+  updatedAt: number;
+  defaultQuantity?: number;
+  unit?: string;
+};

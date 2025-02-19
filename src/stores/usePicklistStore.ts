@@ -10,6 +10,7 @@ export interface PicklistItem {
   productId: string;
   name: string; // アイテム名
   quantity: number; // 数量
+  unit?: string; // 追加
   maxPrice?: number;
   note?: string;
   completed: boolean;
@@ -26,13 +27,13 @@ export interface Picklist {
   updatedAt: number; // 更新日時
 }
 
-/**
- * 買い物リストの状態管理とアクションを定義するインターフェース
- */
-export interface PicklistStore {
-  picklists: Picklist[]; // 全ての買い物リスト
-  addPicklist: (name: string) => void; // 新規リスト追加
-  removePicklist: (id: string) => void; // リスト削除
+type PicklistState = {
+  picklists: Picklist[];
+};
+
+type PicklistActions = {
+  addPicklist: (name: string) => void;
+  removePicklist: (id: string) => void;
   updatePicklist: (id: string, updates: Partial<Picklist>) => void;
   addItemsToList: (listId: string, items: Omit<PicklistItem, 'id'>[]) => void;
   updateItem: (
@@ -42,15 +43,18 @@ export interface PicklistStore {
   ) => void;
   removeItem: (listId: string, itemId: string) => void;
   toggleItemCompletion: (listId: string, itemId: string) => void;
-}
+};
+
+// 型をエクスポート
+export type PicklistStore = PicklistState & PicklistActions;
 
 /**
  * Zustandストアの作成
  * AsyncStorageを使用して永続化を実現
  */
-export const usePicklistStore = create<PicklistStore>()(
+export const usePicklistStore = create<PicklistState & PicklistActions>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       picklists: [],
 
       // 新しい買い物リストを追加
@@ -159,13 +163,6 @@ export const usePicklistStore = create<PicklistStore>()(
     {
       name: 'picklist-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      onRehydrateStorage: () => (state) => {
-        console.log(
-          'State hydrated:',
-          state?.picklists.length ?? 0,
-          'picklists'
-        );
-      },
     }
   )
 );

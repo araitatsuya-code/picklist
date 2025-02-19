@@ -6,6 +6,7 @@ import {
   ScrollView,
   TextInput,
   Pressable,
+  GestureResponderEvent,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useFrequentProductStore } from '../src/stores/useFrequentProductStore';
@@ -34,7 +35,7 @@ export default function AddToListScreen() {
   const [maxPrices, setMaxPrices] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState<Record<string, string>>({});
 
-  const handleListSelectorPress = (event: any) => {
+  const handleListSelectorPress = (event: GestureResponderEvent) => {
     const { pageY, pageX } = event.nativeEvent;
     setMenuAnchor({ x: pageX, y: pageY });
     setMenuVisible(true);

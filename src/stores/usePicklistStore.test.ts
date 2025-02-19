@@ -3,36 +3,99 @@ import type { PicklistStore, Picklist } from './usePicklistStore';
 
 // テスト用の簡易ストア
 const createTestStore = () =>
-  create<PicklistStore>((set) => ({
+  create<PicklistStore>()((set) => ({
     picklists: [],
-    addPicklist: (name: string) =>
-      set((state: { picklists: Picklist[] }) => ({
+    addPicklist: (name: string) => {
+      const now = Date.now();
+      set((state) => ({
         picklists: [
           ...state.picklists,
           {
-            id: 'test-id',
+            id: now.toString(),
             name,
             items: [],
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            createdAt: now,
+            updatedAt: now,
           },
         ],
-      })),
-    removePicklist: (id: string) =>
-      set((state: { picklists: Picklist[] }) => ({
-        picklists: state.picklists.filter((list: Picklist) => list.id !== id),
-      })),
-    addItem: () => {
-      throw new Error('Not implemented in test');
+      }));
     },
-    removeItem: () => {
-      throw new Error('Not implemented in test');
+    removePicklist: (id: string) => {
+      set((state) => ({
+        picklists: state.picklists.filter((list) => list.id !== id),
+      }));
     },
-    toggleItem: () => {
-      throw new Error('Not implemented in test');
+    updatePicklist: (id: string, updates: Partial<Picklist>) => {
+      set((state) => ({
+        picklists: state.picklists.map((list) =>
+          list.id === id ? { ...list, ...updates, updatedAt: Date.now() } : list
+        ),
+      }));
     },
-    reorderItems: () => {
-      throw new Error('Not implemented in test');
+    addItemsToList: (listId: string, items) => {
+      const now = Date.now();
+      set((state) => ({
+        picklists: state.picklists.map((list) =>
+          list.id === listId
+            ? {
+                ...list,
+                items: [
+                  ...list.items,
+                  ...items.map((item) => ({
+                    ...item,
+                    id: `${now}_${item.productId}`,
+                  })),
+                ],
+                updatedAt: now,
+              }
+            : list
+        ),
+      }));
+    },
+    updateItem: (listId, itemId, updates) => {
+      set((state) => ({
+        picklists: state.picklists.map((list) =>
+          list.id === listId
+            ? {
+                ...list,
+                items: list.items.map((item) =>
+                  item.id === itemId ? { ...item, ...updates } : item
+                ),
+                updatedAt: Date.now(),
+              }
+            : list
+        ),
+      }));
+    },
+    removeItem: (listId, itemId) => {
+      set((state) => ({
+        picklists: state.picklists.map((list) =>
+          list.id === listId
+            ? {
+                ...list,
+                items: list.items.filter((item) => item.id !== itemId),
+                updatedAt: Date.now(),
+              }
+            : list
+        ),
+      }));
+    },
+    toggleItemCompletion: (listId, itemId) => {
+      set((state) => ({
+        picklists: state.picklists.map((list) =>
+          list.id === listId
+            ? {
+                ...list,
+                items: list.items.map((item) =>
+                  item.id === itemId
+                    ? { ...item, completed: !item.completed }
+                    : item
+                ),
+                updatedAt: Date.now(),
+              }
+            : list
+        ),
+      }));
     },
   }));
 

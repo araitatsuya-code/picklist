@@ -8,7 +8,10 @@ import {
   TextInput,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { usePicklistStore } from '../../src/stores/usePicklistStore';
+import {
+  PicklistItem,
+  usePicklistStore,
+} from '../../src/stores/usePicklistStore';
 import { Ionicons } from '@expo/vector-icons';
 
 /**
@@ -27,8 +30,14 @@ export default function ListDetailScreen() {
     note: string;
   } | null>(null);
 
-  const { picklists, updatePicklist, toggleItemCompletion, removeItem, removePicklist, updateItem } =
-    usePicklistStore();
+  const {
+    picklists,
+    updatePicklist,
+    toggleItemCompletion,
+    removeItem,
+    removePicklist,
+    updateItem,
+  } = usePicklistStore();
 
   const list = useMemo(
     () => picklists.find((l) => l.id === id),
@@ -57,7 +66,7 @@ export default function ListDetailScreen() {
 
   const handleDeleteList = () => {
     removePicklist(id);
-    router.replace('/lists');  // リスト一覧画面に戻る
+    router.replace('/lists'); // リスト一覧画面に戻る
   };
 
   const handleEditItem = (item: PicklistItem) => {
@@ -93,10 +102,7 @@ export default function ListDetailScreen() {
                 placeholder="リスト名を入力"
                 autoFocus
               />
-              <Pressable
-                style={styles.saveButton}
-                onPress={handleSaveListName}
-              >
+              <Pressable style={styles.saveButton} onPress={handleSaveListName}>
                 <Text style={styles.saveButtonText}>保存</Text>
               </Pressable>
             </View>
@@ -177,7 +183,7 @@ export default function ListDetailScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>アイテムを編集</Text>
-            
+
             <View style={styles.inputGroup}>
               <Text style={styles.label}>数量</Text>
               <TextInput
@@ -434,10 +440,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 80,
     padding: 12,
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontWeight: '600',
   },
   modalSaveButton: {
     backgroundColor: '#007AFF',

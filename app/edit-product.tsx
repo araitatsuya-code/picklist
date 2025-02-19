@@ -52,7 +52,7 @@ export default function EditProductScreen() {
         ? Number(productData.defaultQuantity)
         : undefined,
       unit: productData.unit.trim(),
-      imageUrl: productData.imageUrl,
+      imageUrl: productData.imageUrl || undefined,
       updatedAt: Date.now(),
     });
 
