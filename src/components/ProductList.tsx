@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { FrequentProduct } from '../stores/useFrequentProductStore';
-import noImage from '../../assets/no-image.png';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const noImage = require('../../assets/no-image.png');
 
 type ProductListProps = {
   products: FrequentProduct[];

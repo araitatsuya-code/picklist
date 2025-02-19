@@ -14,7 +14,8 @@ import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Menu } from 'react-native-paper';
 import { FrequentProduct } from '../src/types/frequentProduct';
-import noImage from '../assets/no-image.png';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const noImage = require('../assets/no-image.png');
 
 /**
  * 買い物リスト一覧を表示するホーム画面
