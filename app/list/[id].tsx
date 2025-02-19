@@ -20,8 +20,14 @@ export default function ListDetailScreen() {
   const [editMode, setEditMode] = useState(false);
   const [listName, setListName] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editingItem, setEditingItem] = useState<{
+    id: string;
+    quantity: string;
+    maxPrice: string;
+    note: string;
+  } | null>(null);
 
-  const { picklists, updatePicklist, toggleItemCompletion, removeItem, removePicklist } =
+  const { picklists, updatePicklist, toggleItemCompletion, removeItem, removePicklist, updateItem } =
     usePicklistStore();
 
   const list = useMemo(
@@ -52,6 +58,26 @@ export default function ListDetailScreen() {
   const handleDeleteList = () => {
     removePicklist(id);
     router.replace('/lists');  // リスト一覧画面に戻る
+  };
+
+  const handleEditItem = (item: PicklistItem) => {
+    setEditingItem({
+      id: item.id,
+      quantity: item.quantity.toString(),
+      maxPrice: item.maxPrice?.toString() || '',
+      note: item.note || '',
+    });
+  };
+
+  const handleSaveItem = () => {
+    if (!editingItem) return;
+
+    updateItem(id, editingItem.id, {
+      quantity: Number(editingItem.quantity) || 1,
+      maxPrice: editingItem.maxPrice ? Number(editingItem.maxPrice) : undefined,
+      note: editingItem.note || undefined,
+    });
+    setEditingItem(null);
   };
 
   return (
@@ -128,15 +154,87 @@ export default function ListDetailScreen() {
               {item.note && <Text style={styles.itemNote}>{item.note}</Text>}
             </View>
 
-            <Pressable
-              style={styles.deleteButton}
-              onPress={() => handleRemoveItem(item.id)}
-            >
-              <Ionicons name="trash-outline" size={20} color="#FF3B30" />
-            </Pressable>
+            <View style={styles.itemActions}>
+              <Pressable
+                style={styles.editButton}
+                onPress={() => handleEditItem(item)}
+              >
+                <Ionicons name="pencil-outline" size={20} color="#007AFF" />
+              </Pressable>
+              <Pressable
+                style={styles.deleteButton}
+                onPress={() => handleRemoveItem(item.id)}
+              >
+                <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+              </Pressable>
+            </View>
           </View>
         )}
       />
+
+      {/* アイテム編集モーダル */}
+      {editingItem && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>アイテムを編集</Text>
+            
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>数量</Text>
+              <TextInput
+                style={styles.input}
+                value={editingItem.quantity}
+                onChangeText={(text) =>
+                  setEditingItem({ ...editingItem, quantity: text })
+                }
+                keyboardType="numeric"
+                placeholder="数量を入力"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>価格上限</Text>
+              <TextInput
+                style={styles.input}
+                value={editingItem.maxPrice}
+                onChangeText={(text) =>
+                  setEditingItem({ ...editingItem, maxPrice: text })
+                }
+                keyboardType="numeric"
+                placeholder="任意"
+              />
+              <Text style={styles.unit}>円</Text>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>メモ</Text>
+              <TextInput
+                style={[styles.input, styles.noteInput]}
+                value={editingItem.note}
+                onChangeText={(text) =>
+                  setEditingItem({ ...editingItem, note: text })
+                }
+                placeholder="任意"
+                multiline
+              />
+            </View>
+
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={[styles.modalButton, styles.modalCancelButton]}
+                onPress={() => setEditingItem(null)}
+              >
+                <Text style={styles.modalCancelButtonText}>キャンセル</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalButton, styles.modalSaveButton]}
+                onPress={handleSaveItem}
+              >
+                <Text style={styles.modalSaveButtonText}>保存</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      )}
 
       {/* 削除確認モーダル */}
       {showDeleteConfirm && (
@@ -301,6 +399,50 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   modalDeleteButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  itemActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  editButton: {
+    padding: 8,
+  },
+  inputGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  label: {
+    flex: 1,
+    fontWeight: '600',
+  },
+  input: {
+    flex: 1,
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+  },
+  unit: {
+    marginLeft: 8,
+  },
+  noteInput: {
+    flex: 1,
+    height: 80,
+    padding: 12,
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  modalSaveButton: {
+    backgroundColor: '#007AFF',
+  },
+  modalSaveButtonText: {
     color: '#fff',
     fontWeight: '600',
   },
