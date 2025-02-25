@@ -14,10 +14,6 @@ import {
 } from '../../src/stores/usePicklistStore';
 import { Ionicons } from '@expo/vector-icons';
 
-/**
- * 個別の買い物リスト画面
- * リストの詳細表示と編集機能を提供
- */
 export default function ListDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [editMode, setEditMode] = useState(false);
@@ -45,7 +41,7 @@ export default function ListDetailScreen() {
   );
 
   if (!list) {
-    router.back();
+    router.replace('/(tabs)');
     return null;
   }
 
@@ -66,7 +62,7 @@ export default function ListDetailScreen() {
 
   const handleDeleteList = () => {
     removePicklist(id);
-    router.replace('/lists'); // リスト一覧画面に戻る
+    router.replace('/(tabs)');
   };
 
   const handleEditItem = (item: PicklistItem) => {

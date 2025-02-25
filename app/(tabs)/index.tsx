@@ -26,7 +26,7 @@ export default function PicklistScreen() {
         ) : (
           picklists.map((list) => (
             <View key={list.id} style={styles.listItem}>
-              <Link href={`/list/${list.id}`} asChild>
+              <Link href={`/(lists)/${list.id}`} asChild>
                 <Pressable style={styles.listContent}>
                   <Text style={styles.listName}>{list.name}</Text>
                   <Text style={styles.itemCount}>

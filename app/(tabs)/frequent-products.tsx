@@ -9,18 +9,18 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import { useFrequentProductStore } from '../src/stores/useFrequentProductStore';
+import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Menu } from 'react-native-paper';
-import { FrequentProduct } from '../src/types/frequentProduct';
+import { FrequentProduct } from '../../src/types/frequentProduct';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const noImage = require('../assets/no-image.png');
+const noImage = require('../../assets/no-image.png');
 
 /**
- * 買い物リスト一覧を表示するホーム画面
+ * よく買う商品リストを表示する画面
  */
-export default function HomeScreen() {
+export default function FrequentProductsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
     new Set()
@@ -90,14 +90,14 @@ export default function HomeScreen() {
     if (isSelectionMode) {
       toggleProductSelection(product.id);
     } else {
-      router.push(`/edit-product?id=${product.id}`);
+      router.push(`/(products)/edit?id=${product.id}`);
     }
   };
 
   const handleAddToList = () => {
     if (selectedProducts.size === 0) return;
     const selectedIds = Array.from(selectedProducts).join(',');
-    router.push(`/add-to-list?selectedIds=${selectedIds}`);
+    router.push(`/(products)/add-to-list?selectedIds=${selectedIds}`);
   };
 
   const renderProductImage = (imageKey: string | null | undefined) => {
@@ -222,7 +222,7 @@ export default function HomeScreen() {
             </Pressable>
           </View>
         ) : (
-          <Link href="/add-product" asChild>
+          <Link href="/(products)/add" asChild>
             <Pressable style={styles.addButton}>
               <Text style={styles.addButtonText}>商品を追加</Text>
             </Pressable>

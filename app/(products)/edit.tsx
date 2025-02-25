@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,15 @@ import {
   StyleSheet,
   Pressable,
   ScrollView,
+  Alert,
 } from 'react-native';
-import { useFrequentProductStore } from '../src/stores/useFrequentProductStore';
-import { router } from 'expo-router';
-import { ImagePicker } from '../src/components/ImagePicker';
+import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
+import { router, useLocalSearchParams } from 'expo-router';
+import { ImagePicker } from '../../src/components/ImagePicker';
 
-export default function AddProductScreen() {
+export default function EditProductScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { products, updateProduct, deleteProduct } = useFrequentProductStore();
   const [productData, setProductData] = useState({
     name: '',
     category: '',
@@ -20,7 +23,21 @@ export default function AddProductScreen() {
     imageUrl: null as string | null,
   });
 
-  const { addProduct } = useFrequentProductStore();
+  useEffect(() => {
+    const product = products.find((p) => p.id === id);
+    if (!product) {
+      router.back();
+      return;
+    }
+
+    setProductData({
+      name: product.name,
+      category: product.category ?? '',
+      defaultQuantity: product.defaultQuantity?.toString() ?? '',
+      unit: product.unit ?? '',
+      imageUrl: product.imageUrl ?? null,
+    });
+  }, [id, products]);
 
   const handleSubmit = () => {
     if (!productData.name.trim()) {
@@ -28,7 +45,7 @@ export default function AddProductScreen() {
       return;
     }
 
-    addProduct({
+    updateProduct(id, {
       name: productData.name.trim(),
       category: productData.category.trim(),
       defaultQuantity: productData.defaultQuantity
@@ -36,9 +53,27 @@ export default function AddProductScreen() {
         : undefined,
       unit: productData.unit.trim(),
       imageUrl: productData.imageUrl || undefined,
+      updatedAt: Date.now(),
     });
 
     router.back();
+  };
+
+  const handleDelete = () => {
+    Alert.alert('商品の削除', '本当にこの商品を削除しますか？', [
+      {
+        text: 'キャンセル',
+        style: 'cancel',
+      },
+      {
+        text: '削除',
+        style: 'destructive',
+        onPress: () => {
+          deleteProduct(id);
+          router.back();
+        },
+      },
+    ]);
   };
 
   const handleImageSelected = (key: string) => {
@@ -62,7 +97,7 @@ export default function AddProductScreen() {
           imageKey={productData.imageUrl}
           onImageSelected={handleImageSelected}
           onImageRemoved={handleImageRemoved}
-          productId={Date.now().toString()}
+          productId={id}
         />
 
         <View style={styles.inputGroup}>
@@ -115,7 +150,11 @@ export default function AddProductScreen() {
         </View>
 
         <Pressable style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>追加</Text>
+          <Text style={styles.submitButtonText}>更新</Text>
+        </Pressable>
+
+        <Pressable style={styles.deleteButton} onPress={handleDelete}>
+          <Text style={styles.deleteButtonText}>削除</Text>
         </Pressable>
       </View>
     </ScrollView>
@@ -153,6 +192,18 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   submitButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  deleteButton: {
+    backgroundColor: '#FF3B30',
+    padding: 16,
+    borderRadius: 8,
+    marginTop: 12,
+  },
+  deleteButtonText: {
     color: '#fff',
     textAlign: 'center',
     fontSize: 16,

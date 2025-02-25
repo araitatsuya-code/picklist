@@ -24,31 +24,31 @@ export default function Layout() {
       <GestureHandlerRootView style={styles.container}>
         <Stack>
           <Stack.Screen
-            name="index"
+            name="(tabs)"
             options={{
-              title: 'よく買う商品',
+              headerShown: false,
             }}
           />
           <Stack.Screen
-            name="add-product"
+            name="(products)/add"
             options={{
               title: '商品を追加',
             }}
           />
           <Stack.Screen
-            name="edit-product"
+            name="(products)/edit"
             options={{
               title: '商品を編集',
             }}
           />
           <Stack.Screen
-            name="lists/index"
+            name="(products)/add-to-list"
             options={{
-              title: '買い物リスト',
+              title: '買い物リストに追加',
             }}
           />
           <Stack.Screen
-            name="list/[id]"
+            name="(lists)/[id]"
             options={{
               title: '買い物リストの詳細',
             }}
@@ -57,12 +57,6 @@ export default function Layout() {
             name="scanner"
             options={{
               title: 'バーコードスキャナー',
-            }}
-          />
-          <Stack.Screen
-            name="settings"
-            options={{
-              title: '設定',
             }}
           />
         </Stack>
