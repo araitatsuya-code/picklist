@@ -33,24 +33,28 @@ export default function Layout() {
             name="(products)/add"
             options={{
               title: '商品を追加',
+              headerBackTitle: '戻る',
             }}
           />
           <Stack.Screen
             name="(products)/edit"
             options={{
               title: '商品を編集',
+              headerBackTitle: '戻る',
             }}
           />
           <Stack.Screen
             name="(products)/add-to-list"
             options={{
               title: '買い物リストに追加',
+              headerBackTitle: '戻る',
             }}
           />
           <Stack.Screen
             name="(lists)/[id]"
             options={{
               title: '買い物リストの詳細',
+              headerBackTitle: '戻る',
             }}
           />
           <Stack.Screen
