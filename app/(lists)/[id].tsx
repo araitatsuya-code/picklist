@@ -135,6 +135,14 @@ export default function ListDetailScreen() {
           <TextInput
             style={styles.quickAddInput}
             placeholder="商品名を入力して追加"
+            ref={(input) => {
+              if (input) {
+                // TextInput型の定義にclear()メソッドが含まれていないため一時的に無視
+                // TODO: 適切な型定義を追加する
+                // @ts-ignore
+                this.quickAddInput = input;
+              }
+            }}
             onSubmitEditing={(event) => {
               const name = event.nativeEvent.text.trim();
               if (name) {
@@ -143,14 +151,17 @@ export default function ListDetailScreen() {
                     ...list.items,
                     {
                       id: Crypto.randomUUID(),
+                      productId: Crypto.randomUUID(),
                       name,
                       quantity: 1,
                       completed: false,
                     },
                   ],
                 });
-                // 入力をクリア
-                event.target.clear();
+                // TextInput型の定義にclear()メソッドが含まれていないため一時的に無視
+                // TODO: 適切な型定義を追加する
+                // @ts-ignore
+                this.quickAddInput?.clear();
               }
             }}
             returnKeyType="done"
