@@ -22,7 +22,11 @@ export default function Layout() {
   return (
     <PaperProvider>
       <GestureHandlerRootView style={styles.container}>
-        <Stack>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
           <Stack.Screen
             name="(tabs)"
             options={{
@@ -47,13 +51,6 @@ export default function Layout() {
             name="(products)/add-to-list"
             options={{
               title: '買い物リストに追加',
-              headerBackTitle: '戻る',
-            }}
-          />
-          <Stack.Screen
-            name="(lists)/[id]"
-            options={{
-              title: '買い物リストの詳細',
               headerBackTitle: '戻る',
             }}
           />

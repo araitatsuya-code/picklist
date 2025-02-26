@@ -12,7 +12,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import {
   PicklistItem,
   usePicklistStore,
-} from '../../src/stores/usePicklistStore';
+} from '../../../src/stores/usePicklistStore';
 import { Ionicons } from '@expo/vector-icons';
 import * as Crypto from 'expo-crypto';
 
