@@ -14,6 +14,7 @@ import {
   usePicklistStore,
 } from '../../src/stores/usePicklistStore';
 import { Ionicons } from '@expo/vector-icons';
+import * as Crypto from 'expo-crypto';
 
 export default function ListDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -127,6 +128,33 @@ export default function ListDetailScreen() {
               <Ionicons name="trash-outline" size={24} color="#FF3B30" />
             </Pressable>
           </View>
+        </View>
+
+        {/* クイック追加フォーム */}
+        <View style={styles.quickAdd}>
+          <TextInput
+            style={styles.quickAddInput}
+            placeholder="商品名を入力して追加"
+            onSubmitEditing={(event) => {
+              const name = event.nativeEvent.text.trim();
+              if (name) {
+                updatePicklist(id, {
+                  items: [
+                    ...list.items,
+                    {
+                      id: Crypto.randomUUID(),
+                      name,
+                      quantity: 1,
+                      completed: false,
+                    },
+                  ],
+                });
+                // 入力をクリア
+                event.target.clear();
+              }
+            }}
+            returnKeyType="done"
+          />
         </View>
 
         <FlatList
@@ -481,5 +509,18 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     // Androidのシャドウ
     elevation: 5,
+  },
+  quickAdd: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  quickAddInput: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#fff',
   },
 });

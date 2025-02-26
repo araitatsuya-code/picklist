@@ -11,7 +11,7 @@ import {
 import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
 import { router } from 'expo-router';
 import { ImagePicker } from '../../src/components/ImagePicker';
-import { nanoid } from 'nanoid';
+import * as Crypto from 'expo-crypto';
 
 export default function AddProductScreen() {
   const { addProduct } = useFrequentProductStore();
@@ -64,7 +64,7 @@ export default function AddProductScreen() {
             imageKey={productData.imageUrl}
             onImageSelected={handleImageSelected}
             onImageRemoved={handleImageRemoved}
-            productId={nanoid()} // 一時的なID
+            productId={Crypto.randomUUID()} // 一時的なID
           />
 
           <View style={styles.inputGroup}>
