@@ -4,10 +4,6 @@ import { Ionicons } from '@expo/vector-icons';
 export default function SettingsScreen() {
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>設定</Text>
-      </View>
-
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>一般</Text>
 

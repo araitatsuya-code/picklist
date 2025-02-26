@@ -1,4 +1,4 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, SafeAreaView } from 'react-native';
 import { usePicklistStore } from '../../src/stores/usePicklistStore';
 import { Link } from 'expo-router';
 
@@ -7,44 +7,41 @@ export default function PicklistScreen() {
   const { addPicklist, removePicklist } = usePicklistStore();
 
   return (
-    <View style={styles.container}>
-      {/* ヘッダー */}
-      <View style={styles.header}>
-        <Text style={styles.title}>買い物リスト</Text>
-        <Pressable
-          style={styles.addButton}
-          onPress={() => addPicklist('新しいリスト')}
-        >
-          <Text style={styles.addButtonText}>＋ 新規作成</Text>
-        </Pressable>
-      </View>
-
-      {/* リスト一覧 */}
-      <View style={styles.listContainer}>
-        {picklists.length === 0 ? (
-          <Text style={styles.emptyText}>買い物リストを作成してください</Text>
-        ) : (
-          picklists.map((list) => (
-            <View key={list.id} style={styles.listItem}>
-              <Link href={`/(lists)/${list.id}`} asChild>
-                <Pressable style={styles.listContent}>
-                  <Text style={styles.listName}>{list.name}</Text>
-                  <Text style={styles.itemCount}>
-                    {list.items.length}個のアイテム
-                  </Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        {/* リスト一覧 */}
+        <View style={styles.listContainer}>
+          <Pressable
+            style={styles.addButton}
+            onPress={() => addPicklist('新しいリスト')}
+          >
+            <Text style={styles.addButtonText}>＋ 新規作成</Text>
+          </Pressable>
+          {picklists.length === 0 ? (
+            <Text style={styles.emptyText}>買い物リストを作成してください</Text>
+          ) : (
+            picklists.map((list) => (
+              <View key={list.id} style={styles.listItem}>
+                <Link href={`/(lists)/${list.id}`} asChild>
+                  <Pressable style={styles.listContent}>
+                    <Text style={styles.listName}>{list.name}</Text>
+                    <Text style={styles.itemCount}>
+                      {list.items.length}個のアイテム
+                    </Text>
+                  </Pressable>
+                </Link>
+                <Pressable
+                  style={styles.deleteButton}
+                  onPress={() => removePicklist(list.id)}
+                >
+                  <Text style={styles.deleteButtonText}>削除</Text>
                 </Pressable>
-              </Link>
-              <Pressable
-                style={styles.deleteButton}
-                onPress={() => removePicklist(list.id)}
-              >
-                <Text style={styles.deleteButtonText}>削除</Text>
-              </Pressable>
-            </View>
-          ))
-        )}
+              </View>
+            ))
+          )}
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -53,27 +50,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  header: {
+  content: {
+    flex: 1,
     padding: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  addButton: {
-    backgroundColor: '#3b82f6',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  addButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
   },
   listContainer: {
     flex: 1,
@@ -111,6 +90,17 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     color: '#ef4444',
+    fontWeight: 'bold',
+  },
+  addButton: {
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  addButtonText: {
+    color: '#fff',
     fontWeight: 'bold',
   },
 });

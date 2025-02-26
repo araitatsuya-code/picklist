@@ -6,6 +6,7 @@ import {
   FlatList,
   Pressable,
   TextInput,
+  SafeAreaView,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import {
@@ -86,185 +87,198 @@ export default function ListDetailScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          {editMode ? (
-            <View style={styles.editNameContainer}>
-              <TextInput
-                style={styles.nameInput}
-                value={listName}
-                onChangeText={setListName}
-                placeholder="リスト名を入力"
-                autoFocus
-              />
-              <Pressable style={styles.saveButton} onPress={handleSaveListName}>
-                <Text style={styles.saveButtonText}>保存</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            {editMode ? (
+              <View style={styles.editNameContainer}>
+                <TextInput
+                  style={styles.nameInput}
+                  value={listName}
+                  onChangeText={setListName}
+                  placeholder="リスト名を入力"
+                  autoFocus
+                />
+                <Pressable
+                  style={styles.saveButton}
+                  onPress={handleSaveListName}
+                >
+                  <Text style={styles.saveButtonText}>保存</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <Pressable
+                style={styles.titleContainer}
+                onPress={() => {
+                  setListName(list.name);
+                  setEditMode(true);
+                }}
+              >
+                <Text style={styles.title}>{list.name}</Text>
+                <Ionicons name="pencil" size={20} color="#666" />
               </Pressable>
-            </View>
-          ) : (
-            <Pressable
-              style={styles.titleContainer}
-              onPress={() => {
-                setListName(list.name);
-                setEditMode(true);
-              }}
-            >
-              <Text style={styles.title}>{list.name}</Text>
-              <Ionicons name="pencil" size={20} color="#666" />
-            </Pressable>
-          )}
+            )}
 
-          <Pressable
-            style={styles.deleteListButton}
-            onPress={() => setShowDeleteConfirm(true)}
-          >
-            <Ionicons name="trash-outline" size={24} color="#FF3B30" />
-          </Pressable>
+            <Pressable
+              style={styles.deleteListButton}
+              onPress={() => setShowDeleteConfirm(true)}
+            >
+              <Ionicons name="trash-outline" size={24} color="#FF3B30" />
+            </Pressable>
+          </View>
         </View>
-      </View>
 
-      <FlatList
-        data={list.items}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.itemContainer}>
-            <Pressable
-              style={styles.checkbox}
-              onPress={() => handleToggleComplete(item.id)}
-            >
-              <Ionicons
-                name={item.completed ? 'checkmark-circle' : 'ellipse-outline'}
-                size={24}
-                color={item.completed ? '#007AFF' : '#666'}
-              />
-            </Pressable>
-
-            <View style={styles.itemInfo}>
-              <Text
-                style={[
-                  styles.itemName,
-                  item.completed && styles.itemNameCompleted,
-                ]}
+        <FlatList
+          data={list.items}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.itemContainer}>
+              <Pressable
+                style={styles.checkbox}
+                onPress={() => handleToggleComplete(item.id)}
               >
-                {item.name}
-              </Text>
-              <Text style={styles.itemQuantity}>
-                {item.quantity} {item.unit || '個'}
-                {item.maxPrice && ` (${item.maxPrice}円まで)`}
-              </Text>
-              {item.note && <Text style={styles.itemNote}>{item.note}</Text>}
+                <Ionicons
+                  name={item.completed ? 'checkmark-circle' : 'ellipse-outline'}
+                  size={24}
+                  color={item.completed ? '#007AFF' : '#666'}
+                />
+              </Pressable>
+
+              <View style={styles.itemInfo}>
+                <Text
+                  style={[
+                    styles.itemName,
+                    item.completed && styles.itemNameCompleted,
+                  ]}
+                >
+                  {item.name}
+                </Text>
+                <Text style={styles.itemQuantity}>
+                  {item.quantity} {item.unit || '個'}
+                  {item.maxPrice && ` (${item.maxPrice}円まで)`}
+                </Text>
+                {item.note && <Text style={styles.itemNote}>{item.note}</Text>}
+              </View>
+
+              <View style={styles.itemActions}>
+                <Pressable
+                  style={styles.editButton}
+                  onPress={() => handleEditItem(item)}
+                >
+                  <Ionicons name="pencil-outline" size={20} color="#007AFF" />
+                </Pressable>
+                <Pressable
+                  style={styles.deleteButton}
+                  onPress={() => handleRemoveItem(item.id)}
+                >
+                  <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+                </Pressable>
+              </View>
             </View>
+          )}
+        />
 
-            <View style={styles.itemActions}>
-              <Pressable
-                style={styles.editButton}
-                onPress={() => handleEditItem(item)}
-              >
-                <Ionicons name="pencil-outline" size={20} color="#007AFF" />
-              </Pressable>
-              <Pressable
-                style={styles.deleteButton}
-                onPress={() => handleRemoveItem(item.id)}
-              >
-                <Ionicons name="trash-outline" size={20} color="#FF3B30" />
-              </Pressable>
+        {/* アイテム編集モーダル */}
+        {editingItem && (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>アイテムを編集</Text>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>数量</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editingItem.quantity}
+                  onChangeText={(text) =>
+                    setEditingItem({ ...editingItem, quantity: text })
+                  }
+                  keyboardType="numeric"
+                  placeholder="数量を入力"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>価格上限</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editingItem.maxPrice}
+                  onChangeText={(text) =>
+                    setEditingItem({ ...editingItem, maxPrice: text })
+                  }
+                  keyboardType="numeric"
+                  placeholder="任意"
+                />
+                <Text style={styles.unit}>円</Text>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>メモ</Text>
+                <TextInput
+                  style={[styles.input, styles.noteInput]}
+                  value={editingItem.note}
+                  onChangeText={(text) =>
+                    setEditingItem({ ...editingItem, note: text })
+                  }
+                  placeholder="任意"
+                  multiline
+                />
+              </View>
+
+              <View style={styles.modalButtons}>
+                <Pressable
+                  style={[styles.modalButton, styles.modalCancelButton]}
+                  onPress={() => setEditingItem(null)}
+                >
+                  <Text style={styles.modalCancelButtonText}>キャンセル</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.modalButton, styles.modalSaveButton]}
+                  onPress={handleSaveItem}
+                >
+                  <Text style={styles.modalSaveButtonText}>保存</Text>
+                </Pressable>
+              </View>
             </View>
           </View>
         )}
-      />
 
-      {/* アイテム編集モーダル */}
-      {editingItem && (
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>アイテムを編集</Text>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>数量</Text>
-              <TextInput
-                style={styles.input}
-                value={editingItem.quantity}
-                onChangeText={(text) =>
-                  setEditingItem({ ...editingItem, quantity: text })
-                }
-                keyboardType="numeric"
-                placeholder="数量を入力"
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>価格上限</Text>
-              <TextInput
-                style={styles.input}
-                value={editingItem.maxPrice}
-                onChangeText={(text) =>
-                  setEditingItem({ ...editingItem, maxPrice: text })
-                }
-                keyboardType="numeric"
-                placeholder="任意"
-              />
-              <Text style={styles.unit}>円</Text>
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>メモ</Text>
-              <TextInput
-                style={[styles.input, styles.noteInput]}
-                value={editingItem.note}
-                onChangeText={(text) =>
-                  setEditingItem({ ...editingItem, note: text })
-                }
-                placeholder="任意"
-                multiline
-              />
-            </View>
-
-            <View style={styles.modalButtons}>
-              <Pressable
-                style={[styles.modalButton, styles.modalCancelButton]}
-                onPress={() => setEditingItem(null)}
-              >
-                <Text style={styles.modalCancelButtonText}>キャンセル</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.modalButton, styles.modalSaveButton]}
-                onPress={handleSaveItem}
-              >
-                <Text style={styles.modalSaveButtonText}>保存</Text>
-              </Pressable>
+        {/* 削除確認モーダル */}
+        {showDeleteConfirm && (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>買い物リストを削除</Text>
+              <Text style={styles.modalMessage}>
+                「{list.name}」を削除してもよろしいですか？
+                {'\n'}この操作は取り消せません。
+              </Text>
+              <View style={styles.modalButtons}>
+                <Pressable
+                  style={[styles.modalButton, styles.modalCancelButton]}
+                  onPress={() => setShowDeleteConfirm(false)}
+                >
+                  <Text style={styles.modalCancelButtonText}>キャンセル</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.modalButton, styles.modalDeleteButton]}
+                  onPress={handleDeleteList}
+                >
+                  <Text style={styles.modalDeleteButtonText}>削除</Text>
+                </Pressable>
+              </View>
             </View>
           </View>
-        </View>
-      )}
+        )}
 
-      {/* 削除確認モーダル */}
-      {showDeleteConfirm && (
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>買い物リストを削除</Text>
-            <Text style={styles.modalMessage}>
-              「{list.name}」を削除してもよろしいですか？
-              {'\n'}この操作は取り消せません。
-            </Text>
-            <View style={styles.modalButtons}>
-              <Pressable
-                style={[styles.modalButton, styles.modalCancelButton]}
-                onPress={() => setShowDeleteConfirm(false)}
-              >
-                <Text style={styles.modalCancelButtonText}>キャンセル</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.modalButton, styles.modalDeleteButton]}
-                onPress={handleDeleteList}
-              >
-                <Text style={styles.modalDeleteButtonText}>削除</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      )}
-    </View>
+        {/* 追加ボタン */}
+        <Pressable
+          style={styles.fab}
+          onPress={() => router.push('/(products)/add-to-list?selectedIds=')}
+        >
+          <Ionicons name="add" size={24} color="#fff" />
+        </Pressable>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -272,6 +286,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  content: {
+    flex: 1,
   },
   header: {
     padding: 16,
@@ -443,5 +460,26 @@ const styles = StyleSheet.create({
   modalSaveButtonText: {
     color: '#fff',
     fontWeight: '600',
+  },
+  fab: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#007AFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    // iOSのシャドウ
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    // Androidのシャドウ
+    elevation: 5,
   },
 });

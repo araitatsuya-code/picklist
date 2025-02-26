@@ -15,7 +15,10 @@ import { Menu, Button } from 'react-native-paper';
 
 export default function AddToListScreen() {
   const { selectedIds } = useLocalSearchParams<{ selectedIds: string }>();
-  const selectedIdArray = useMemo(() => selectedIds.split(','), [selectedIds]);
+  const selectedIdArray = useMemo(() => {
+    if (!selectedIds) return [];
+    return selectedIds.split(',');
+  }, [selectedIds]);
 
   // 商品の取得
   const products = useFrequentProductStore((state) => state.products);
