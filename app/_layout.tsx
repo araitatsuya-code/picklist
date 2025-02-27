@@ -22,47 +22,42 @@ export default function Layout() {
   return (
     <PaperProvider>
       <GestureHandlerRootView style={styles.container}>
-        <Stack>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
           <Stack.Screen
-            name="index"
+            name="(tabs)"
             options={{
-              title: 'よく買う商品',
+              headerShown: false,
             }}
           />
           <Stack.Screen
-            name="add-product"
+            name="(products)/add"
             options={{
               title: '商品を追加',
+              headerBackTitle: '戻る',
             }}
           />
           <Stack.Screen
-            name="edit-product"
+            name="(products)/edit"
             options={{
               title: '商品を編集',
+              headerBackTitle: '戻る',
             }}
           />
           <Stack.Screen
-            name="lists/index"
+            name="(products)/add-to-list"
             options={{
-              title: '買い物リスト',
-            }}
-          />
-          <Stack.Screen
-            name="list/[id]"
-            options={{
-              title: '買い物リストの詳細',
+              title: '買い物リストに追加',
+              headerBackTitle: '戻る',
             }}
           />
           <Stack.Screen
             name="scanner"
             options={{
               title: 'バーコードスキャナー',
-            }}
-          />
-          <Stack.Screen
-            name="settings"
-            options={{
-              title: '設定',
             }}
           />
         </Stack>

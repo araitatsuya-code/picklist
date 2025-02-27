@@ -8,9 +8,9 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { useFrequentProductStore } from '../src/stores/useFrequentProductStore';
+import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ImagePicker } from '../src/components/ImagePicker';
+import { ImagePicker } from '../../src/components/ImagePicker';
 
 export default function EditProductScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

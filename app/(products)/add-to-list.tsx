@@ -9,13 +9,16 @@ import {
   GestureResponderEvent,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { useFrequentProductStore } from '../src/stores/useFrequentProductStore';
-import { usePicklistStore } from '../src/stores/usePicklistStore';
+import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
+import { usePicklistStore } from '../../src/stores/usePicklistStore';
 import { Menu, Button } from 'react-native-paper';
 
 export default function AddToListScreen() {
   const { selectedIds } = useLocalSearchParams<{ selectedIds: string }>();
-  const selectedIdArray = useMemo(() => selectedIds.split(','), [selectedIds]);
+  const selectedIdArray = useMemo(() => {
+    if (!selectedIds) return [];
+    return selectedIds.split(',');
+  }, [selectedIds]);
 
   // 商品の取得
   const products = useFrequentProductStore((state) => state.products);
@@ -56,7 +59,7 @@ export default function AddToListScreen() {
     }));
 
     addItemsToList(selectedList, items);
-    router.push(`/list/${selectedList}`);
+    router.push(`/(lists)/${selectedList}`);
   };
 
   return (
