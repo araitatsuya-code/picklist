@@ -137,9 +137,7 @@ export default function ListDetailScreen() {
             placeholder="商品名を入力して追加"
             ref={(input) => {
               if (input) {
-                // TextInput型の定義にclear()メソッドが含まれていないため一時的に無視
-                // TODO: 適切な型定義を追加する
-                // @ts-ignore
+                // @ts-expect-error TextInput型の定義にclear()メソッドが含まれていないため
                 this.quickAddInput = input;
               }
             }}
@@ -158,9 +156,7 @@ export default function ListDetailScreen() {
                     },
                   ],
                 });
-                // TextInput型の定義にclear()メソッドが含まれていないため一時的に無視
-                // TODO: 適切な型定義を追加する
-                // @ts-ignore
+                // @ts-expect-error TextInput型の定義にclear()メソッドが含まれていないため
                 this.quickAddInput?.clear();
               }
             }}
