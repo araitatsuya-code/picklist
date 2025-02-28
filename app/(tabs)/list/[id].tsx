@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -42,8 +42,13 @@ export default function ListDetailScreen() {
     [picklists, id]
   );
 
+  useEffect(() => {
+    if (!list) {
+      router.replace('/(tabs)');
+    }
+  }, [list]);
+
   if (!list) {
-    router.replace('/(tabs)');
     return null;
   }
 
