@@ -8,19 +8,20 @@ import {
   Pressable,
   Image,
   ScrollView,
+  SafeAreaView,
 } from 'react-native';
-import { useFrequentProductStore } from '../src/stores/useFrequentProductStore';
+import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Menu } from 'react-native-paper';
-import { FrequentProduct } from '../src/types/frequentProduct';
+import { FrequentProduct } from '../../src/types/frequentProduct';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const noImage = require('../assets/no-image.png');
+const noImage = require('../../assets/no-image.png');
 
 /**
- * 買い物リスト一覧を表示するホーム画面
+ * よく買う商品リストを表示する画面
  */
-export default function HomeScreen() {
+export default function FrequentProductsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
     new Set()
@@ -90,14 +91,14 @@ export default function HomeScreen() {
     if (isSelectionMode) {
       toggleProductSelection(product.id);
     } else {
-      router.push(`/edit-product?id=${product.id}`);
+      router.push(`/(products)/edit?id=${product.id}`);
     }
   };
 
   const handleAddToList = () => {
     if (selectedProducts.size === 0) return;
     const selectedIds = Array.from(selectedProducts).join(',');
-    router.push(`/add-to-list?selectedIds=${selectedIds}`);
+    router.push(`/(products)/add-to-list?selectedIds=${selectedIds}`);
   };
 
   const renderProductImage = (imageKey: string | null | undefined) => {
@@ -115,164 +116,172 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TextInput
-          style={styles.searchInput}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="商品を検索"
-        />
-
-        <Pressable style={styles.modeButton} onPress={toggleSelectionMode}>
-          <Ionicons
-            name={isSelectionMode ? 'checkmark-circle' : 'add-circle-outline'}
-            size={24}
-            color="#007AFF"
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <TextInput
+            style={styles.searchInput}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="商品を検索"
           />
-        </Pressable>
 
-        {categories.length > 0 && (
-          <Menu
-            visible={menuVisible}
-            onDismiss={() => setMenuVisible(false)}
-            anchor={
-              <Pressable
-                style={styles.filterButton}
-                onPress={() => setMenuVisible(true)}
-              >
-                <Ionicons
-                  name={
-                    selectedCategories.size > 0 ? 'filter' : 'filter-outline'
-                  }
-                  size={24}
-                  color="#007AFF"
-                />
-                {selectedCategories.size > 0 && (
-                  <View style={styles.filterBadge}>
-                    <Text style={styles.filterBadgeText}>
-                      {selectedCategories.size}
-                    </Text>
-                  </View>
-                )}
-              </Pressable>
-            }
-          >
-            {categories.map((category) => (
-              <Menu.Item
-                key={category}
-                onPress={() => toggleCategory(category)}
-                title={category}
-                leadingIcon={
-                  selectedCategories.has(category) ? 'check' : undefined
-                }
-              />
-            ))}
-          </Menu>
-        )}
-      </View>
+          <Pressable style={styles.modeButton} onPress={toggleSelectionMode}>
+            <Ionicons
+              name={isSelectionMode ? 'checkmark-circle' : 'add-circle-outline'}
+              size={24}
+              color="#007AFF"
+            />
+          </Pressable>
 
-      {categories.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryScrollContent}
-          style={styles.categoryScroll}
-        >
-          {categories.map((category) => (
-            <Pressable
-              key={category}
-              style={[
-                styles.categoryChip,
-                selectedCategories.has(category) && styles.categoryChipSelected,
-              ]}
-              onPress={() => toggleCategory(category)}
-            >
-              <Text
-                style={[
-                  styles.categoryChipText,
-                  selectedCategories.has(category) &&
-                    styles.categoryChipTextSelected,
-                ]}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {category}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-      )}
-
-      <View style={styles.listContainer}>
-        {isSelectionMode ? (
-          <View style={styles.selectionHeader}>
-            <Text style={styles.selectionCount}>
-              {selectedProducts.size}個選択中
-            </Text>
-            <Pressable
-              style={[
-                styles.addToListButton,
-                selectedProducts.size === 0 && styles.addToListButtonDisabled,
-              ]}
-              onPress={handleAddToList}
-              disabled={selectedProducts.size === 0}
-            >
-              <Text style={styles.addToListButtonText}>買い物リストに追加</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <Link href="/add-product" asChild>
-            <Pressable style={styles.addButton}>
-              <Text style={styles.addButtonText}>商品を追加</Text>
-            </Pressable>
-          </Link>
-        )}
-
-        <FlatList
-          data={filteredProducts}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <Pressable
-              style={[
-                styles.productItem,
-                selectedProducts.has(item.id) && styles.productItemSelected,
-              ]}
-              onPress={() => handleProductPress(item)}
-            >
-              {isSelectionMode && (
-                <View style={styles.checkbox}>
+          {categories.length > 0 && (
+            <Menu
+              visible={menuVisible}
+              onDismiss={() => setMenuVisible(false)}
+              anchor={
+                <Pressable
+                  style={styles.filterButton}
+                  onPress={() => setMenuVisible(true)}
+                >
                   <Ionicons
                     name={
-                      selectedProducts.has(item.id)
-                        ? 'checkmark-circle'
-                        : 'ellipse-outline'
+                      selectedCategories.size > 0 ? 'filter' : 'filter-outline'
                     }
                     size={24}
-                    color={selectedProducts.has(item.id) ? '#007AFF' : '#999'}
+                    color="#007AFF"
                   />
-                </View>
-              )}
-              {renderProductImage(item.imageUrl)}
-              <View style={styles.productInfo}>
-                <Text style={styles.productName}>{item.name}</Text>
-                {item.category && (
-                  <Text style={styles.productCategory}>{item.category}</Text>
-                )}
-              </View>
-            </Pressable>
+                  {selectedCategories.size > 0 && (
+                    <View style={styles.filterBadge}>
+                      <Text style={styles.filterBadgeText}>
+                        {selectedCategories.size}
+                      </Text>
+                    </View>
+                  )}
+                </Pressable>
+              }
+            >
+              {categories.map((category) => (
+                <Menu.Item
+                  key={category}
+                  onPress={() => toggleCategory(category)}
+                  title={category}
+                  leadingIcon={
+                    selectedCategories.has(category) ? 'check' : undefined
+                  }
+                />
+              ))}
+            </Menu>
           )}
-        />
+        </View>
+
+        {categories.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoryScrollContent}
+            style={styles.categoryScroll}
+          >
+            {categories.map((category) => (
+              <Pressable
+                key={category}
+                style={[
+                  styles.categoryChip,
+                  selectedCategories.has(category) &&
+                    styles.categoryChipSelected,
+                ]}
+                onPress={() => toggleCategory(category)}
+              >
+                <Text
+                  style={[
+                    styles.categoryChipText,
+                    selectedCategories.has(category) &&
+                      styles.categoryChipTextSelected,
+                  ]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {category}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        )}
+
+        <View style={styles.listContainer}>
+          {isSelectionMode ? (
+            <View style={styles.selectionHeader}>
+              <Text style={styles.selectionCount}>
+                {selectedProducts.size}個選択中
+              </Text>
+              <Pressable
+                style={[
+                  styles.addToListButton,
+                  selectedProducts.size === 0 && styles.addToListButtonDisabled,
+                ]}
+                onPress={handleAddToList}
+                disabled={selectedProducts.size === 0}
+              >
+                <Text style={styles.addToListButtonText}>
+                  買い物リストに追加
+                </Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Link href="/(products)/add" asChild>
+              <Pressable style={styles.addButton}>
+                <Text style={styles.addButtonText}>商品を追加</Text>
+              </Pressable>
+            </Link>
+          )}
+
+          <FlatList
+            data={filteredProducts}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <Pressable
+                style={[
+                  styles.productItem,
+                  selectedProducts.has(item.id) && styles.productItemSelected,
+                ]}
+                onPress={() => handleProductPress(item)}
+              >
+                {isSelectionMode && (
+                  <View style={styles.checkbox}>
+                    <Ionicons
+                      name={
+                        selectedProducts.has(item.id)
+                          ? 'checkmark-circle'
+                          : 'ellipse-outline'
+                      }
+                      size={24}
+                      color={selectedProducts.has(item.id) ? '#007AFF' : '#999'}
+                    />
+                  </View>
+                )}
+                {renderProductImage(item.imageUrl)}
+                <View style={styles.productInfo}>
+                  <Text style={styles.productName}>{item.name}</Text>
+                  {item.category && (
+                    <Text style={styles.productCategory}>{item.category}</Text>
+                  )}
+                </View>
+              </Pressable>
+            )}
+          />
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
     backgroundColor: '#fff',
+  },
+  content: {
+    flex: 1,
+    padding: 16,
   },
   header: {
     flexDirection: 'row',
