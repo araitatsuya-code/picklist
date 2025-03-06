@@ -18,6 +18,7 @@ export const useFrequentProductStore = create<FrequentProductState>()(
       products: [],
 
       addProduct: (product) => {
++       try {
         const now = Date.now();
         const newProduct: FrequentProduct = {
           id: now.toString(),
@@ -29,6 +30,10 @@ export const useFrequentProductStore = create<FrequentProductState>()(
         set((state) => ({
           products: [...state.products, newProduct],
         }));
++       } catch (error) {
++         console.error('商品の追加に失敗しました:', error);
++         // エラー処理ロジックをここに追加（例：エラー状態を設定）
++       }
       },
 
       updateProduct: (id, updates) => {
@@ -62,8 +67,20 @@ export const useFrequentProductStore = create<FrequentProductState>()(
       name: 'frequent-products-storage',
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state) => {
-        console.log('State hydrated:', state?.products.length ?? 0, 'products');
+        if (__DEV__) {
+          console.log('State hydrated:', state?.products.length ?? 0, 'products');
+        }
       },
++     partialize: (state) => {
++       // エラーを防ぐために永続化する前に状態を検証
++       return {
++         products: state.products.filter(p => 
++           p && typeof p === 'object' && 
++           typeof p.id === 'string' && 
++           typeof p.name === 'string'
++         )
++       };
++     },
     }
   )
 );
