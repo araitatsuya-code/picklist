@@ -180,9 +180,12 @@ export default EditProduct;
           <TextInput
             style={styles.input}
             value={productData.defaultQuantity}
-            onChangeText={(text) =>
-              setProductData({ ...productData, defaultQuantity: text })
-            }
+            onChangeText={(text) => {
+              // 数値のみ許可（空文字または数字）
+              if (text === '' || /^\d+$/.test(text)) {
+                setProductData({ ...productData, defaultQuantity: text })
+              }
+            }}
             placeholder="数量を入力"
             keyboardType="numeric"
           />
