@@ -30,9 +30,25 @@ export default function PicklistScreen() {
                     </Text>
                   </Pressable>
                 </Link>
+// Import section in your file (updated)
+import { View, Text, Pressable, StyleSheet, SafeAreaView, Alert } from 'react-native';
+
+// ... other code
+
+// Within your component (updated)
                 <Pressable
                   style={styles.deleteButton}
-                  onPress={() => removePicklist(list.id)}
+                  onPress={() => {
+                    // Alert APIを使用して確認ダイアログを表示
+                    Alert.alert(
+                      "確認",
+                      `「${list.name}」を削除してもよろしいですか？`,
+                      [
+                        { text: "キャンセル", style: "cancel" },
+                        { text: "削除", style: "destructive", onPress: () => removePicklist(list.id) }
+                      ]
+                    );
+                  }}
                 >
                   <Text style={styles.deleteButtonText}>削除</Text>
                 </Pressable>
