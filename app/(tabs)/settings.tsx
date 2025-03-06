@@ -52,7 +52,23 @@ export default function SettingsScreen() {
             <Ionicons name="chevron-forward" size={20} color="#666" />
           </Pressable>
 
-          <Pressable style={[styles.menuItem, styles.dangerItem]}>
+          <Pressable 
+            style={[styles.menuItem, styles.dangerItem]} 
+            onPress={() => {
+              Alert.alert(
+                'データの削除',
+                '全てのデータを削除しますか？この操作は元に戻せません。',
+                [
+                  { text: 'キャンセル', style: 'cancel' },
+                  { 
+                    text: '削除', 
+                    style: 'destructive',
+                    onPress: () => {/* 削除処理を実装 */} 
+                  }
+                ]
+              );
+            }}
+          >
             <View style={styles.menuContent}>
               <Ionicons name="trash-outline" size={24} color="#FF3B30" />
               <Text style={styles.dangerText}>全データを削除</Text>
