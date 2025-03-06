@@ -26,7 +26,11 @@ export default function EditProductScreen() {
   useEffect(() => {
     const product = products.find((p) => p.id === id);
     if (!product) {
-      router.back();
+      Alert.alert(
+        '商品が見つかりません',
+        '指定された商品が見つかりませんでした。',
+        [{ text: 'OK', onPress: () => router.back() }]
+      );
       return;
     }
 
