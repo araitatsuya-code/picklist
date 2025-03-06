@@ -111,6 +111,13 @@ export default function FrequentProductsScreen() {
         source={{ uri: imageKey }}
         style={styles.productImage}
         defaultSource={noImage}
+        onError={(e) => console.warn('画像読み込みエラー:', e.nativeEvent.error)}
+        accessible={true}
+        accessibilityLabel="商品画像"
+        resizeMode="cover"
+        // キャッシュ戦略の設定
+        // ※Expoを使用している場合の例
+        cachePolicy="memory-disk"
       />
     );
   };
