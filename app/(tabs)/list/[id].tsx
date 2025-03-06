@@ -27,6 +27,7 @@ export default function ListDetailScreen() {
     maxPrice: string;
     note: string;
   } | null>(null);
+  const quickAddInputRef = React.useRef<TextInput>(null);
 
   const {
     picklists,
@@ -92,6 +93,25 @@ export default function ListDetailScreen() {
     setEditingItem(null);
   };
 
+  const handleQuickAdd = (text: string) => {
+    const name = text.trim();
+    if (name) {
+      updatePicklist(id, {
+        items: [
+          ...list.items,
+          {
+            id: Crypto.randomUUID(),
+            productId: Crypto.randomUUID(),
+            name,
+            quantity: 1,
+            completed: false,
+          },
+        ],
+      });
+      quickAddInputRef.current?.clear();
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -135,41 +155,15 @@ export default function ListDetailScreen() {
           </View>
         </View>
 
-{/* クイック追加フォーム */}
-{/*
-  Note: The following hook and handler should be declared at the top level within your component,
-  before the return statement. For this snippet example, they are shown inline for clarity.
-*/}
-const quickAddInputRef = React.useRef<TextInput>(null);
-
-const handleQuickAdd = (text: string) => {
-  const name = text.trim();
-  if (name) {
-    updatePicklist(id, {
-      items: [
-        ...list.items,
-        {
-          id: Crypto.randomUUID(),
-          productId: Crypto.randomUUID(),
-          name,
-          quantity: 1,
-          completed: false,
-        },
-      ],
-    });
-    quickAddInputRef.current?.clear();
-  }
-};
-
-<View style={styles.quickAdd}>
-  <TextInput
-    style={styles.quickAddInput}
-    placeholder="商品名を入力して追加"
-    ref={quickAddInputRef}
-    onSubmitEditing={(event) => handleQuickAdd(event.nativeEvent.text)}
-    returnKeyType="done"
-  />
-</View>
+        <View style={styles.quickAdd}>
+          <TextInput
+            style={styles.quickAddInput}
+            placeholder="商品名を入力して追加"
+            ref={quickAddInputRef}
+            onSubmitEditing={(event) => handleQuickAdd(event.nativeEvent.text)}
+            returnKeyType="done"
+          />
+        </View>
 
         <FlatList
           data={list.items}
@@ -221,7 +215,6 @@ const handleQuickAdd = (text: string) => {
           )}
         />
 
-        {/* アイテム編集モーダル */}
         {editingItem && (
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
@@ -285,7 +278,6 @@ const handleQuickAdd = (text: string) => {
           </View>
         )}
 
-        {/* 削除確認モーダル */}
         {showDeleteConfirm && (
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
@@ -312,7 +304,6 @@ const handleQuickAdd = (text: string) => {
           </View>
         )}
 
-        {/* 追加ボタン */}
         <Pressable
           style={styles.fab}
           onPress={() => router.push('/(products)/add-to-list?selectedIds=')}
@@ -513,7 +504,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#007AFF',
     justifyContent: 'center',
     alignItems: 'center',
-    // iOSのシャドウ
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -521,7 +511,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    // Androidのシャドウ
     elevation: 5,
   },
   quickAdd: {

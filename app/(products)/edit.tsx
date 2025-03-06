@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -18,83 +18,43 @@ export default function EditProductScreen() {
   const [productData, setProductData] = useState({
     name: '',
     category: '',
+    imageUrl: '',
     defaultQuantity: '',
     unit: '',
-    imageUrl: null as string | null,
   });
 
+  const product = useMemo(
+    () => products.find((p) => p.id === id),
+    [products, id]
+  );
+
   useEffect(() => {
-    const product = products.find((p) => p.id === id);
     if (!product) {
-      Alert.alert(
-        '商品が見つかりません',
-        '指定された商品が見つかりませんでした。',
-        [{ text: 'OK', onPress: () => router.back() }]
-      );
+      router.back();
       return;
     }
 
     setProductData({
       name: product.name,
-      category: product.category ?? '',
-      defaultQuantity: product.defaultQuantity?.toString() ?? '',
-      unit: product.unit ?? '',
-      imageUrl: product.imageUrl ?? null,
+      category: product.category || '',
+      imageUrl: product.imageUrl || '',
+      defaultQuantity: product.defaultQuantity?.toString() || '',
+      unit: product.unit || '',
     });
-  }, [id, products]);
-
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
-
-const EditProduct = () => {
-  const [productData, setProductData] = useState({ name: '' });
-+  const [nameError, setNameError] = useState('');
+  }, [
+    product,
+    product?.name,
+    product?.category,
+    product?.imageUrl,
+    product?.defaultQuantity,
+    product?.unit,
+  ]);
 
   const handleSubmit = () => {
     if (!productData.name.trim()) {
--      // TODO: エラー表示の実装
-+      setNameError('商品名は必須です');
+      // TODO: エラー表示の実装
       return;
     }
-+    setNameError('');
-    
-    // 送信処理の実装
-  };
-
-  return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        value={productData.name}
-        onChangeText={(text) => setProductData({ ...productData, name: text })}
-        placeholder="商品名を入力"
-      />
-+     {nameError ? <Text style={styles.errorText}>{nameError}</Text> : null}
-      {/* 他のコンポーネント */}
-    </View>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  input: {
-    // 既存のスタイル
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 8,
-    borderRadius: 4,
-  },
-+ errorText: {
-+   color: '#FF3B30',
-+   fontSize: 12,
-+   marginTop: 4,
-+ },
-});
-
-export default EditProduct;
 
     updateProduct(id, {
       name: productData.name.trim(),
@@ -137,7 +97,7 @@ export default EditProduct;
   const handleImageRemoved = () => {
     setProductData((prev) => ({
       ...prev,
-      imageUrl: null,
+      imageUrl: '',
     }));
   };
 
@@ -183,7 +143,7 @@ export default EditProduct;
             onChangeText={(text) => {
               // 数値のみ許可（空文字または数字）
               if (text === '' || /^\d+$/.test(text)) {
-                setProductData({ ...productData, defaultQuantity: text })
+                setProductData({ ...productData, defaultQuantity: text });
               }
             }}
             placeholder="数量を入力"

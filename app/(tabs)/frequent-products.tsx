@@ -101,7 +101,7 @@ export default function FrequentProductsScreen() {
     router.push(`/(products)/add-to-list?selectedIds=${selectedIds}`);
   };
 
-  const renderProductImage = (imageKey: string | null | undefined) => {
+  const renderProductImage = (imageKey: string | null | undefined, productName: string) => {
     if (!imageKey) {
       return <View style={styles.imagePlaceholder} />;
     }
@@ -109,15 +109,12 @@ export default function FrequentProductsScreen() {
     return (
       <Image
         source={{ uri: imageKey }}
-        style={styles.productImage}
-        defaultSource={noImage}
-        onError={(e) => console.warn('画像読み込みエラー:', e.nativeEvent.error)}
+        style={{ width: 48, height: 48, borderRadius: 8 }}
+        defaultSource={require('../../assets/no-image.png')}
+        onError={(e) => console.error('Image loading error:', e.nativeEvent.error)}
         accessible={true}
-        accessibilityLabel="商品画像"
+        accessibilityLabel={`${productName}の画像`}
         resizeMode="cover"
-        // キャッシュ戦略の設定
-        // ※Expoを使用している場合の例
-        cachePolicy="memory-disk"
       />
     );
   };
@@ -265,7 +262,7 @@ export default function FrequentProductsScreen() {
                     />
                   </View>
                 )}
-                {renderProductImage(item.imageUrl)}
+                {renderProductImage(item.imageUrl, item.name)}
                 <View style={styles.productInfo}>
                   <Text style={styles.productName}>{item.name}</Text>
                   {item.category && (

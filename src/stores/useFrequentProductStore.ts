@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Crypto from 'expo-crypto';
 
 interface FrequentProductState {
   products: FrequentProduct[];
@@ -18,22 +19,22 @@ export const useFrequentProductStore = create<FrequentProductState>()(
       products: [],
 
       addProduct: (product) => {
-+       try {
-        const now = Date.now();
-        const newProduct: FrequentProduct = {
-          id: now.toString(),
-          ...product,
-          createdAt: now,
-          updatedAt: now,
-        };
+        try {
+          const now = Date.now();
+          const newProduct: FrequentProduct = {
+            id: Crypto.randomUUID(),
+            ...product,
+            createdAt: now,
+            updatedAt: now,
+          };
 
-        set((state) => ({
-          products: [...state.products, newProduct],
-        }));
-+       } catch (error) {
-+         console.error('商品の追加に失敗しました:', error);
-+         // エラー処理ロジックをここに追加（例：エラー状態を設定）
-+       }
+          set((state) => ({
+            products: [...state.products, newProduct],
+          }));
+        } catch (error) {
+          console.error('商品の追加に失敗しました:', error);
+          // エラー処理ロジックをここに追加（例：エラー状態を設定）
+        }
       },
 
       updateProduct: (id, updates) => {
@@ -68,19 +69,25 @@ export const useFrequentProductStore = create<FrequentProductState>()(
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state) => {
         if (__DEV__) {
-          console.log('State hydrated:', state?.products.length ?? 0, 'products');
+          console.log(
+            'State hydrated:',
+            state?.products.length ?? 0,
+            'products'
+          );
         }
       },
-+     partialize: (state) => {
-+       // エラーを防ぐために永続化する前に状態を検証
-+       return {
-+         products: state.products.filter(p => 
-+           p && typeof p === 'object' && 
-+           typeof p.id === 'string' && 
-+           typeof p.name === 'string'
-+         )
-+       };
-+     },
+      partialize: (state) => {
+        // エラーを防ぐために永続化する前に状態を検証
+        return {
+          products: state.products.filter(
+            (p) =>
+              p &&
+              typeof p === 'object' &&
+              typeof p.id === 'string' &&
+              typeof p.name === 'string'
+          ),
+        };
+      },
     }
   )
 );

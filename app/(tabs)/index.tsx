@@ -1,4 +1,11 @@
-import { View, Text, Pressable, StyleSheet, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  SafeAreaView,
+  Alert,
+} from 'react-native';
 import { usePicklistStore } from '../../src/stores/usePicklistStore';
 import { Link } from 'expo-router';
 
@@ -30,22 +37,20 @@ export default function PicklistScreen() {
                     </Text>
                   </Pressable>
                 </Link>
-// Import section in your file (updated)
-import { View, Text, Pressable, StyleSheet, SafeAreaView, Alert } from 'react-native';
-
-// ... other code
-
-// Within your component (updated)
                 <Pressable
                   style={styles.deleteButton}
                   onPress={() => {
                     // Alert APIを使用して確認ダイアログを表示
                     Alert.alert(
-                      "確認",
+                      '確認',
                       `「${list.name}」を削除してもよろしいですか？`,
                       [
-                        { text: "キャンセル", style: "cancel" },
-                        { text: "削除", style: "destructive", onPress: () => removePicklist(list.id) }
+                        { text: 'キャンセル', style: 'cancel' },
+                        {
+                          text: '削除',
+                          style: 'destructive',
+                          onPress: () => removePicklist(list.id),
+                        },
                       ]
                     );
                   }}
