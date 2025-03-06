@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ImagePicker } from '../../src/components/ImagePicker';
+import { CustomImagePicker } from '../../src/components/ImagePicker';
 
 export default function EditProductScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -104,7 +104,7 @@ export default function EditProductScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.form}>
-        <ImagePicker
+        <CustomImagePicker
           imageKey={productData.imageUrl}
           onImageSelected={handleImageSelected}
           onImageRemoved={handleImageRemoved}

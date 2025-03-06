@@ -15,8 +15,7 @@ import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Menu } from 'react-native-paper';
 import { FrequentProduct } from '../../src/types/frequentProduct';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const noImage = require('../../assets/no-image.png');
+import noImage from '../../assets/no-image.png';
 
 /**
  * よく買う商品リストを表示する画面
@@ -101,17 +100,31 @@ export default function FrequentProductsScreen() {
     router.push(`/(products)/add-to-list?selectedIds=${selectedIds}`);
   };
 
-  const renderProductImage = (imageKey: string | null | undefined, productName: string) => {
+  const renderProductImage = (
+    imageKey: string | null | undefined,
+    productName: string
+  ) => {
     if (!imageKey) {
       return <View style={styles.imagePlaceholder} />;
     }
 
     return (
       <Image
-        source={{ uri: imageKey }}
+        source={
+          imageKey.startsWith('file://')
+            ? { uri: imageKey }
+            : { uri: `file://${imageKey}` }
+        }
         style={{ width: 48, height: 48, borderRadius: 8 }}
-        defaultSource={require('../../assets/no-image.png')}
-        onError={(e) => console.error('Image loading error:', e.nativeEvent.error)}
+        defaultSource={noImage}
+        onError={(e) => {
+          console.warn(
+            'Image loading error:',
+            e.nativeEvent.error,
+            'for path:',
+            imageKey
+          );
+        }}
         accessible={true}
         accessibilityLabel={`${productName}の画像`}
         resizeMode="cover"

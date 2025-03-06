@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import * as imageUtils from '../utils/imageUtils';
+import * as ExpoImagePicker from 'expo-image-picker';
 
 type ImagePickerProps = {
   imageKey: string | null;
@@ -17,7 +18,7 @@ type ImagePickerProps = {
   productId: string;
 };
 
-export function ImagePicker({
+export function CustomImagePicker({
   imageKey,
   onImageSelected,
   onImageRemoved,
@@ -75,11 +76,21 @@ export function ImagePicker({
   const pickFromLibrary = async () => {
     try {
       setLoading(true);
-      const uri = await imageUtils.pickImage();
-      if (uri) {
-        const key = await imageUtils.saveImage(uri, productId);
+      const result = await ExpoImagePicker.launchImageLibraryAsync({
+        mediaTypes: ExpoImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        const imageUri = result.assets[0].uri;
+        const key = await imageUtils.saveImage(
+          imageUri.replace('file://', ''),
+          productId
+        );
         onImageSelected(key);
-        setImageUri(uri);
+        setImageUri(imageUri);
       }
     } catch (error) {
       console.error('Gallery error:', error);

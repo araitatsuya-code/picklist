@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
 import { router } from 'expo-router';
-import { ImagePicker } from '../../src/components/ImagePicker';
+import { CustomImagePicker } from '../../src/components/ImagePicker';
 import * as Crypto from 'expo-crypto';
 
 export default function AddProductScreen() {
@@ -60,7 +60,7 @@ export default function AddProductScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <View style={styles.form}>
-          <ImagePicker
+          <CustomImagePicker
             imageKey={productData.imageUrl}
             onImageSelected={handleImageSelected}
             onImageRemoved={handleImageRemoved}
