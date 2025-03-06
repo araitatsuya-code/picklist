@@ -39,11 +39,58 @@ export default function EditProductScreen() {
     });
   }, [id, products]);
 
+import React, { useState } from 'react';
+import { View, Text, TextInput, StyleSheet } from 'react-native';
+
+const EditProduct = () => {
+  const [productData, setProductData] = useState({ name: '' });
++  const [nameError, setNameError] = useState('');
+
   const handleSubmit = () => {
     if (!productData.name.trim()) {
-      // TODO: エラー表示の実装
+-      // TODO: エラー表示の実装
++      setNameError('商品名は必須です');
       return;
     }
++    setNameError('');
+    
+    // 送信処理の実装
+  };
+
+  return (
+    <View style={styles.container}>
+      <TextInput
+        style={styles.input}
+        value={productData.name}
+        onChangeText={(text) => setProductData({ ...productData, name: text })}
+        placeholder="商品名を入力"
+      />
++     {nameError ? <Text style={styles.errorText}>{nameError}</Text> : null}
+      {/* 他のコンポーネント */}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  input: {
+    // 既存のスタイル
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 8,
+    borderRadius: 4,
+  },
++ errorText: {
++   color: '#FF3B30',
++   fontSize: 12,
++   marginTop: 4,
++ },
+});
+
+export default EditProduct;
 
     updateProduct(id, {
       name: productData.name.trim(),
