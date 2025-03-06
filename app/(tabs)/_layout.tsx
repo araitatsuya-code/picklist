@@ -5,17 +5,31 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+  return (
+    <Navigator
+      screenOptions={{
         headerShown: true,
         headerStyle: {
-          height: 96,
+          paddingTop: insets.top,
+          height: 44 + insets.top,
         },
         tabBarActiveTintColor: '#007AFF',
         tabBarInactiveTintColor: '#8E8E93',
         tabBarStyle: {
-          height: 88,
-          paddingBottom: 34,
+          height: 49 + insets.bottom,
+          paddingBottom: insets.bottom,
           paddingTop: 8,
         },
+      }}
+    >
+      {/* Other screen components */}
+    </Navigator>
+  );
+}
       }}
     >
       <Tabs.Screen
