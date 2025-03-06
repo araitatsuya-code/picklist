@@ -135,39 +135,41 @@ export default function ListDetailScreen() {
           </View>
         </View>
 
-        {/* クイック追加フォーム */}
-        <View style={styles.quickAdd}>
-          <TextInput
-            style={styles.quickAddInput}
-            placeholder="商品名を入力して追加"
-            ref={(input) => {
-              if (input) {
-                // @ts-expect-error TextInput型の定義にclear()メソッドが含まれていないため
-                this.quickAddInput = input;
-              }
-            }}
-            onSubmitEditing={(event) => {
-              const name = event.nativeEvent.text.trim();
-              if (name) {
-                updatePicklist(id, {
-                  items: [
-                    ...list.items,
-                    {
-                      id: Crypto.randomUUID(),
-                      productId: Crypto.randomUUID(),
-                      name,
-                      quantity: 1,
-                      completed: false,
-                    },
-                  ],
-                });
-                // @ts-expect-error TextInput型の定義にclear()メソッドが含まれていないため
-                this.quickAddInput?.clear();
-              }
-            }}
-            returnKeyType="done"
-          />
-        </View>
+{/* クイック追加フォーム */}
+{/*
+  Note: The following hook and handler should be declared at the top level within your component,
+  before the return statement. For this snippet example, they are shown inline for clarity.
+*/}
+const quickAddInputRef = React.useRef<TextInput>(null);
+
+const handleQuickAdd = (text: string) => {
+  const name = text.trim();
+  if (name) {
+    updatePicklist(id, {
+      items: [
+        ...list.items,
+        {
+          id: Crypto.randomUUID(),
+          productId: Crypto.randomUUID(),
+          name,
+          quantity: 1,
+          completed: false,
+        },
+      ],
+    });
+    quickAddInputRef.current?.clear();
+  }
+};
+
+<View style={styles.quickAdd}>
+  <TextInput
+    style={styles.quickAddInput}
+    placeholder="商品名を入力して追加"
+    ref={quickAddInputRef}
+    onSubmitEditing={(event) => handleQuickAdd(event.nativeEvent.text)}
+    returnKeyType="done"
+  />
+</View>
 
         <FlatList
           data={list.items}
