@@ -85,10 +85,7 @@ export function CustomImagePicker({
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
-        const key = await imageUtils.saveImage(
-          imageUri.replace('file://', ''),
-          productId
-        );
+        const key = await imageUtils.saveImage(imageUri, productId);
         onImageSelected(key);
         setImageUri(imageUri);
       }

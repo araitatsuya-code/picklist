@@ -1,6 +1,7 @@
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 const THUMBNAIL_SIZE = 300;
 const IMAGE_QUALITY = 0.7;
@@ -58,14 +59,41 @@ export async function optimizeImage(uri: string): Promise<string> {
   return result.uri;
 }
 
+/**
+ * プラットフォーム間で一貫したパス形式に正規化します
+ * - iOS: file:// プレフィックスを削除
+ * - Android: content:// や file:// は保持
+ * @param uri 画像のURI
+ * @returns 正規化されたURI
+ */
+export const normalizeImageUri = (uri: string): string => {
+  if (Platform.OS === 'ios' && uri.startsWith('file://')) {
+    return uri.replace('file://', '');
+  }
+  return uri;
+};
+
 export async function saveImage(
   uri: string,
   productId: string
 ): Promise<string> {
-  const optimizedUri = await optimizeImage(uri);
-  const key = `product_image_${productId}`;
-  await AsyncStorage.setItem(key, optimizedUri);
-  return key;
+  try {
+    // URIを正規化
+    const normalizedUri = normalizeImageUri(uri);
+
+    // 画像を最適化
+    const optimizedUri = await optimizeImage(normalizedUri);
+
+    // ファイル名を生成
+    const fileName = `product_image_${productId}_${Date.now()}.png`;
+
+    const key = fileName;
+    await AsyncStorage.setItem(key, optimizedUri);
+    return key;
+  } catch (error) {
+    console.error('Failed to save image:', error);
+    throw error;
+  }
 }
 
 export async function loadImage(key: string): Promise<string | null> {
