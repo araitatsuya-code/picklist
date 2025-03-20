@@ -319,9 +319,16 @@ export default function FrequentProductsScreen() {
                 {renderProductImage(item.imageUrl, item.name)}
                 <View style={styles.productInfo}>
                   <Text style={styles.productName}>{item.name}</Text>
-                  {item.category && (
-                    <Text style={styles.productCategory}>{item.category}</Text>
-                  )}
+                  <View style={styles.productDetails}>
+                    {item.category && (
+                      <Text style={styles.productCategory}>
+                        {item.category}
+                      </Text>
+                    )}
+                    <Text style={styles.addCount}>
+                      追加回数: {item.addCount || 0}回
+                    </Text>
+                  </View>
                 </View>
               </Pressable>
             )}
@@ -381,11 +388,25 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 16,
     fontWeight: '500',
+    marginBottom: 4,
+  },
+  productDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
   },
   productCategory: {
     fontSize: 14,
     color: '#666',
-    marginTop: 4,
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  addCount: {
+    fontSize: 14,
+    color: '#666',
   },
   productImage: {
     width: 48,

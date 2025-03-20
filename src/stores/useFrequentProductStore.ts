@@ -7,11 +7,18 @@ import { initialProducts } from '../data/initialFrequentProducts';
 interface FrequentProductState {
   products: FrequentProduct[];
   addProduct: (
-    product: Omit<FrequentProduct, 'id' | 'createdAt' | 'updatedAt'>
+    product: Omit<
+      FrequentProduct,
+      'id' | 'createdAt' | 'updatedAt' | 'addCount'
+    >
   ) => void;
-  updateProduct: (id: string, product: Partial<FrequentProduct>) => void;
+  updateProduct: (
+    id: string,
+    product: Partial<Omit<FrequentProduct, 'id' | 'createdAt'>>
+  ) => void;
   deleteProduct: (id: string) => void;
   searchProducts: (query: string) => FrequentProduct[];
+  incrementAddCount: (productId: string) => void;
   initializeDefaultProducts: () => void;
   isInitialized: boolean;
 }
@@ -36,6 +43,7 @@ export const useFrequentProductStore = create<FrequentProductState>()(
           id: Crypto.randomUUID(),
           createdAt: now,
           updatedAt: now,
+          addCount: 0,
         }));
 
         set({
@@ -52,6 +60,7 @@ export const useFrequentProductStore = create<FrequentProductState>()(
             ...product,
             createdAt: now,
             updatedAt: now,
+            addCount: 0,
           };
 
           set((state) => ({
@@ -63,19 +72,23 @@ export const useFrequentProductStore = create<FrequentProductState>()(
         }
       },
 
-      updateProduct: (id, updates) => {
+      updateProduct: (id, product) => {
         set((state) => ({
-          products: state.products.map((product) =>
-            product.id === id
-              ? { ...product, ...updates, updatedAt: Date.now() }
-              : product
+          products: state.products.map((p) =>
+            p.id === id
+              ? {
+                  ...p,
+                  ...product,
+                  updatedAt: Date.now(),
+                }
+              : p
           ),
         }));
       },
 
       deleteProduct: (id) => {
         set((state) => ({
-          products: state.products.filter((product) => product.id !== id),
+          products: state.products.filter((p) => p.id !== id),
         }));
       },
 
@@ -88,6 +101,20 @@ export const useFrequentProductStore = create<FrequentProductState>()(
             product.name.toLowerCase().includes(normalizedQuery) ||
             product.category?.toLowerCase().includes(normalizedQuery)
         );
+      },
+
+      incrementAddCount: (productId) => {
+        set((state) => ({
+          products: state.products.map((p) =>
+            p.id === productId
+              ? {
+                  ...p,
+                  addCount: (p.addCount || 0) + 1,
+                  updatedAt: Date.now(),
+                }
+              : p
+          ),
+        }));
       },
     }),
     {
@@ -134,4 +161,5 @@ export type FrequentProduct = {
   updatedAt: number;
   defaultQuantity?: number;
   unit?: string;
+  addCount: number;
 };

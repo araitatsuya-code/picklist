@@ -24,6 +24,9 @@ export default function AddToListScreen() {
 
   // 商品の取得
   const products = useFrequentProductStore((state) => state.products);
+  const incrementAddCount = useFrequentProductStore(
+    (state) => state.incrementAddCount
+  );
   const selectedProducts = useMemo(
     () => products.filter((p) => selectedIdArray.includes(p.id)),
     [products, selectedIdArray]
@@ -49,16 +52,23 @@ export default function AddToListScreen() {
   const handleSubmit = () => {
     if (!selectedList) return;
 
-    const items = selectedProducts.map((product) => ({
-      productId: product.id,
-      name: product.name,
-      quantity: Number(quantities[product.id] || product.defaultQuantity || 1),
-      maxPrice: maxPrices[product.id]
-        ? Number(maxPrices[product.id])
-        : undefined,
-      note: notes[product.id],
-      completed: false,
-    }));
+    const items = selectedProducts.map((product) => {
+      // 追加回数をインクリメント
+      incrementAddCount(product.id);
+
+      return {
+        productId: product.id,
+        name: product.name,
+        quantity: Number(
+          quantities[product.id] || product.defaultQuantity || 1
+        ),
+        maxPrice: maxPrices[product.id]
+          ? Number(maxPrices[product.id])
+          : undefined,
+        note: notes[product.id],
+        completed: false,
+      };
+    });
 
     addItemsToList(selectedList, items);
     router.push(`/(tabs)/list/${selectedList}`);
