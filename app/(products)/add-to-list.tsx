@@ -59,7 +59,7 @@ export default function AddToListScreen() {
     }));
 
     addItemsToList(selectedList, items);
-    router.push(`/(lists)/${selectedList}`);
+    router.push(`/(tabs)/list/${selectedList}`);
   };
 
   return (

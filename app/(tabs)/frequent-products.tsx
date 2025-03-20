@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Menu } from 'react-native-paper';
 import { FrequentProduct } from '../../src/types/frequentProduct';
 import noImage from '../../assets/no-image.png';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * よく買う商品リストを表示する画面
@@ -31,6 +32,7 @@ export default function FrequentProductsScreen() {
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set()
   );
+  const [imageUris, setImageUris] = useState<Record<string, string>>({});
 
   // 全カテゴリーのリストを取得
   const categories = useMemo(() => {
@@ -100,6 +102,20 @@ export default function FrequentProductsScreen() {
     router.push(`/(products)/add-to-list?selectedIds=${selectedIds}`);
   };
 
+  const loadImageUri = useCallback(async (imageKey: string) => {
+    try {
+      const uri = await AsyncStorage.getItem(imageKey);
+      if (uri) {
+        // URIが既にfile://で始まっているかチェック
+        const finalUri = uri.startsWith('file://') ? uri : `file://${uri}`;
+        console.log('Loaded image URI:', finalUri);
+        setImageUris((prev) => ({ ...prev, [imageKey]: finalUri }));
+      }
+    } catch (error) {
+      console.error('Failed to load image:', error);
+    }
+  }, []);
+
   const renderProductImage = (
     imageKey: string | null | undefined,
     productName: string
@@ -108,22 +124,32 @@ export default function FrequentProductsScreen() {
       return <View style={styles.imagePlaceholder} />;
     }
 
+    // まだURIが読み込まれていない場合は読み込みを開始
+    if (!imageUris[imageKey]) {
+      loadImageUri(imageKey);
+      return <View style={styles.imagePlaceholder} />;
+    }
+
+    const imageUri = imageUris[imageKey];
+
     return (
       <Image
-        source={
-          imageKey.startsWith('file://')
-            ? { uri: imageKey }
-            : { uri: `file://${imageKey}` }
-        }
+        source={{ uri: imageUri }}
         style={styles.productImage}
         defaultSource={noImage}
         onError={(e) => {
           console.warn(
             'Image loading error:',
             e.nativeEvent.error,
-            'for path:',
-            imageKey
+            'for URI:',
+            imageUri
           );
+          // エラー時にキャッシュをクリア
+          setImageUris((prev) => {
+            const next = { ...prev };
+            delete next[imageKey];
+            return next;
+          });
         }}
         accessible={true}
         accessibilityLabel={`${productName}の画像`}

@@ -67,8 +67,9 @@ export async function optimizeImage(uri: string): Promise<string> {
  * @returns 正規化されたURI
  */
 export const normalizeImageUri = (uri: string): string => {
-  if (Platform.OS === 'ios' && uri.startsWith('file://')) {
-    return uri.replace('file://', '');
+  if (Platform.OS === 'ios') {
+    // iOSの場合、file://プレフィックスを保持
+    return uri.startsWith('file://') ? uri : `file://${uri}`;
   }
   return uri;
 };
@@ -87,9 +88,10 @@ export async function saveImage(
     // ファイル名を生成
     const fileName = `product_image_${productId}_${Date.now()}.png`;
 
-    const key = fileName;
-    await AsyncStorage.setItem(key, optimizedUri);
-    return key;
+    // 最適化されたURIをそのまま保存
+    await AsyncStorage.setItem(fileName, optimizedUri);
+
+    return fileName;
   } catch (error) {
     console.error('Failed to save image:', error);
     throw error;
