@@ -115,7 +115,7 @@ export default function FrequentProductsScreen() {
             ? { uri: imageKey }
             : { uri: `file://${imageKey}` }
         }
-        style={{ width: 48, height: 48, borderRadius: 8 }}
+        style={styles.productImage}
         defaultSource={noImage}
         onError={(e) => {
           console.warn(
@@ -347,14 +347,15 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   productImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 4,
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
   },
   imagePlaceholder: {
-    width: 50,
-    height: 50,
-    borderRadius: 4,
+    width: 48,
+    height: 48,
+    borderRadius: 8,
     backgroundColor: '#f0f0f0',
   },
   filterButton: {
