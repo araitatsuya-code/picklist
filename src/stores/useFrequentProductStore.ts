@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
+import { initialProducts } from '../data/initialFrequentProducts';
 
 interface FrequentProductState {
   products: FrequentProduct[];
@@ -11,12 +12,37 @@ interface FrequentProductState {
   updateProduct: (id: string, product: Partial<FrequentProduct>) => void;
   deleteProduct: (id: string) => void;
   searchProducts: (query: string) => FrequentProduct[];
+  initializeDefaultProducts: () => void;
+  isInitialized: boolean;
 }
 
 export const useFrequentProductStore = create<FrequentProductState>()(
   persist(
     (set, get) => ({
       products: [],
+      isInitialized: false,
+
+      initializeDefaultProducts: () => {
+        const { products, isInitialized } = get();
+
+        // 既に初期化済みの場合は何もしない
+        if (isInitialized || products.length > 0) {
+          return;
+        }
+
+        const now = Date.now();
+        const defaultProducts = initialProducts.map((product) => ({
+          ...product,
+          id: Crypto.randomUUID(),
+          createdAt: now,
+          updatedAt: now,
+        }));
+
+        set({
+          products: defaultProducts,
+          isInitialized: true,
+        });
+      },
 
       addProduct: (product) => {
         try {
@@ -68,6 +94,13 @@ export const useFrequentProductStore = create<FrequentProductState>()(
       name: 'frequent-products-storage',
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state) => {
+        if (state && (!state.isInitialized || state.products.length === 0)) {
+          // 初期データがない場合は初期化を実行
+          setTimeout(() => {
+            const store = useFrequentProductStore.getState();
+            store.initializeDefaultProducts();
+          }, 0);
+        }
         if (__DEV__) {
           console.log(
             'State hydrated:',
