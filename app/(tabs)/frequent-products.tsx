@@ -169,12 +169,27 @@ export default function FrequentProductsScreen() {
             placeholder="商品を検索"
           />
 
-          <Pressable style={styles.modeButton} onPress={toggleSelectionMode}>
+          <Pressable
+            style={[
+              styles.selectionButton,
+              isSelectionMode && styles.selectionButtonActive,
+            ]}
+            onPress={toggleSelectionMode}
+          >
             <Ionicons
-              name={isSelectionMode ? 'checkmark-circle' : 'add-circle-outline'}
-              size={24}
-              color="#007AFF"
+              name={isSelectionMode ? 'checkmark-circle' : 'cart-outline'}
+              size={20}
+              color={isSelectionMode ? '#fff' : '#007AFF'}
+              style={styles.selectionButtonIcon}
             />
+            <Text
+              style={[
+                styles.selectionButtonText,
+                isSelectionMode && styles.selectionButtonTextActive,
+              ]}
+            >
+              {isSelectionMode ? '選択中' : 'リストへ一括追加'}
+            </Text>
           </Pressable>
 
           {categories.length > 0 && (
@@ -443,14 +458,33 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
   },
-  modeButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
+  selectionButton: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+    backgroundColor: 'transparent',
+    minWidth: 140,
+    justifyContent: 'center',
+    height: 40,
+  },
+  selectionButtonActive: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+  },
+  selectionButtonIcon: {
+    marginRight: 4,
+  },
+  selectionButtonText: {
+    color: '#007AFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  selectionButtonTextActive: {
+    color: '#fff',
   },
   selectionHeader: {
     flexDirection: 'row',
