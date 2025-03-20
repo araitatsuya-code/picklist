@@ -1,7 +1,4 @@
 import { FrequentProduct } from '../stores/useFrequentProductStore';
-import * as Crypto from 'expo-crypto';
-
-const now = Date.now();
 
 export const initialProducts: Omit<
   FrequentProduct,
