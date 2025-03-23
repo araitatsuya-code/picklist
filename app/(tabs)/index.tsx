@@ -1,13 +1,17 @@
+import React from 'react';
 import {
   View,
   Text,
-  Pressable,
   StyleSheet,
+  Pressable,
+  Platform,
   SafeAreaView,
   Alert,
 } from 'react-native';
 import { usePicklistStore } from '../../src/stores/usePicklistStore';
 import { Link } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function PicklistScreen() {
   const picklists = usePicklistStore((state) => state.picklists);
@@ -16,47 +20,72 @@ export default function PicklistScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        {/* リスト一覧 */}
         <View style={styles.listContainer}>
           <Pressable
-            style={styles.addButton}
+            style={styles.createButton}
             onPress={() => addPicklist('新しいリスト')}
           >
-            <Text style={styles.addButtonText}>＋ 新規作成</Text>
+            <LinearGradient
+              colors={['#007AFF', '#00A2FF']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradientButton}
+            >
+              <Ionicons name="add" size={24} color="#FFF" />
+              <Text style={styles.createButtonText}>新規リスト作成</Text>
+            </LinearGradient>
           </Pressable>
+
           {picklists.length === 0 ? (
-            <Text style={styles.emptyText}>買い物リストを作成してください</Text>
+            <View style={styles.emptyContainer}>
+              <Ionicons name="cart" size={64} color="#DDD" />
+              <Text style={styles.emptyText}>
+                買い物リストを作成してください
+              </Text>
+            </View>
           ) : (
             picklists.map((list) => (
-              <View key={list.id} style={styles.listItem}>
+              <View key={list.id} style={styles.card}>
                 <Link href={`/list/${list.id}`} asChild>
-                  <Pressable style={styles.listContent}>
-                    <Text style={styles.listName}>{list.name}</Text>
+                  <Pressable style={styles.cardContent}>
+                    <View style={styles.cardHeader}>
+                      <View style={styles.cardTitleContainer}>
+                        <Ionicons
+                          name="list"
+                          size={24}
+                          color="#007AFF"
+                          style={styles.cardIcon}
+                        />
+                        <Text style={styles.cardTitle}>{list.name}</Text>
+                      </View>
+                      <Pressable
+                        style={styles.deleteButton}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          Alert.alert(
+                            '確認',
+                            `「${list.name}」を削除してもよろしいですか？`,
+                            [
+                              { text: 'キャンセル', style: 'cancel' },
+                              {
+                                text: '削除',
+                                style: 'destructive',
+                                onPress: () => removePicklist(list.id),
+                              },
+                            ]
+                          );
+                        }}
+                      >
+                        <View style={styles.deleteIconContainer}>
+                          <Ionicons name="close" size={16} color="#FF6B6B" />
+                        </View>
+                      </Pressable>
+                    </View>
                     <Text style={styles.itemCount}>
                       {list.items.length}個のアイテム
                     </Text>
                   </Pressable>
                 </Link>
-                <Pressable
-                  style={styles.deleteButton}
-                  onPress={() => {
-                    // Alert APIを使用して確認ダイアログを表示
-                    Alert.alert(
-                      '確認',
-                      `「${list.name}」を削除してもよろしいですか？`,
-                      [
-                        { text: 'キャンセル', style: 'cancel' },
-                        {
-                          text: '削除',
-                          style: 'destructive',
-                          onPress: () => removePicklist(list.id),
-                        },
-                      ]
-                    );
-                  }}
-                >
-                  <Text style={styles.deleteButtonText}>削除</Text>
-                </Pressable>
               </View>
             ))
           )}
@@ -69,7 +98,7 @@ export default function PicklistScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F8F9FA',
   },
   content: {
     flex: 1,
@@ -77,51 +106,98 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     flex: 1,
-    padding: 16,
+    gap: 12,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
   },
   emptyText: {
+    fontSize: 16,
+    color: '#666',
     textAlign: 'center',
-    color: '#6b7280',
-    marginTop: 24,
   },
-  listItem: {
-    flexDirection: 'row',
-    backgroundColor: '#f3f4f6',
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  listContent: {
-    flex: 1,
-    padding: 16,
-  },
-  listName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  itemCount: {
-    color: '#6b7280',
-  },
-  deleteButton: {
-    padding: 16,
-    justifyContent: 'center',
-    backgroundColor: '#fee2e2',
-    borderTopRightRadius: 8,
-    borderBottomRightRadius: 8,
-  },
-  deleteButtonText: {
-    color: '#ef4444',
-    fontWeight: 'bold',
-  },
-  addButton: {
-    backgroundColor: '#3b82f6',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+  createButton: {
     marginBottom: 16,
   },
-  addButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  gradientButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  createButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  card: {
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  cardContent: {
+    padding: 16,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  cardTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  cardIcon: {
+    marginRight: 8,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    flex: 1,
+  },
+  itemCount: {
+    fontSize: 14,
+    color: '#666',
+  },
+  deleteButton: {
+    padding: 4,
+    marginLeft: 8,
+  },
+  deleteIconContainer: {
+    backgroundColor: '#FFE8E8',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
