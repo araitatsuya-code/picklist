@@ -7,11 +7,13 @@ import {
   TextInput,
   Pressable,
   GestureResponderEvent,
+  SafeAreaView,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
 import { usePicklistStore } from '../../src/stores/usePicklistStore';
 import { Menu, Button } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function AddToListScreen() {
   const { selectedIds } = useLocalSearchParams<{ selectedIds: string }>();
@@ -22,6 +24,9 @@ export default function AddToListScreen() {
 
   // 商品の取得
   const products = useFrequentProductStore((state) => state.products);
+  const incrementAddCount = useFrequentProductStore(
+    (state) => state.incrementAddCount
+  );
   const selectedProducts = useMemo(
     () => products.filter((p) => selectedIdArray.includes(p.id)),
     [products, selectedIdArray]
@@ -47,24 +52,38 @@ export default function AddToListScreen() {
   const handleSubmit = () => {
     if (!selectedList) return;
 
-    const items = selectedProducts.map((product) => ({
-      productId: product.id,
-      name: product.name,
-      quantity: Number(quantities[product.id] || product.defaultQuantity || 1),
-      maxPrice: maxPrices[product.id]
-        ? Number(maxPrices[product.id])
-        : undefined,
-      note: notes[product.id],
-      completed: false,
-    }));
+    const items = selectedProducts.map((product) => {
+      // 追加回数をインクリメント
+      incrementAddCount(product.id);
+
+      return {
+        productId: product.id,
+        name: product.name,
+        quantity: Number(
+          quantities[product.id] || product.defaultQuantity || 1
+        ),
+        maxPrice: maxPrices[product.id]
+          ? Number(maxPrices[product.id])
+          : undefined,
+        note: notes[product.id],
+        completed: false,
+      };
+    });
 
     addItemsToList(selectedList, items);
-    router.push(`/(lists)/${selectedList}`);
+    router.push(`/(tabs)/list/${selectedList}`);
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={24} color="#007AFF" />
+        </Pressable>
+        <Text style={styles.headerTitle}>リストに追加</Text>
+        <View style={styles.headerRight} />
+      </View>
+      <ScrollView style={styles.content}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>買い物リストを選択</Text>
           <Button
@@ -148,7 +167,6 @@ export default function AddToListScreen() {
           ))}
         </View>
       </ScrollView>
-
       <View style={styles.footer}>
         <Pressable
           style={[
@@ -161,7 +179,7 @@ export default function AddToListScreen() {
           <Text style={styles.submitButtonText}>追加</Text>
         </Pressable>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -169,6 +187,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    height: 44,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  backButton: {
+    padding: 8,
+    marginLeft: -8,
+  },
+  headerRight: {
+    width: 40,
+  },
+  content: {
+    flex: 1,
   },
   section: {
     padding: 16,

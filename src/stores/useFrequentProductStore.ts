@@ -2,21 +2,55 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
+import { initialProducts } from '../data/initialFrequentProducts';
 
 interface FrequentProductState {
   products: FrequentProduct[];
   addProduct: (
-    product: Omit<FrequentProduct, 'id' | 'createdAt' | 'updatedAt'>
+    product: Omit<
+      FrequentProduct,
+      'id' | 'createdAt' | 'updatedAt' | 'addCount'
+    >
   ) => void;
-  updateProduct: (id: string, product: Partial<FrequentProduct>) => void;
+  updateProduct: (
+    id: string,
+    product: Partial<Omit<FrequentProduct, 'id' | 'createdAt'>>
+  ) => void;
   deleteProduct: (id: string) => void;
   searchProducts: (query: string) => FrequentProduct[];
+  incrementAddCount: (productId: string) => void;
+  initializeDefaultProducts: () => void;
+  isInitialized: boolean;
 }
 
 export const useFrequentProductStore = create<FrequentProductState>()(
   persist(
     (set, get) => ({
       products: [],
+      isInitialized: false,
+
+      initializeDefaultProducts: () => {
+        const { products, isInitialized } = get();
+
+        // 既に初期化済みの場合は何もしない
+        if (isInitialized || products.length > 0) {
+          return;
+        }
+
+        const now = Date.now();
+        const defaultProducts = initialProducts.map((product) => ({
+          ...product,
+          id: Crypto.randomUUID(),
+          createdAt: now,
+          updatedAt: now,
+          addCount: 0,
+        }));
+
+        set({
+          products: defaultProducts,
+          isInitialized: true,
+        });
+      },
 
       addProduct: (product) => {
         try {
@@ -26,6 +60,7 @@ export const useFrequentProductStore = create<FrequentProductState>()(
             ...product,
             createdAt: now,
             updatedAt: now,
+            addCount: 0,
           };
 
           set((state) => ({
@@ -37,19 +72,23 @@ export const useFrequentProductStore = create<FrequentProductState>()(
         }
       },
 
-      updateProduct: (id, updates) => {
+      updateProduct: (id, product) => {
         set((state) => ({
-          products: state.products.map((product) =>
-            product.id === id
-              ? { ...product, ...updates, updatedAt: Date.now() }
-              : product
+          products: state.products.map((p) =>
+            p.id === id
+              ? {
+                  ...p,
+                  ...product,
+                  updatedAt: Date.now(),
+                }
+              : p
           ),
         }));
       },
 
       deleteProduct: (id) => {
         set((state) => ({
-          products: state.products.filter((product) => product.id !== id),
+          products: state.products.filter((p) => p.id !== id),
         }));
       },
 
@@ -63,11 +102,32 @@ export const useFrequentProductStore = create<FrequentProductState>()(
             product.category?.toLowerCase().includes(normalizedQuery)
         );
       },
+
+      incrementAddCount: (productId) => {
+        set((state) => ({
+          products: state.products.map((p) =>
+            p.id === productId
+              ? {
+                  ...p,
+                  addCount: (p.addCount || 0) + 1,
+                  updatedAt: Date.now(),
+                }
+              : p
+          ),
+        }));
+      },
     }),
     {
       name: 'frequent-products-storage',
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state) => {
+        if (state && (!state.isInitialized || state.products.length === 0)) {
+          // 初期データがない場合は初期化を実行
+          setTimeout(() => {
+            const store = useFrequentProductStore.getState();
+            store.initializeDefaultProducts();
+          }, 0);
+        }
         if (__DEV__) {
           console.log(
             'State hydrated:',
@@ -101,4 +161,5 @@ export type FrequentProduct = {
   updatedAt: number;
   defaultQuantity?: number;
   unit?: string;
+  addCount: number;
 };

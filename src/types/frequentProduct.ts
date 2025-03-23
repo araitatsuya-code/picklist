@@ -7,4 +7,5 @@ export type FrequentProduct = {
   unit?: string;
   createdAt: number;
   updatedAt: number;
+  addCount: number;
 };
