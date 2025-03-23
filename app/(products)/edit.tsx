@@ -7,10 +7,12 @@ import {
   Pressable,
   ScrollView,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
 import { router, useLocalSearchParams } from 'expo-router';
 import { CustomImagePicker } from '../../src/components/ImagePicker';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function EditProductScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -102,76 +104,85 @@ export default function EditProductScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.form}>
-        <CustomImagePicker
-          imageKey={productData.imageUrl}
-          onImageSelected={handleImageSelected}
-          onImageRemoved={handleImageRemoved}
-          productId={id}
-        />
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>商品名 *</Text>
-          <TextInput
-            style={styles.input}
-            value={productData.name}
-            onChangeText={(text) =>
-              setProductData({ ...productData, name: text })
-            }
-            placeholder="商品名を入力"
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>カテゴリー</Text>
-          <TextInput
-            style={styles.input}
-            value={productData.category}
-            onChangeText={(text) =>
-              setProductData({ ...productData, category: text })
-            }
-            placeholder="カテゴリーを入力"
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>デフォルト数量</Text>
-          <TextInput
-            style={styles.input}
-            value={productData.defaultQuantity}
-            onChangeText={(text) => {
-              // 数値のみ許可（空文字または数字）
-              if (text === '' || /^\d+$/.test(text)) {
-                setProductData({ ...productData, defaultQuantity: text });
-              }
-            }}
-            placeholder="数量を入力"
-            keyboardType="numeric"
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>単位</Text>
-          <TextInput
-            style={styles.input}
-            value={productData.unit}
-            onChangeText={(text) =>
-              setProductData({ ...productData, unit: text })
-            }
-            placeholder="個、本、パックなど"
-          />
-        </View>
-
-        <Pressable style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>更新</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={24} color="#007AFF" />
         </Pressable>
-
-        <Pressable style={styles.deleteButton} onPress={handleDelete}>
-          <Text style={styles.deleteButtonText}>削除</Text>
-        </Pressable>
+        <Text style={styles.headerTitle}>商品を編集</Text>
+        <View style={styles.headerRight} />
       </View>
-    </ScrollView>
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.form}>
+          <CustomImagePicker
+            imageKey={productData.imageUrl}
+            onImageSelected={handleImageSelected}
+            onImageRemoved={handleImageRemoved}
+            productId={id}
+          />
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>商品名 *</Text>
+            <TextInput
+              style={styles.input}
+              value={productData.name}
+              onChangeText={(text) =>
+                setProductData({ ...productData, name: text })
+              }
+              placeholder="商品名を入力"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>カテゴリー</Text>
+            <TextInput
+              style={styles.input}
+              value={productData.category}
+              onChangeText={(text) =>
+                setProductData({ ...productData, category: text })
+              }
+              placeholder="カテゴリーを入力"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>デフォルト数量</Text>
+            <TextInput
+              style={styles.input}
+              value={productData.defaultQuantity}
+              onChangeText={(text) => {
+                // 数値のみ許可（空文字または数字）
+                if (text === '' || /^\d+$/.test(text)) {
+                  setProductData({ ...productData, defaultQuantity: text });
+                }
+              }}
+              placeholder="数量を入力"
+              keyboardType="numeric"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>単位</Text>
+            <TextInput
+              style={styles.input}
+              value={productData.unit}
+              onChangeText={(text) =>
+                setProductData({ ...productData, unit: text })
+              }
+              placeholder="個、本、パックなど"
+            />
+          </View>
+
+          <Pressable style={styles.submitButton} onPress={handleSubmit}>
+            <Text style={styles.submitButtonText}>更新</Text>
+          </Pressable>
+
+          <Pressable style={styles.deleteButton} onPress={handleDelete}>
+            <Text style={styles.deleteButtonText}>削除</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -179,6 +190,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    height: 44,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  backButton: {
+    padding: 8,
+    marginLeft: -8,
+  },
+  headerRight: {
+    width: 40,
   },
   form: {
     padding: 16,
@@ -222,5 +253,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     fontWeight: '600',
+  },
+  scrollView: {
+    flex: 1,
   },
 });

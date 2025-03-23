@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Menu } from 'react-native-paper';
 import { FrequentProduct } from '../../src/types/frequentProduct';
 import noImage from '../../assets/no-image.png';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * よく買う商品リストを表示する画面
@@ -31,6 +32,7 @@ export default function FrequentProductsScreen() {
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set()
   );
+  const [imageUris, setImageUris] = useState<Record<string, string>>({});
 
   // 全カテゴリーのリストを取得
   const categories = useMemo(() => {
@@ -100,6 +102,20 @@ export default function FrequentProductsScreen() {
     router.push(`/(products)/add-to-list?selectedIds=${selectedIds}`);
   };
 
+  const loadImageUri = useCallback(async (imageKey: string) => {
+    try {
+      const uri = await AsyncStorage.getItem(imageKey);
+      if (uri) {
+        // URIが既にfile://で始まっているかチェック
+        const finalUri = uri.startsWith('file://') ? uri : `file://${uri}`;
+        console.log('Loaded image URI:', finalUri);
+        setImageUris((prev) => ({ ...prev, [imageKey]: finalUri }));
+      }
+    } catch (error) {
+      console.error('Failed to load image:', error);
+    }
+  }, []);
+
   const renderProductImage = (
     imageKey: string | null | undefined,
     productName: string
@@ -108,22 +124,32 @@ export default function FrequentProductsScreen() {
       return <View style={styles.imagePlaceholder} />;
     }
 
+    // まだURIが読み込まれていない場合は読み込みを開始
+    if (!imageUris[imageKey]) {
+      loadImageUri(imageKey);
+      return <View style={styles.imagePlaceholder} />;
+    }
+
+    const imageUri = imageUris[imageKey];
+
     return (
       <Image
-        source={
-          imageKey.startsWith('file://')
-            ? { uri: imageKey }
-            : { uri: `file://${imageKey}` }
-        }
-        style={{ width: 48, height: 48, borderRadius: 8 }}
+        source={{ uri: imageUri }}
+        style={styles.productImage}
         defaultSource={noImage}
         onError={(e) => {
           console.warn(
             'Image loading error:',
             e.nativeEvent.error,
-            'for path:',
-            imageKey
+            'for URI:',
+            imageUri
           );
+          // エラー時にキャッシュをクリア
+          setImageUris((prev) => {
+            const next = { ...prev };
+            delete next[imageKey];
+            return next;
+          });
         }}
         accessible={true}
         accessibilityLabel={`${productName}の画像`}
@@ -143,12 +169,27 @@ export default function FrequentProductsScreen() {
             placeholder="商品を検索"
           />
 
-          <Pressable style={styles.modeButton} onPress={toggleSelectionMode}>
+          <Pressable
+            style={[
+              styles.selectionButton,
+              isSelectionMode && styles.selectionButtonActive,
+            ]}
+            onPress={toggleSelectionMode}
+          >
             <Ionicons
-              name={isSelectionMode ? 'checkmark-circle' : 'add-circle-outline'}
-              size={24}
-              color="#007AFF"
+              name={isSelectionMode ? 'checkmark-circle' : 'cart-outline'}
+              size={20}
+              color={isSelectionMode ? '#fff' : '#007AFF'}
+              style={styles.selectionButtonIcon}
             />
+            <Text
+              style={[
+                styles.selectionButtonText,
+                isSelectionMode && styles.selectionButtonTextActive,
+              ]}
+            >
+              {isSelectionMode ? '選択中' : 'リストへ一括追加'}
+            </Text>
           </Pressable>
 
           {categories.length > 0 && (
@@ -278,9 +319,16 @@ export default function FrequentProductsScreen() {
                 {renderProductImage(item.imageUrl, item.name)}
                 <View style={styles.productInfo}>
                   <Text style={styles.productName}>{item.name}</Text>
-                  {item.category && (
-                    <Text style={styles.productCategory}>{item.category}</Text>
-                  )}
+                  <View style={styles.productDetails}>
+                    {item.category && (
+                      <Text style={styles.productCategory}>
+                        {item.category}
+                      </Text>
+                    )}
+                    <Text style={styles.addCount}>
+                      追加回数: {item.addCount || 0}回
+                    </Text>
+                  </View>
                 </View>
               </Pressable>
             )}
@@ -340,21 +388,36 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 16,
     fontWeight: '500',
+    marginBottom: 4,
+  },
+  productDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
   },
   productCategory: {
     fontSize: 14,
     color: '#666',
-    marginTop: 4,
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  addCount: {
+    fontSize: 14,
+    color: '#666',
   },
   productImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 4,
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
   },
   imagePlaceholder: {
-    width: 50,
-    height: 50,
-    borderRadius: 4,
+    width: 48,
+    height: 48,
+    borderRadius: 8,
     backgroundColor: '#f0f0f0',
   },
   filterButton: {
@@ -416,14 +479,33 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
   },
-  modeButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
+  selectionButton: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+    backgroundColor: 'transparent',
+    minWidth: 140,
+    justifyContent: 'center',
+    height: 40,
+  },
+  selectionButtonActive: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+  },
+  selectionButtonIcon: {
+    marginRight: 4,
+  },
+  selectionButtonText: {
+    color: '#007AFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  selectionButtonTextActive: {
+    color: '#fff',
   },
   selectionHeader: {
     flexDirection: 'row',

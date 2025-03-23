@@ -12,6 +12,7 @@ import { useFrequentProductStore } from '../../src/stores/useFrequentProductStor
 import { router } from 'expo-router';
 import { CustomImagePicker } from '../../src/components/ImagePicker';
 import * as Crypto from 'expo-crypto';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function AddProductScreen() {
   const { addProduct } = useFrequentProductStore();
@@ -58,6 +59,13 @@ export default function AddProductScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={24} color="#007AFF" />
+        </Pressable>
+        <Text style={styles.headerTitle}>商品を追加</Text>
+        <View style={styles.headerRight} />
+      </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.form}>
           <CustomImagePicker
@@ -99,7 +107,7 @@ export default function AddProductScreen() {
               onChangeText={(text) => {
                 // 数値のみ許可、空文字は許可
                 if (text === '' || /^\d+$/.test(text)) {
-                  setProductData({ ...productData, defaultQuantity: text })
+                  setProductData({ ...productData, defaultQuantity: text });
                 }
               }}
               placeholder="数量を入力"
@@ -132,6 +140,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    height: 44,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  backButton: {
+    padding: 8,
+    marginLeft: -8,
+  },
+  headerRight: {
+    width: 40,
   },
   scrollView: {
     flex: 1,

@@ -304,12 +304,13 @@ export default function ListDetailScreen() {
           </View>
         )}
 
-        <Pressable
+        {/* 一旦ボタンを非表示にする */}
+        {/* <Pressable
           style={styles.fab}
           onPress={() => router.push('/(products)/add-to-list?selectedIds=')}
         >
           <Ionicons name="add" size={24} color="#fff" />
-        </Pressable>
+        </Pressable> */}
       </View>
     </SafeAreaView>
   );
