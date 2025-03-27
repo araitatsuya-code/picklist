@@ -27,7 +27,8 @@ export interface Picklist {
   items: PicklistItem[]; // リストアイテムの配列
   createdAt: number; // 作成日時
   updatedAt: number; // 更新日時
-  sortBy?: 'category' | 'priority' | 'name'; // ソート方法
+  sortBy?: 'name' | 'category' | 'priority' | 'created';
+  sortDirection?: 'asc' | 'desc';
   groupByCategory?: boolean; // カテゴリでグループ化するかどうか
 }
 
@@ -59,7 +60,8 @@ type PicklistActions = {
   ) => void;
   updateListSortSettings: (
     listId: string,
-    sortBy?: 'category' | 'priority' | 'name',
+    sortBy?: 'name' | 'category' | 'priority' | 'created',
+    sortDirection?: 'asc' | 'desc',
     groupByCategory?: boolean
   ) => void;
 };
@@ -214,11 +216,22 @@ export const usePicklistStore = create<PicklistState & PicklistActions>()(
         }));
       },
 
-      updateListSortSettings: (listId, sortBy, groupByCategory) => {
+      updateListSortSettings: (
+        listId,
+        sortBy,
+        sortDirection,
+        groupByCategory
+      ) => {
         set((state) => ({
           picklists: state.picklists.map((list) =>
             list.id === listId
-              ? { ...list, sortBy, groupByCategory, updatedAt: Date.now() }
+              ? {
+                  ...list,
+                  sortBy,
+                  sortDirection,
+                  groupByCategory,
+                  updatedAt: Date.now(),
+                }
               : list
           ),
         }));

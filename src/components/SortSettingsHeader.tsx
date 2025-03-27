@@ -1,68 +1,68 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Button, SegmentedButtons } from 'react-native-paper';
+import { Button } from 'react-native-paper';
 import { usePicklistStore } from '../stores/usePicklistStore';
 
-interface SortSettingsHeaderProps {
+type Props = {
   listId: string;
-}
+  sortBy?: 'name' | 'category' | 'priority' | 'created';
+  sortDirection?: 'asc' | 'desc';
+  groupByCategory?: boolean;
+};
 
-export const SortSettingsHeader: React.FC<SortSettingsHeaderProps> = ({
+export function SortSettingsHeader({
   listId,
-}) => {
-  const { picklists, updateListSortSettings } = usePicklistStore();
-  const currentList = picklists.find((list) => list.id === listId);
+  sortBy,
+  sortDirection,
+  groupByCategory,
+}: Props) {
+  const { updateListSortSettings } = usePicklistStore();
 
-  if (!currentList) return null;
-
-  const { sortBy = 'category', groupByCategory = true } = currentList;
-
-  const handleSortChange = (value: string) => {
+  const handleSortDirectionChange = () => {
     updateListSortSettings(
       listId,
-      value as 'category' | 'priority' | 'name',
+      sortBy,
+      sortDirection === 'asc' ? 'desc' : 'asc',
       groupByCategory
     );
   };
 
-  const toggleGrouping = () => {
-    updateListSortSettings(listId, sortBy, !groupByCategory);
+  const handleGroupByCategory = () => {
+    updateListSortSettings(listId, sortBy, sortDirection, !groupByCategory);
   };
 
   return (
     <View style={styles.container}>
-      <SegmentedButtons
-        value={sortBy}
-        onValueChange={handleSortChange}
-        buttons={[
-          { value: 'category', label: 'カテゴリ' },
-          { value: 'priority', label: '優先度' },
-          { value: 'name', label: '名前' },
-        ]}
-        style={styles.segmentedButtons}
-      />
+      <Button
+        mode={sortDirection === 'asc' ? 'contained' : 'outlined'}
+        onPress={handleSortDirectionChange}
+        style={styles.directionButton}
+      >
+        {sortDirection === 'asc' ? '昇順' : '降順'}
+      </Button>
       <Button
         mode={groupByCategory ? 'contained' : 'outlined'}
-        onPress={toggleGrouping}
+        onPress={handleGroupByCategory}
         style={styles.groupButton}
       >
-        グループ化
+        カテゴリでグループ化
       </Button>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: 'row',
+    gap: 8,
     padding: 16,
-    backgroundColor: 'white',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#eee',
   },
-  segmentedButtons: {
-    marginBottom: 8,
+  directionButton: {
+    flex: 1,
   },
   groupButton: {
-    marginTop: 8,
+    flex: 2,
   },
 });

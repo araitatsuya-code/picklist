@@ -129,7 +129,8 @@ const createTestStore = () =>
     },
     updateListSortSettings: (
       listId: string,
-      sortBy?: 'name' | 'category' | 'priority',
+      sortBy?: 'name' | 'category' | 'priority' | 'created',
+      sortDirection?: 'asc' | 'desc',
       groupByCategory?: boolean
     ) => {
       set((state) => ({

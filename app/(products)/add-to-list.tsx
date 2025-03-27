@@ -66,6 +66,7 @@ export default function AddToListScreen() {
           ? Number(maxPrices[product.id])
           : undefined,
         note: notes[product.id],
+        category: product.category,
         completed: false,
       };
     });

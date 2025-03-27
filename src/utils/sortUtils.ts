@@ -6,7 +6,8 @@ import { Category } from '../stores/useCategoryStore';
  */
 export const sortByCategory = (
   items: PicklistItem[],
-  categories: Category[]
+  categories: Category[],
+  direction: 'asc' | 'desc' = 'asc'
 ): PicklistItem[] => {
   const categoryMap = new Map(
     categories.map((category) => [category.id, category.priority])
@@ -18,7 +19,8 @@ export const sortByCategory = (
     const bPriority =
       categoryMap.get(b.category || 'other') || Number.MAX_VALUE;
     if (aPriority !== bPriority) {
-      return aPriority - bPriority;
+      const result = aPriority - bPriority;
+      return direction === 'asc' ? result : -result;
     }
     return a.name.localeCompare(b.name);
   });
@@ -27,10 +29,14 @@ export const sortByCategory = (
 /**
  * アイテムの優先順位でソートする
  */
-export const sortByPriority = (items: PicklistItem[]): PicklistItem[] => {
+export const sortByPriority = (
+  items: PicklistItem[],
+  direction: 'asc' | 'desc' = 'asc'
+): PicklistItem[] => {
   return [...items].sort((a, b) => {
     if (a.priority !== b.priority) {
-      return a.priority - b.priority;
+      const result = a.priority - b.priority;
+      return direction === 'asc' ? result : -result;
     }
     return a.name.localeCompare(b.name);
   });
@@ -39,8 +45,14 @@ export const sortByPriority = (items: PicklistItem[]): PicklistItem[] => {
 /**
  * アイテム名でソートする
  */
-export const sortByName = (items: PicklistItem[]): PicklistItem[] => {
-  return [...items].sort((a, b) => a.name.localeCompare(b.name));
+export const sortByName = (
+  items: PicklistItem[],
+  direction: 'asc' | 'desc' = 'asc'
+): PicklistItem[] => {
+  return [...items].sort((a, b) => {
+    const result = a.name.localeCompare(b.name);
+    return direction === 'asc' ? result : -result;
+  });
 };
 
 /**
@@ -48,35 +60,77 @@ export const sortByName = (items: PicklistItem[]): PicklistItem[] => {
  */
 export const groupAndSortByCategory = (
   items: PicklistItem[],
-  categories: Category[]
+  categories: Category[],
+  direction: 'asc' | 'desc' = 'asc'
 ): { category: Category; items: PicklistItem[] }[] => {
   const categoryMap = new Map(
     categories.map((category) => [category.id, category])
   );
-  const itemsByCategory = new Map<string, PicklistItem[]>();
 
-  // カテゴリごとにアイテムをグループ化
+  // カテゴリーごとにアイテムをグループ化
+  const itemsByCategory = new Map<string, PicklistItem[]>();
+  const uncategorizedItems: PicklistItem[] = [];
+
   items.forEach((item) => {
-    const categoryId = item.category || 'other';
-    if (!itemsByCategory.has(categoryId)) {
-      itemsByCategory.set(categoryId, []);
+    if (!item.category || !categoryMap.has(item.category)) {
+      uncategorizedItems.push(item);
+    } else {
+      if (!itemsByCategory.has(item.category)) {
+        itemsByCategory.set(item.category, []);
+      }
+      itemsByCategory.get(item.category)?.push(item);
     }
-    itemsByCategory.get(categoryId)?.push(item);
   });
 
-  // カテゴリごとにソートして結果を生成
-  return categories
+  // カテゴリーごとにソートして結果を生成
+  const sortedGroups = categories
     .filter((category) => {
       const categoryItems = itemsByCategory.get(category.id);
       return categoryItems && categoryItems.length > 0;
     })
     .map((category) => ({
-      category: categoryMap.get(category.id) || category,
+      category,
       items: (itemsByCategory.get(category.id) || []).sort((a, b) => {
         if (a.priority !== b.priority) {
-          return a.priority - b.priority;
+          const result = a.priority - b.priority;
+          return direction === 'asc' ? result : -result;
         }
         return a.name.localeCompare(b.name);
       }),
     }));
+
+  // その他のカテゴリーがある場合は追加
+  if (uncategorizedItems.length > 0) {
+    sortedGroups.push({
+      category: {
+        id: 'other',
+        name: 'その他',
+        priority: Number.MAX_VALUE,
+        displayOrder: Number.MAX_VALUE,
+      },
+      items: uncategorizedItems.sort((a, b) => {
+        if (a.priority !== b.priority) {
+          const result = a.priority - b.priority;
+          return direction === 'asc' ? result : -result;
+        }
+        return a.name.localeCompare(b.name);
+      }),
+    });
+  }
+
+  // カテゴリーの優先順位でソート
+  return sortedGroups.sort((a, b) => {
+    const result = (a.category.priority || 0) - (b.category.priority || 0);
+    return direction === 'asc' ? result : -result;
+  });
+};
+
+export const sortByCreated = (
+  items: PicklistItem[],
+  direction: 'asc' | 'desc' = 'asc'
+): PicklistItem[] => {
+  return [...items].sort((a, b) => {
+    const result = (a.id || '').localeCompare(b.id || '');
+    return direction === 'asc' ? result : -result;
+  });
 };

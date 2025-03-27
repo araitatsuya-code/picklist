@@ -1,15 +1,16 @@
 import React, { useMemo } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { List, Text } from 'react-native-paper';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { usePicklistStore } from '../stores/usePicklistStore';
-import { useCategoryStore, Category } from '../stores/useCategoryStore';
+import { useCategoryStore } from '../stores/useCategoryStore';
 import {
   sortByCategory,
   sortByPriority,
   sortByName,
   groupAndSortByCategory,
+  sortByCreated,
 } from '../utils/sortUtils';
 import { PicklistItem } from '../stores/usePicklistStore';
+import { Ionicons } from '@expo/vector-icons';
 
 interface GroupedPicklistItemsProps {
   listId: string;
@@ -32,19 +33,38 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
   const sortedItems = useMemo<ItemGroup[]>(() => {
     if (!currentList) return [];
 
-    const { items, sortBy = 'category', groupByCategory = true } = currentList;
+    const {
+      items,
+      sortBy = 'category',
+      sortDirection = 'asc',
+      groupByCategory = true,
+    } = currentList;
+
+    console.log('Debug - Categories:', categories);
+    console.log(
+      'Debug - Items with categories:',
+      items.map((item) => ({
+        name: item.name,
+        category: item.category,
+        categoryName: categories.find((c) => c.id === item.category)?.name,
+      }))
+    );
 
     if (groupByCategory && sortBy === 'category') {
-      return groupAndSortByCategory(items, categories);
+      return groupAndSortByCategory(items, categories, sortDirection);
     }
 
     switch (sortBy) {
       case 'category':
-        return [{ items: sortByCategory(items, categories) }] as ItemGroup[];
+        return [
+          { items: sortByCategory(items, categories, sortDirection) },
+        ] as ItemGroup[];
       case 'priority':
-        return [{ items: sortByPriority(items) }] as ItemGroup[];
+        return [{ items: sortByPriority(items, sortDirection) }] as ItemGroup[];
       case 'name':
-        return [{ items: sortByName(items) }] as ItemGroup[];
+        return [{ items: sortByName(items, sortDirection) }] as ItemGroup[];
+      case 'created':
+        return [{ items: sortByCreated(items, sortDirection) }] as ItemGroup[];
       default:
         return [{ items }] as ItemGroup[];
     }
@@ -52,33 +72,29 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
 
   if (!currentList) return null;
 
-  const renderItem = (item: PicklistItem) => {
-    const priorityLabels = ['高', '中', '低'];
-    const category = categories.find((c) => c.id === item.category);
-
-    return (
-      <List.Item
-        key={item.id}
-        title={item.name}
-        description={`${item.quantity}${item.unit || '個'} ${
-          category ? `/ ${category.name}` : ''
-        }`}
-        left={(props) => (
-          <List.Icon
-            {...props}
-            icon={item.completed ? 'checkbox-marked' : 'checkbox-blank-outline'}
-          />
-        )}
-        right={(props) => (
-          <Text {...props} style={styles.priorityText}>
-            優先度: {priorityLabels[item.priority - 1]}
-          </Text>
-        )}
-        onPress={() => onItemPress?.(item)}
-        style={[styles.listItem, item.completed && styles.completedItem]}
+  const renderItem = (item: PicklistItem) => (
+    <Pressable
+      key={item.id}
+      style={styles.itemContainer}
+      onPress={() => onItemPress?.(item)}
+    >
+      <Ionicons
+        name={item.completed ? 'checkmark-circle' : 'ellipse-outline'}
+        size={24}
+        color={item.completed ? '#007AFF' : '#666'}
       />
-    );
-  };
+      <View style={styles.itemInfo}>
+        <Text
+          style={[styles.itemName, item.completed && styles.itemNameCompleted]}
+        >
+          {item.name}
+        </Text>
+        <Text style={styles.itemQuantity}>
+          {item.quantity} {item.unit || '個'}
+        </Text>
+      </View>
+    </Pressable>
+  );
 
   return (
     <View style={styles.container}>
@@ -98,21 +114,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  listItem: {
-    backgroundColor: 'white',
+  itemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    gap: 12,
   },
-  completedItem: {
-    opacity: 0.6,
+  itemInfo: {
+    flex: 1,
   },
-  categoryHeader: {
-    backgroundColor: '#f5f5f5',
-    fontWeight: 'bold',
+  itemName: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
   },
-  priorityText: {
-    fontSize: 12,
+  itemNameCompleted: {
+    textDecorationLine: 'line-through',
+    color: '#999',
+  },
+  itemQuantity: {
+    fontSize: 14,
     color: '#666',
   },
   categoryName: {
+    fontSize: 14,
     fontWeight: 'bold',
+    color: '#666',
+    backgroundColor: '#f5f5f5',
+    padding: 8,
   },
 });
