@@ -104,6 +104,7 @@ export default function ListDetailScreen() {
             productId: Crypto.randomUUID(),
             name,
             quantity: 1,
+            priority: 2,
             completed: false,
           },
         ],

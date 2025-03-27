@@ -97,6 +97,54 @@ const createTestStore = () =>
         ),
       }));
     },
+    updateItemCategory: (listId, itemId, categoryId) => {
+      set((state) => ({
+        picklists: state.picklists.map((list) =>
+          list.id === listId
+            ? {
+                ...list,
+                items: list.items.map((item) =>
+                  item.id === itemId ? { ...item, category: categoryId } : item
+                ),
+                updatedAt: Date.now(),
+              }
+            : list
+        ),
+      }));
+    },
+    updateItemPriority: (listId, itemId, priority) => {
+      set((state) => ({
+        picklists: state.picklists.map((list) =>
+          list.id === listId
+            ? {
+                ...list,
+                items: list.items.map((item) =>
+                  item.id === itemId ? { ...item, priority } : item
+                ),
+                updatedAt: Date.now(),
+              }
+            : list
+        ),
+      }));
+    },
+    updateListSortSettings: (
+      listId: string,
+      sortBy?: 'name' | 'category' | 'priority',
+      groupByCategory?: boolean
+    ) => {
+      set((state) => ({
+        picklists: state.picklists.map((list) =>
+          list.id === listId
+            ? {
+                ...list,
+                ...(sortBy !== undefined && { sortBy }),
+                ...(groupByCategory !== undefined && { groupByCategory }),
+                updatedAt: Date.now(),
+              }
+            : list
+        ),
+      }));
+    },
   }));
 
 describe('usePicklistStore', () => {
