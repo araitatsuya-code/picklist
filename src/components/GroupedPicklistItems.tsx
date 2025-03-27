@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { usePicklistStore } from '../stores/usePicklistStore';
-import { useCategoryStore } from '../stores/useCategoryStore';
+import { useCategoryStore, Category } from '../stores/useCategoryStore';
 import {
   sortByCategory,
   sortByPriority,
@@ -39,16 +39,6 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
       sortDirection = 'asc',
       groupByCategory = true,
     } = currentList;
-
-    console.log('Debug - Categories:', categories);
-    console.log(
-      'Debug - Items with categories:',
-      items.map((item) => ({
-        name: item.name,
-        category: item.category,
-        categoryName: categories.find((c) => c.id === item.category)?.name,
-      }))
-    );
 
     if (groupByCategory && sortBy === 'category') {
       return groupAndSortByCategory(items, categories, sortDirection);

@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    padding: 16,
+    padding: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 4,
   },
   headerActions: {
     flexDirection: 'row',
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   quickAdd: {
-    padding: 16,
+    padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },

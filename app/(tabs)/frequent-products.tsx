@@ -103,7 +103,6 @@ export default function FrequentProductsScreen() {
       const uri = await AsyncStorage.getItem(imageKey);
       if (uri) {
         const finalUri = uri.startsWith('file://') ? uri : `file://${uri}`;
-        console.log('Loaded image URI:', finalUri);
         setImageUris((prev) => ({ ...prev, [imageKey]: finalUri }));
       }
     } catch (error) {
