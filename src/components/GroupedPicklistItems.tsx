@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 interface GroupedPicklistItemsProps {
   listId: string;
   onItemPress?: (item: PicklistItem) => void;
+  onItemDelete?: (item: PicklistItem) => void;
 }
 
 type ItemGroup = {
@@ -25,6 +26,7 @@ type ItemGroup = {
 export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
   listId,
   onItemPress,
+  onItemDelete,
 }) => {
   const { picklists } = usePicklistStore();
   const { categories } = useCategoryStore();
@@ -83,6 +85,14 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
           {item.quantity} {item.unit || '個'}
         </Text>
       </View>
+      {onItemDelete && (
+        <Pressable
+          style={styles.deleteButton}
+          onPress={() => onItemDelete(item)}
+        >
+          <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+        </Pressable>
+      )}
     </Pressable>
   );
 
@@ -133,6 +143,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#666',
     backgroundColor: '#f5f5f5',
+    padding: 8,
+  },
+  deleteButton: {
     padding: 8,
   },
 });

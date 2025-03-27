@@ -8,7 +8,10 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { usePicklistStore } from '../../../src/stores/usePicklistStore';
+import {
+  usePicklistStore,
+  PicklistItem,
+} from '../../../src/stores/usePicklistStore';
 import { Ionicons } from '@expo/vector-icons';
 import * as Crypto from 'expo-crypto';
 import { IconButton, Menu } from 'react-native-paper';
@@ -123,6 +126,12 @@ export default function ListDetailScreen() {
     setMenuVisible(false);
   };
 
+  const handleRemoveItem = (item: PicklistItem) => {
+    updatePicklist(id, {
+      items: list.items.filter((i) => i.id !== item.id),
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -218,6 +227,7 @@ export default function ListDetailScreen() {
         <GroupedPicklistItems
           listId={id}
           onItemPress={(item) => handleToggleComplete(item.id)}
+          onItemDelete={handleRemoveItem}
         />
 
         {editingItem && (
