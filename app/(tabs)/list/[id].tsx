@@ -3,18 +3,21 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   Pressable,
   TextInput,
   SafeAreaView,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import {
-  PicklistItem,
   usePicklistStore,
+  PicklistItem,
 } from '../../../src/stores/usePicklistStore';
 import { Ionicons } from '@expo/vector-icons';
 import * as Crypto from 'expo-crypto';
+import { IconButton, Menu } from 'react-native-paper';
+import { useCategoryStore } from '../../../src/stores/useCategoryStore';
+import { GroupedPicklistItems } from '../../../src/components/GroupedPicklistItems';
+import { useFrequentProductStore } from '../../../src/stores/useFrequentProductStore';
 
 export default function ListDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -28,15 +31,18 @@ export default function ListDetailScreen() {
     note: string;
   } | null>(null);
   const quickAddInputRef = React.useRef<TextInput>(null);
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const {
     picklists,
     updatePicklist,
     toggleItemCompletion,
-    removeItem,
     removePicklist,
     updateItem,
+    updateListSortSettings,
   } = usePicklistStore();
+  const { categories } = useCategoryStore();
+  const { products } = useFrequentProductStore();
 
   const list = useMemo(
     () => picklists.find((l) => l.id === id),
@@ -57,10 +63,6 @@ export default function ListDetailScreen() {
     toggleItemCompletion(id, itemId);
   };
 
-  const handleRemoveItem = (itemId: string) => {
-    removeItem(id, itemId);
-  };
-
   const handleSaveListName = () => {
     if (listName.trim()) {
       updatePicklist(id, { name: listName.trim() });
@@ -71,15 +73,6 @@ export default function ListDetailScreen() {
   const handleDeleteList = () => {
     removePicklist(id);
     router.replace('/(tabs)');
-  };
-
-  const handleEditItem = (item: PicklistItem) => {
-    setEditingItem({
-      id: item.id,
-      quantity: item.quantity.toString(),
-      maxPrice: item.maxPrice?.toString() || '',
-      note: item.note || '',
-    });
   };
 
   const handleSaveItem = () => {
@@ -96,20 +89,47 @@ export default function ListDetailScreen() {
   const handleQuickAdd = (text: string) => {
     const name = text.trim();
     if (name) {
+      // よく買う商品から同じ名前の商品を探す
+      const frequentProduct = products.find(
+        (product) => product.name.toLowerCase() === name.toLowerCase()
+      );
+
+      // 商品が見つかった場合はそのカテゴリを使用、見つからない場合はデフォルトカテゴリを使用
+      const category =
+        frequentProduct?.category || categories[0]?.id || 'other';
+
       updatePicklist(id, {
         items: [
           ...list.items,
           {
             id: Crypto.randomUUID(),
-            productId: Crypto.randomUUID(),
+            productId: frequentProduct?.id || Crypto.randomUUID(),
             name,
             quantity: 1,
+            priority: 2,
+            category,
             completed: false,
           },
         ],
       });
       quickAddInputRef.current?.clear();
     }
+  };
+
+  const handleSortChange = (
+    sortBy: 'created' | 'name' | 'category' | 'priority',
+    sortDirection: 'asc' | 'desc'
+  ) => {
+    if (id) {
+      updateListSortSettings(id, sortBy, sortDirection);
+    }
+    setMenuVisible(false);
+  };
+
+  const handleRemoveItem = (item: PicklistItem) => {
+    updatePicklist(id, {
+      items: list.items.filter((i) => i.id !== item.id),
+    });
   };
 
   return (
@@ -134,24 +154,63 @@ export default function ListDetailScreen() {
                 </Pressable>
               </View>
             ) : (
-              <Pressable
-                style={styles.titleContainer}
-                onPress={() => {
-                  setListName(list.name);
-                  setEditMode(true);
-                }}
-              >
-                <Text style={styles.title}>{list.name}</Text>
-                <Ionicons name="pencil" size={20} color="#666" />
-              </Pressable>
+              <>
+                <Pressable
+                  style={styles.titleContainer}
+                  onPress={() => {
+                    setListName(list.name);
+                    setEditMode(true);
+                  }}
+                >
+                  <Text style={styles.title}>{list.name}</Text>
+                  <Ionicons name="pencil" size={20} color="#666" />
+                </Pressable>
+                <View style={styles.headerActions}>
+                  <Menu
+                    visible={menuVisible}
+                    onDismiss={() => setMenuVisible(false)}
+                    anchor={
+                      <IconButton
+                        icon="sort"
+                        size={24}
+                        onPress={() => setMenuVisible(true)}
+                      />
+                    }
+                  >
+                    <Menu.Item
+                      title="作成順（昇順）"
+                      onPress={() => handleSortChange('created', 'asc')}
+                    />
+                    <Menu.Item
+                      title="作成順（降順）"
+                      onPress={() => handleSortChange('created', 'desc')}
+                    />
+                    <Menu.Item
+                      title="名前順（昇順）"
+                      onPress={() => handleSortChange('name', 'asc')}
+                    />
+                    <Menu.Item
+                      title="名前順（降順）"
+                      onPress={() => handleSortChange('name', 'desc')}
+                    />
+                    <Menu.Item
+                      title="カテゴリ順（昇順）"
+                      onPress={() => handleSortChange('category', 'asc')}
+                    />
+                    <Menu.Item
+                      title="カテゴリ順（降順）"
+                      onPress={() => handleSortChange('category', 'desc')}
+                    />
+                  </Menu>
+                  <Pressable
+                    style={styles.deleteListButton}
+                    onPress={() => setShowDeleteConfirm(true)}
+                  >
+                    <Ionicons name="trash-outline" size={24} color="#FF3B30" />
+                  </Pressable>
+                </View>
+              </>
             )}
-
-            <Pressable
-              style={styles.deleteListButton}
-              onPress={() => setShowDeleteConfirm(true)}
-            >
-              <Ionicons name="trash-outline" size={24} color="#FF3B30" />
-            </Pressable>
           </View>
         </View>
 
@@ -165,54 +224,10 @@ export default function ListDetailScreen() {
           />
         </View>
 
-        <FlatList
-          data={list.items}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.itemContainer}>
-              <Pressable
-                style={styles.checkbox}
-                onPress={() => handleToggleComplete(item.id)}
-              >
-                <Ionicons
-                  name={item.completed ? 'checkmark-circle' : 'ellipse-outline'}
-                  size={24}
-                  color={item.completed ? '#007AFF' : '#666'}
-                />
-              </Pressable>
-
-              <View style={styles.itemInfo}>
-                <Text
-                  style={[
-                    styles.itemName,
-                    item.completed && styles.itemNameCompleted,
-                  ]}
-                >
-                  {item.name}
-                </Text>
-                <Text style={styles.itemQuantity}>
-                  {item.quantity} {item.unit || '個'}
-                  {item.maxPrice && ` (${item.maxPrice}円まで)`}
-                </Text>
-                {item.note && <Text style={styles.itemNote}>{item.note}</Text>}
-              </View>
-
-              <View style={styles.itemActions}>
-                <Pressable
-                  style={styles.editButton}
-                  onPress={() => handleEditItem(item)}
-                >
-                  <Ionicons name="pencil-outline" size={20} color="#007AFF" />
-                </Pressable>
-                <Pressable
-                  style={styles.deleteButton}
-                  onPress={() => handleRemoveItem(item.id)}
-                >
-                  <Ionicons name="trash-outline" size={20} color="#FF3B30" />
-                </Pressable>
-              </View>
-            </View>
-          )}
+        <GroupedPicklistItems
+          listId={id}
+          onItemPress={(item) => handleToggleComplete(item.id)}
+          onItemDelete={handleRemoveItem}
         />
 
         {editingItem && (
@@ -325,7 +340,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    padding: 16,
+    padding: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
@@ -333,8 +348,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: 4,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   titleContainer: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -515,7 +537,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   quickAdd: {
-    padding: 16,
+    padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },

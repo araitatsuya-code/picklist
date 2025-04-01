@@ -3,7 +3,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Platform, View } from 'react-native';
 
-type IconName = 'cart-outline' | 'list-outline' | 'settings-outline';
+type IconName =
+  | 'cart-outline'
+  | 'list-outline'
+  | 'settings-outline'
+  | 'grid-outline';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
@@ -109,6 +113,14 @@ export default function TabLayout() {
           title: '設定',
           tabBarIcon: ({ color, focused }) =>
             renderTabBarIcon('settings-outline', color, focused),
+        }}
+      />
+      <Tabs.Screen
+        name="settings/categories"
+        options={{
+          title: 'カテゴリー',
+          tabBarIcon: ({ color, focused }) =>
+            renderTabBarIcon('grid-outline', color, focused),
         }}
       />
       <Tabs.Screen

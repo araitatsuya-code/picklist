@@ -18,7 +18,7 @@ Picklistは、日常の買い物をサポートするためのモバイルアプ
 - AIを活用したレシピからの買い物リスト生成（将来実装予定）
 
 ## 詳細仕様
-詳細な仕様については[こちら](docs/SPECIFICATIONS.md)をご覧ください。
+詳細な仕様については[こちら](docs/specifications.md)をご覧ください。
 
 ## Picklist
 

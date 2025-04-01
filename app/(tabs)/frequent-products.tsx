@@ -11,6 +11,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
+import { useCategoryStore } from '../../src/stores/useCategoryStore';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Menu } from 'react-native-paper';
@@ -28,22 +29,17 @@ export default function FrequentProductsScreen() {
   );
   const [menuVisible, setMenuVisible] = useState(false);
   const { products, searchProducts } = useFrequentProductStore();
+  const { categories } = useCategoryStore();
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set()
   );
   const [imageUris, setImageUris] = useState<Record<string, string>>({});
 
-  // 全カテゴリーのリストを取得
-  const categories = useMemo(() => {
-    const categorySet = new Set<string>();
-    products.forEach((product) => {
-      if (product.category) {
-        categorySet.add(product.category);
-      }
-    });
-    return Array.from(categorySet).sort();
-  }, [products]);
+  // カテゴリーを優先順位でソート
+  const sortedCategories = useMemo(() => {
+    return [...categories].sort((a, b) => a.priority - b.priority);
+  }, [categories]);
 
   // 検索とカテゴリーフィルターを組み合わせて商品をフィルタリング
   const filteredProducts = useMemo(() => {
@@ -59,13 +55,13 @@ export default function FrequentProductsScreen() {
     return filtered;
   }, [products, searchQuery, selectedCategories, searchProducts]);
 
-  const toggleCategory = (category: string) => {
+  const toggleCategory = (categoryId: string) => {
     setSelectedCategories((prev) => {
       const next = new Set(prev);
-      if (next.has(category)) {
-        next.delete(category);
+      if (next.has(categoryId)) {
+        next.delete(categoryId);
       } else {
-        next.add(category);
+        next.add(categoryId);
       }
       return next;
     });
@@ -106,9 +102,7 @@ export default function FrequentProductsScreen() {
     try {
       const uri = await AsyncStorage.getItem(imageKey);
       if (uri) {
-        // URIが既にfile://で始まっているかチェック
         const finalUri = uri.startsWith('file://') ? uri : `file://${uri}`;
-        console.log('Loaded image URI:', finalUri);
         setImageUris((prev) => ({ ...prev, [imageKey]: finalUri }));
       }
     } catch (error) {
@@ -124,7 +118,6 @@ export default function FrequentProductsScreen() {
       return <View style={styles.imagePlaceholder} />;
     }
 
-    // まだURIが読み込まれていない場合は読み込みを開始
     if (!imageUris[imageKey]) {
       loadImageUri(imageKey);
       return <View style={styles.imagePlaceholder} />;
@@ -144,7 +137,6 @@ export default function FrequentProductsScreen() {
             'for URI:',
             imageUri
           );
-          // エラー時にキャッシュをクリア
           setImageUris((prev) => {
             const next = { ...prev };
             delete next[imageKey];
@@ -218,13 +210,13 @@ export default function FrequentProductsScreen() {
                 </Pressable>
               }
             >
-              {categories.map((category) => (
+              {sortedCategories.map((category) => (
                 <Menu.Item
-                  key={category}
-                  onPress={() => toggleCategory(category)}
-                  title={category}
+                  key={category.id}
+                  onPress={() => toggleCategory(category.id)}
+                  title={category.name}
                   leadingIcon={
-                    selectedCategories.has(category) ? 'check' : undefined
+                    selectedCategories.has(category.id) ? 'check' : undefined
                   }
                 />
               ))}
@@ -239,101 +231,91 @@ export default function FrequentProductsScreen() {
             contentContainerStyle={styles.categoryScrollContent}
             style={styles.categoryScroll}
           >
-            {categories.map((category) => (
+            {sortedCategories.map((category) => (
               <Pressable
-                key={category}
+                key={category.id}
                 style={[
                   styles.categoryChip,
-                  selectedCategories.has(category) &&
+                  selectedCategories.has(category.id) &&
                     styles.categoryChipSelected,
                 ]}
-                onPress={() => toggleCategory(category)}
+                onPress={() => toggleCategory(category.id)}
               >
                 <Text
                   style={[
                     styles.categoryChipText,
-                    selectedCategories.has(category) &&
+                    selectedCategories.has(category.id) &&
                       styles.categoryChipTextSelected,
                   ]}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
                 >
-                  {category}
+                  {category.name}
                 </Text>
               </Pressable>
             ))}
           </ScrollView>
         )}
 
-        <View style={styles.listContainer}>
-          {isSelectionMode ? (
-            <View style={styles.selectionHeader}>
-              <Text style={styles.selectionCount}>
-                {selectedProducts.size}個選択中
-              </Text>
-              <Pressable
-                style={[
-                  styles.addToListButton,
-                  selectedProducts.size === 0 && styles.addToListButtonDisabled,
-                ]}
-                onPress={handleAddToList}
-                disabled={selectedProducts.size === 0}
-              >
-                <Text style={styles.addToListButtonText}>
-                  買い物リストに追加
-                </Text>
-              </Pressable>
-            </View>
-          ) : (
-            <Link href="/(products)/add" asChild>
-              <Pressable style={styles.addButton}>
-                <Text style={styles.addButtonText}>商品を追加</Text>
-              </Pressable>
-            </Link>
-          )}
+        {!isSelectionMode && (
+          <Link href="/(products)/add" asChild>
+            <Pressable style={styles.addButton}>
+              <Text style={styles.addButtonText}>商品を追加</Text>
+            </Pressable>
+          </Link>
+        )}
 
-          <FlatList
-            data={filteredProducts}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <Pressable
-                style={[
-                  styles.productItem,
-                  selectedProducts.has(item.id) && styles.productItemSelected,
-                ]}
-                onPress={() => handleProductPress(item)}
-              >
-                {isSelectionMode && (
-                  <View style={styles.checkbox}>
-                    <Ionicons
-                      name={
-                        selectedProducts.has(item.id)
-                          ? 'checkmark-circle'
-                          : 'ellipse-outline'
-                      }
-                      size={24}
-                      color={selectedProducts.has(item.id) ? '#007AFF' : '#999'}
-                    />
-                  </View>
-                )}
-                {renderProductImage(item.imageUrl, item.name)}
-                <View style={styles.productInfo}>
-                  <Text style={styles.productName}>{item.name}</Text>
-                  <View style={styles.productDetails}>
-                    {item.category && (
-                      <Text style={styles.productCategory}>
-                        {item.category}
-                      </Text>
-                    )}
-                    <Text style={styles.addCount}>
-                      追加回数: {item.addCount || 0}回
-                    </Text>
-                  </View>
+        <FlatList
+          data={filteredProducts}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.productList}
+          renderItem={({ item }) => (
+            <Pressable
+              style={[
+                styles.productItem,
+                isSelectionMode &&
+                  selectedProducts.has(item.id) &&
+                  styles.productItemSelected,
+              ]}
+              onPress={() => handleProductPress(item)}
+            >
+              {isSelectionMode && (
+                <View style={styles.checkbox}>
+                  <Ionicons
+                    name={
+                      selectedProducts.has(item.id)
+                        ? 'checkmark-circle'
+                        : 'ellipse-outline'
+                    }
+                    size={24}
+                    color={selectedProducts.has(item.id) ? '#007AFF' : '#999'}
+                  />
                 </View>
-              </Pressable>
-            )}
-          />
-        </View>
+              )}
+              {renderProductImage(item.imageUrl, item.name)}
+              <View style={styles.productInfo}>
+                <Text style={styles.productName}>{item.name}</Text>
+                <View style={styles.productDetails}>
+                  {item.category && (
+                    <Text style={styles.productCategory}>
+                      {categories.find((c) => c.id === item.category)?.name ||
+                        ''}
+                    </Text>
+                  )}
+                  <Text style={styles.addCount}>
+                    追加回数: {item.addCount || 0}回
+                  </Text>
+                </View>
+              </View>
+            </Pressable>
+          )}
+        />
+
+        {isSelectionMode && selectedProducts.size > 0 && (
+          <Pressable style={styles.addToListButton} onPress={handleAddToList}>
+            <Text style={styles.addToListButtonText}>
+              {selectedProducts.size}個の商品をリストに追加
+            </Text>
+          </Pressable>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -361,64 +343,6 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 12,
-  },
-  addButton: {
-    backgroundColor: '#007AFF',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  addButtonText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  productItem: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  productInfo: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  productName: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  productDetails: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  productCategory: {
-    fontSize: 14,
-    color: '#666',
-    backgroundColor: '#f3f4f6',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  addCount: {
-    fontSize: 14,
-    color: '#666',
-  },
-  productImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
-  },
-  imagePlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
   },
   filterButton: {
     width: 40,
@@ -475,10 +399,6 @@ const styles = StyleSheet.create({
   categoryChipTextSelected: {
     color: '#fff',
   },
-  listContainer: {
-    flex: 1,
-    paddingHorizontal: 16,
-  },
   selectionButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -489,7 +409,6 @@ const styles = StyleSheet.create({
     borderColor: '#007AFF',
     backgroundColor: 'transparent',
     minWidth: 140,
-    justifyContent: 'center',
     height: 40,
   },
   selectionButtonActive: {
@@ -507,33 +426,84 @@ const styles = StyleSheet.create({
   selectionButtonTextActive: {
     color: '#fff',
   },
-  selectionHeader: {
+  productList: {
+    paddingTop: 8,
+  },
+  productItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  selectionCount: {
-    fontSize: 16,
-    color: '#666',
-  },
-  addToListButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  addToListButtonDisabled: {
-    backgroundColor: '#ccc',
-  },
-  addToListButtonText: {
-    color: '#fff',
-    fontWeight: '600',
   },
   productItemSelected: {
     backgroundColor: '#f0f9ff',
   },
   checkbox: {
     marginRight: 12,
+  },
+  productImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+  },
+  imagePlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+  },
+  productInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  productName: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  productDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  productCategory: {
+    fontSize: 14,
+    color: '#666',
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  addCount: {
+    fontSize: 14,
+    color: '#666',
+  },
+  addToListButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  addToListButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  addButton: {
+    backgroundColor: '#007AFF',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  addButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

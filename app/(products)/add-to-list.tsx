@@ -66,11 +66,18 @@ export default function AddToListScreen() {
           ? Number(maxPrices[product.id])
           : undefined,
         note: notes[product.id],
+        category: product.category,
         completed: false,
       };
     });
 
-    addItemsToList(selectedList, items);
+    addItemsToList(
+      selectedList,
+      items.map((item) => ({
+        ...item,
+        priority: 2, // デフォルトで中優先度を設定
+      }))
+    );
     router.push(`/(tabs)/list/${selectedList}`);
   };
 
