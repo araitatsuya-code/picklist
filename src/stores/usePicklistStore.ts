@@ -14,6 +14,8 @@ export interface PicklistItem {
   maxPrice?: number;
   note?: string;
   completed: boolean;
+  category?: string; // カテゴリID
+  priority: number; // 優先順位（1: 高, 2: 中, 3: 低）
 }
 
 /**
@@ -25,6 +27,9 @@ export interface Picklist {
   items: PicklistItem[]; // リストアイテムの配列
   createdAt: number; // 作成日時
   updatedAt: number; // 更新日時
+  sortBy?: 'name' | 'category' | 'priority' | 'created';
+  sortDirection?: 'asc' | 'desc';
+  groupByCategory?: boolean; // カテゴリでグループ化するかどうか
 }
 
 type PicklistState = {
@@ -43,6 +48,22 @@ type PicklistActions = {
   ) => void;
   removeItem: (listId: string, itemId: string) => void;
   toggleItemCompletion: (listId: string, itemId: string) => void;
+  updateItemCategory: (
+    listId: string,
+    itemId: string,
+    categoryId: string
+  ) => void;
+  updateItemPriority: (
+    listId: string,
+    itemId: string,
+    priority: number
+  ) => void;
+  updateListSortSettings: (
+    listId: string,
+    sortBy?: 'name' | 'category' | 'priority' | 'created',
+    sortDirection?: 'asc' | 'desc',
+    groupByCategory?: boolean
+  ) => void;
 };
 
 // 型をエクスポート
@@ -66,6 +87,8 @@ export const usePicklistStore = create<PicklistState & PicklistActions>()(
           items: [],
           createdAt: now,
           updatedAt: now,
+          sortBy: 'category',
+          groupByCategory: true,
         };
 
         set((state) => ({
@@ -99,6 +122,7 @@ export const usePicklistStore = create<PicklistState & PicklistActions>()(
             const newItems: PicklistItem[] = items.map((item) => ({
               ...item,
               id: `${now}_${item.productId}`,
+              priority: item.priority || 2, // デフォルトは中優先度
             }));
 
             return {
@@ -157,6 +181,59 @@ export const usePicklistStore = create<PicklistState & PicklistActions>()(
               updatedAt: Date.now(),
             };
           }),
+        }));
+      },
+
+      updateItemCategory: (listId, itemId, categoryId) => {
+        set((state) => ({
+          picklists: state.picklists.map((list) => {
+            if (list.id !== listId) return list;
+
+            return {
+              ...list,
+              items: list.items.map((item) =>
+                item.id === itemId ? { ...item, category: categoryId } : item
+              ),
+              updatedAt: Date.now(),
+            };
+          }),
+        }));
+      },
+
+      updateItemPriority: (listId, itemId, priority) => {
+        set((state) => ({
+          picklists: state.picklists.map((list) => {
+            if (list.id !== listId) return list;
+
+            return {
+              ...list,
+              items: list.items.map((item) =>
+                item.id === itemId ? { ...item, priority } : item
+              ),
+              updatedAt: Date.now(),
+            };
+          }),
+        }));
+      },
+
+      updateListSortSettings: (
+        listId,
+        sortBy,
+        sortDirection,
+        groupByCategory
+      ) => {
+        set((state) => ({
+          picklists: state.picklists.map((list) =>
+            list.id === listId
+              ? {
+                  ...list,
+                  sortBy,
+                  sortDirection,
+                  groupByCategory,
+                  updatedAt: Date.now(),
+                }
+              : list
+          ),
         }));
       },
     }),

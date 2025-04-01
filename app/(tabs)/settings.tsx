@@ -1,5 +1,7 @@
 import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { List } from 'react-native-paper';
+import { router } from 'expo-router';
 
 export default function SettingsScreen() {
   return (
@@ -52,19 +54,21 @@ export default function SettingsScreen() {
             <Ionicons name="chevron-forward" size={20} color="#666" />
           </Pressable>
 
-          <Pressable 
-            style={[styles.menuItem, styles.dangerItem]} 
+          <Pressable
+            style={[styles.menuItem, styles.dangerItem]}
             onPress={() => {
               Alert.alert(
                 'データの削除',
                 '全てのデータを削除しますか？この操作は元に戻せません。',
                 [
                   { text: 'キャンセル', style: 'cancel' },
-                  { 
-                    text: '削除', 
+                  {
+                    text: '削除',
                     style: 'destructive',
-                    onPress: () => {/* 削除処理を実装 */} 
-                  }
+                    onPress: () => {
+                      /* 削除処理を実装 */
+                    },
+                  },
                 ]
               );
             }}
@@ -98,6 +102,17 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
       </View>
+
+      <List.Section>
+        <List.Subheader>買い物リスト設定</List.Subheader>
+        <List.Item
+          title="カテゴリ管理"
+          description="カテゴリの追加・編集・並び替え"
+          left={(props) => <List.Icon {...props} icon="tag-multiple" />}
+          right={(props) => <List.Icon {...props} icon="chevron-right" />}
+          onPress={() => router.push('/settings/categories')}
+        />
+      </List.Section>
     </View>
   );
 }
