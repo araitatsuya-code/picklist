@@ -25,6 +25,13 @@ export const ItemEditForm: React.FC<ItemEditFormProps> = ({
   const [category, setCategory] = useState(item.category || 'other');
   const [priority, setPriority] = useState(item.priority.toString());
 
+  const setQuantityWithValidation = (text: string) => {
+    // 数字のみを許可
+    const numericValue = text.replace(/[^0-9]/g, '');
+    // 空の値は「1」にデフォルト設定
+    setQuantity(numericValue || '1');
+  };
+
   const handleSave = () => {
     updateItem(listId, item.id, {
       name,
@@ -48,7 +55,7 @@ export const ItemEditForm: React.FC<ItemEditFormProps> = ({
         <TextInput
           label="数量"
           value={quantity}
-          onChangeText={setQuantity}
+          onChangeText={setQuantityWithValidation}
           keyboardType="numeric"
           style={[styles.input, styles.quantityInput]}
         />
