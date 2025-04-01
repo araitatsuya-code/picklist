@@ -33,6 +33,10 @@ export const ItemEditForm: React.FC<ItemEditFormProps> = ({
   };
 
   const handleSave = () => {
+    // 商品名が空の場合は保存しない
+    if (!name.trim()) {
+      return;
+    }
     updateItem(listId, item.id, {
       name,
       quantity: Number(quantity),
