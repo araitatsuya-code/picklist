@@ -13,6 +13,7 @@ import { PicklistItem } from '../stores/usePicklistStore';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFrequentProductStore } from '../stores/useFrequentProductStore';
+import { useThemeContext } from '../components/ThemeProvider';
 
 interface GroupedPicklistItemsProps {
   listId: string;
@@ -30,6 +31,7 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
   onItemPress,
   onItemDelete,
 }) => {
+  const { colors, isDark } = useThemeContext();
   const { picklists } = usePicklistStore();
   const { categories } = useCategoryStore();
   const { products } = useFrequentProductStore();
@@ -92,13 +94,16 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
     return (
       <Pressable
         key={item.id}
-        style={styles.itemContainer}
+        style={[
+          styles.itemContainer,
+          { borderBottomColor: colors.border.secondary },
+        ]}
         onPress={() => onItemPress?.(item)}
       >
         <Ionicons
           name={item.completed ? 'checkmark-circle' : 'ellipse-outline'}
           size={24}
-          color={item.completed ? '#007AFF' : '#666'}
+          color={item.completed ? colors.accent.primary : colors.text.secondary}
         />
 
         <View style={styles.itemContentContainer}>
@@ -106,12 +111,18 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
             <Text
               style={[
                 styles.itemName,
-                item.completed && styles.itemNameCompleted,
+                { color: colors.text.primary },
+                item.completed && [
+                  styles.itemNameCompleted,
+                  { color: colors.text.tertiary },
+                ],
               ]}
             >
               {item.name}
             </Text>
-            <Text style={styles.itemQuantity}>
+            <Text
+              style={[styles.itemQuantity, { color: colors.text.secondary }]}
+            >
               {item.quantity} {item.unit || '個'}
             </Text>
           </View>
@@ -133,12 +144,19 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
                 />
               ) : (
                 <View
-                  style={styles.thumbnailPlaceholder}
+                  style={[
+                    styles.thumbnailPlaceholder,
+                    { backgroundColor: colors.background.secondary },
+                  ]}
                   onLayout={() => {
                     if (productImageUrl) loadImageUri(productImageUrl);
                   }}
                 >
-                  <Ionicons name="image-outline" size={16} color="#999" />
+                  <Ionicons
+                    name="image-outline"
+                    size={16}
+                    color={colors.text.tertiary}
+                  />
                 </View>
               )}
             </Pressable>
@@ -165,7 +183,19 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
       {sortedItems.map((group, index) => (
         <View key={group.category?.id || `uncategorized-${index}`}>
           {group.category ? (
-            <Text style={styles.categoryName}>{group.category.name}</Text>
+            <Text
+              style={[
+                styles.categoryName,
+                {
+                  backgroundColor: colors.background.secondary,
+                  color: colors.text.secondary,
+                  borderBottomColor: colors.border.secondary,
+                  borderBottomWidth: 1,
+                },
+              ]}
+            >
+              {group.category.name}
+            </Text>
           ) : null}
           {group.items.map(renderItem)}
         </View>
@@ -205,7 +235,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
     gap: 12,
   },
   itemContentContainer: {
@@ -224,17 +253,13 @@ const styles = StyleSheet.create({
   },
   itemNameCompleted: {
     textDecorationLine: 'line-through',
-    color: '#999',
   },
   itemQuantity: {
     fontSize: 14,
-    color: '#666',
   },
   categoryName: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#666',
-    backgroundColor: '#f5f5f5',
     padding: 8,
   },
   deleteButton: {
@@ -253,7 +278,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 4,
-    backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -266,9 +290,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: '90%',
     height: '70%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    overflow: 'hidden',
+    backgroundColor: 'transparent',
   },
   fullImage: {
     width: '100%',
