@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import React, { useMemo, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, Pressable, Image, Modal } from 'react-native';
 import { usePicklistStore } from '../stores/usePicklistStore';
 import { useCategoryStore, Category } from '../stores/useCategoryStore';
 import {
@@ -11,6 +11,8 @@ import {
 } from '../utils/sortUtils';
 import { PicklistItem } from '../stores/usePicklistStore';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFrequentProductStore } from '../stores/useFrequentProductStore';
 
 interface GroupedPicklistItemsProps {
   listId: string;
@@ -30,7 +32,10 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
 }) => {
   const { picklists } = usePicklistStore();
   const { categories } = useCategoryStore();
+  const { products } = useFrequentProductStore();
   const currentList = picklists.find((list) => list.id === listId);
+  const [imageUris, setImageUris] = useState<Record<string, string>>({});
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const sortedItems = useMemo<ItemGroup[]>(() => {
     if (!currentList) return [];
@@ -62,39 +67,98 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
     }
   }, [currentList, categories]);
 
+  const loadImageUri = useCallback(async (imageKey: string) => {
+    try {
+      const uri = await AsyncStorage.getItem(imageKey);
+      if (uri) {
+        const finalUri = uri.startsWith('file://') ? uri : `file://${uri}`;
+        setImageUris((prev) => ({ ...prev, [imageKey]: finalUri }));
+      }
+    } catch (error) {
+      console.error('Failed to load image:', error);
+    }
+  }, []);
+
   if (!currentList) return null;
 
-  const renderItem = (item: PicklistItem) => (
-    <Pressable
-      key={item.id}
-      style={styles.itemContainer}
-      onPress={() => onItemPress?.(item)}
-    >
-      <Ionicons
-        name={item.completed ? 'checkmark-circle' : 'ellipse-outline'}
-        size={24}
-        color={item.completed ? '#007AFF' : '#666'}
-      />
-      <View style={styles.itemInfo}>
-        <Text
-          style={[styles.itemName, item.completed && styles.itemNameCompleted]}
-        >
-          {item.name}
-        </Text>
-        <Text style={styles.itemQuantity}>
-          {item.quantity} {item.unit || '個'}
-        </Text>
-      </View>
-      {onItemDelete && (
-        <Pressable
-          style={styles.deleteButton}
-          onPress={() => onItemDelete(item)}
-        >
-          <Ionicons name="trash-outline" size={20} color="#FF3B30" />
-        </Pressable>
-      )}
-    </Pressable>
-  );
+  const getProductImageUrl = (item: PicklistItem) => {
+    const product = products.find((p) => p.id === item.productId);
+    return product?.imageUrl;
+  };
+
+  const renderItem = (item: PicklistItem) => {
+    const productImageUrl = getProductImageUrl(item);
+
+    return (
+      <Pressable
+        key={item.id}
+        style={styles.itemContainer}
+        onPress={() => onItemPress?.(item)}
+      >
+        <Ionicons
+          name={item.completed ? 'checkmark-circle' : 'ellipse-outline'}
+          size={24}
+          color={item.completed ? '#007AFF' : '#666'}
+        />
+
+        <View style={styles.itemContentContainer}>
+          <View style={styles.itemInfo}>
+            <Text
+              style={[
+                styles.itemName,
+                item.completed && styles.itemNameCompleted,
+              ]}
+            >
+              {item.name}
+            </Text>
+            <Text style={styles.itemQuantity}>
+              {item.quantity} {item.unit || '個'}
+            </Text>
+          </View>
+
+          {productImageUrl && (
+            <Pressable
+              onPress={(e) => {
+                e.stopPropagation();
+                if (imageUris[productImageUrl]) {
+                  setSelectedImage(imageUris[productImageUrl]);
+                }
+              }}
+              style={styles.thumbnailContainer}
+            >
+              {imageUris[productImageUrl] ? (
+                <Image
+                  source={{ uri: imageUris[productImageUrl] }}
+                  style={styles.thumbnail}
+                />
+              ) : (
+                <View
+                  style={styles.thumbnailPlaceholder}
+                  onLayout={() => {
+                    if (productImageUrl) loadImageUri(productImageUrl);
+                  }}
+                >
+                  <Ionicons name="image-outline" size={16} color="#999" />
+                </View>
+              )}
+            </Pressable>
+          )}
+        </View>
+
+        {onItemDelete && (
+          <Pressable
+            style={styles.deleteButton}
+            onPress={(e) => {
+              e.stopPropagation();
+              onItemDelete(item);
+            }}
+          >
+            <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+          </Pressable>
+        )}
+      </Pressable>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -106,6 +170,28 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
           {group.items.map(renderItem)}
         </View>
       ))}
+
+      <Modal
+        visible={!!selectedImage}
+        transparent={true}
+        onRequestClose={() => setSelectedImage(null)}
+        animationType="fade"
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setSelectedImage(null)}
+        >
+          <View style={styles.imageContainer}>
+            {selectedImage && (
+              <Image
+                source={{ uri: selectedImage }}
+                style={styles.fullImage}
+                resizeMode="contain"
+              />
+            )}
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 };
@@ -121,6 +207,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
     gap: 12,
+  },
+  itemContentContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   itemInfo: {
     flex: 1,
@@ -147,5 +239,39 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     padding: 8,
+  },
+  thumbnailContainer: {
+    marginLeft: 8,
+  },
+  thumbnail: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
+    backgroundColor: '#f0f0f0',
+  },
+  thumbnailPlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    width: '90%',
+    height: '70%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  fullImage: {
+    width: '100%',
+    height: '100%',
   },
 });

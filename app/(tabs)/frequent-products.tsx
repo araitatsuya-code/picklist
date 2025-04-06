@@ -224,36 +224,38 @@ export default function FrequentProductsScreen() {
           )}
         </View>
 
-        {categories.length > 0 && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryScrollContent}
-            style={styles.categoryScroll}
-          >
-            {sortedCategories.map((category) => (
-              <Pressable
-                key={category.id}
-                style={[
-                  styles.categoryChip,
-                  selectedCategories.has(category.id) &&
-                    styles.categoryChipSelected,
-                ]}
-                onPress={() => toggleCategory(category.id)}
-              >
-                <Text
+        <View style={styles.categoryArea}>
+          {categories.length > 0 ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoryScrollContent}
+              style={styles.categoryScroll}
+            >
+              {sortedCategories.map((category) => (
+                <Pressable
+                  key={category.id}
                   style={[
-                    styles.categoryChipText,
+                    styles.categoryChip,
                     selectedCategories.has(category.id) &&
-                      styles.categoryChipTextSelected,
+                      styles.categoryChipSelected,
                   ]}
+                  onPress={() => toggleCategory(category.id)}
                 >
-                  {category.name}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-        )}
+                  <Text
+                    style={[
+                      styles.categoryChipText,
+                      selectedCategories.has(category.id) &&
+                        styles.categoryChipTextSelected,
+                    ]}
+                  >
+                    {category.name}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          ) : null}
+        </View>
 
         {!isSelectionMode && (
           <Link href="/(products)/add" asChild>
@@ -371,7 +373,7 @@ const styles = StyleSheet.create({
   },
   categoryScroll: {
     maxHeight: 40,
-    marginBottom: 8,
+    marginBottom: 0,
   },
   categoryScrollContent: {
     paddingHorizontal: 16,
@@ -498,12 +500,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#007AFF',
     padding: 12,
     borderRadius: 8,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   addButtonText: {
     color: '#fff',
     textAlign: 'center',
     fontSize: 16,
     fontWeight: '600',
+  },
+  categorySpaceholder: {
+    height: 40,
+    marginBottom: 8,
+  },
+  categoryArea: {
+    height: 40,
+    marginBottom: 16,
   },
 });

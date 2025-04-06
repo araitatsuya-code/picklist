@@ -6,6 +6,7 @@ import {
   Pressable,
   TextInput,
   SafeAreaView,
+  ScrollView,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import {
@@ -224,11 +225,13 @@ export default function ListDetailScreen() {
           />
         </View>
 
-        <GroupedPicklistItems
-          listId={id}
-          onItemPress={(item) => handleToggleComplete(item.id)}
-          onItemDelete={handleRemoveItem}
-        />
+        <ScrollView style={styles.listContent}>
+          <GroupedPicklistItems
+            listId={id}
+            onItemPress={(item) => handleToggleComplete(item.id)}
+            onItemDelete={handleRemoveItem}
+          />
+        </ScrollView>
 
         {editingItem && (
           <View style={styles.modalOverlay}>
@@ -548,5 +551,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     backgroundColor: '#fff',
+  },
+  listContent: {
+    flex: 1,
   },
 });
