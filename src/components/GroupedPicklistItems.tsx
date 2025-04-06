@@ -31,7 +31,7 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
   onItemPress,
   onItemDelete,
 }) => {
-  const { colors, isDark } = useThemeContext();
+  const { colors } = useThemeContext();
   const { picklists } = usePicklistStore();
   const { categories } = useCategoryStore();
   const { products } = useFrequentProductStore();
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 4,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: 'transparent',
   },
   thumbnailPlaceholder: {
     width: 40,

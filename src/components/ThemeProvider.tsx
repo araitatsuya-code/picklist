@@ -28,7 +28,7 @@ interface ThemeProviderProps {
 
 // テーマプロバイダーコンポーネント
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const { colors, isDark, followSystem, theme, setTheme } = useTheme();
+  const { colors, isDark, followSystem, setTheme } = useTheme();
   const systemColorScheme = useColorScheme();
 
   // システムカラースキームが変更された時にテーマを更新

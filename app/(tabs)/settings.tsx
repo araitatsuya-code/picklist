@@ -3,7 +3,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { List } from 'react-native-paper';
 import { router } from 'expo-router';
 import { useTheme } from '../../src/hooks/useTheme';
-import { useThemeContext } from '../../src/components/ThemeProvider';
 import { useState } from 'react';
 
 export default function SettingsScreen() {

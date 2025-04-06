@@ -18,7 +18,7 @@ import { Menu } from 'react-native-paper';
 import { useThemeContext } from '../../src/components/ThemeProvider';
 
 export default function AddProductScreen() {
-  const { colors, isDark } = useThemeContext();
+  const { colors } = useThemeContext();
   const { addProduct } = useFrequentProductStore();
   const { categories, addCategory } = useCategoryStore();
   const [productData, setProductData] = useState<{

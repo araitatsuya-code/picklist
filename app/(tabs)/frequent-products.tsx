@@ -24,7 +24,7 @@ import { useThemeContext } from '../../src/components/ThemeProvider';
  * よく買う商品リストを表示する画面
  */
 export default function FrequentProductsScreen() {
-  const { colors, isDark } = useThemeContext();
+  const { colors } = useThemeContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
     new Set()

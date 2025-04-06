@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useThemeContext } from '../../src/components/ThemeProvider';
 
 export default function AddToListScreen() {
-  const { colors, isDark } = useThemeContext();
+  const { colors } = useThemeContext();
   const { selectedIds } = useLocalSearchParams<{ selectedIds: string }>();
   const selectedIdArray = useMemo(() => {
     if (!selectedIds) return [];
