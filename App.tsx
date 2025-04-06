@@ -1,10 +1,10 @@
-import { StatusBar } from 'expo-status-bar';
 import { Provider as PaperProvider } from 'react-native-paper';
+import { ThemeProvider } from './src/components/ThemeProvider';
 
 export default function App() {
   return (
-    <PaperProvider>
-      <StatusBar style="auto" />
-    </PaperProvider>
+    <ThemeProvider>
+      <PaperProvider></PaperProvider>
+    </ThemeProvider>
   );
 }
