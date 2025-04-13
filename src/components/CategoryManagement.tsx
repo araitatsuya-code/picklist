@@ -13,7 +13,7 @@ import { Category } from '../stores/useCategoryStore';
 import { useThemeContext } from './ThemeProvider';
 
 export const CategoryManagement: React.FC = () => {
-  const { colors } = useThemeContext();
+  const { colors, isDark } = useThemeContext();
   const { categories, addCategory, updateCategory, removeCategory } =
     useCategoryStore();
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -116,9 +116,13 @@ export const CategoryManagement: React.FC = () => {
         <Dialog
           visible={dialogVisible}
           onDismiss={() => setDialogVisible(false)}
-          style={{ backgroundColor: colors.background.primary }}
+          style={{
+            backgroundColor: isDark ? '#f5f5f5' : colors.background.primary,
+          }}
         >
-          <Dialog.Title style={{ color: colors.text.primary }}>
+          <Dialog.Title
+            style={{ color: isDark ? '#000000' : colors.text.primary }}
+          >
             {editingCategory ? 'カテゴリを編集' : 'カテゴリを追加'}
           </Dialog.Title>
           <Dialog.Content>
@@ -127,15 +131,16 @@ export const CategoryManagement: React.FC = () => {
               value={name}
               onChangeText={setName}
               style={styles.input}
-              textColor={colors.text.primary}
+              textColor={isDark ? '#000000' : colors.text.primary}
               theme={{
                 colors: {
                   primary: colors.accent.primary,
-                  background: colors.background.primary,
-                  placeholder: colors.text.secondary,
+                  background: isDark ? '#f5f5f5' : colors.background.primary,
+                  placeholder: isDark ? '#666666' : colors.text.secondary,
+                  text: isDark ? '#000000' : colors.text.primary,
                 },
               }}
-              underlineColor={colors.border.primary}
+              underlineColor={isDark ? '#cccccc' : colors.border.primary}
               activeUnderlineColor={colors.accent.primary}
             />
             <TextInput
@@ -144,22 +149,23 @@ export const CategoryManagement: React.FC = () => {
               onChangeText={setPriority}
               keyboardType="numeric"
               style={styles.input}
-              textColor={colors.text.primary}
+              textColor={isDark ? '#000000' : colors.text.primary}
               theme={{
                 colors: {
                   primary: colors.accent.primary,
-                  background: colors.background.primary,
-                  placeholder: colors.text.secondary,
+                  background: isDark ? '#f5f5f5' : colors.background.primary,
+                  placeholder: isDark ? '#666666' : colors.text.secondary,
+                  text: isDark ? '#000000' : colors.text.primary,
                 },
               }}
-              underlineColor={colors.border.primary}
+              underlineColor={isDark ? '#cccccc' : colors.border.primary}
               activeUnderlineColor={colors.accent.primary}
             />
           </Dialog.Content>
           <Dialog.Actions>
             <Button
               onPress={() => setDialogVisible(false)}
-              textColor={colors.text.secondary}
+              textColor={isDark ? '#666666' : colors.text.secondary}
             >
               キャンセル
             </Button>
