@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -37,6 +37,9 @@ export default function FrequentProductsScreen() {
     new Set()
   );
   const [imageUris, setImageUris] = useState<Record<string, string>>({});
+  const [loadingErrors, setLoadingErrors] = useState<Record<string, boolean>>(
+    {}
+  );
 
   // カテゴリーを優先順位でソート
   const sortedCategories = useMemo(() => {
@@ -100,23 +103,69 @@ export default function FrequentProductsScreen() {
     router.push(`/(products)/add-to-list?selectedIds=${selectedIds}`);
   };
 
-  const loadImageUri = useCallback(async (imageKey: string) => {
-    try {
-      const uri = await AsyncStorage.getItem(imageKey);
-      if (uri) {
-        const finalUri = uri.startsWith('file://') ? uri : `file://${uri}`;
-        setImageUris((prev) => ({ ...prev, [imageKey]: finalUri }));
+  // 画像URIのロードを試みる
+  const loadImageUri = useCallback(
+    async (imageKey: string) => {
+      try {
+        // すでにエラーが発生した画像キーはスキップ
+        if (loadingErrors[imageKey]) return;
+
+        const uri = await AsyncStorage.getItem(imageKey);
+        if (uri) {
+          const finalUri = uri.startsWith('file://') ? uri : `file://${uri}`;
+          setImageUris((prev) => ({ ...prev, [imageKey]: finalUri }));
+        }
+      } catch (error) {
+        console.error('Failed to load image:', error);
+        // エラーが発生した画像キーを記録
+        setLoadingErrors((prev) => ({ ...prev, [imageKey]: true }));
       }
-    } catch (error) {
-      console.error('Failed to load image:', error);
-    }
+    },
+    [loadingErrors]
+  );
+
+  // 無効な画像参照をクリーンアップ
+  useEffect(() => {
+    // すでに発生したエラーをローカルストレージに保存
+    const saveErrorsToStorage = async () => {
+      try {
+        const errorKeys = Object.keys(loadingErrors);
+        if (errorKeys.length > 0) {
+          await AsyncStorage.setItem(
+            'imageLoadingErrors',
+            JSON.stringify(loadingErrors)
+          );
+        }
+      } catch (error) {
+        console.error('Failed to save image errors:', error);
+      }
+    };
+
+    saveErrorsToStorage();
+  }, [loadingErrors]);
+
+  // 保存されていたエラーを読み込む
+  useEffect(() => {
+    const loadErrorsFromStorage = async () => {
+      try {
+        const errorsJson = await AsyncStorage.getItem('imageLoadingErrors');
+        if (errorsJson) {
+          const errors = JSON.parse(errorsJson);
+          setLoadingErrors(errors);
+        }
+      } catch (error) {
+        console.error('Failed to load image errors:', error);
+      }
+    };
+
+    loadErrorsFromStorage();
   }, []);
 
   const renderProductImage = (
     imageKey: string | null | undefined,
     productName: string
   ) => {
-    if (!imageKey) {
+    if (!imageKey || loadingErrors[imageKey]) {
       return (
         <View
           style={[
@@ -146,18 +195,22 @@ export default function FrequentProductsScreen() {
         source={{ uri: imageUri }}
         style={styles.productImage}
         defaultSource={noImage}
-        onError={(e) => {
-          console.warn(
-            'Image loading error:',
-            e.nativeEvent.error,
-            'for URI:',
-            imageUri
+        onError={() => {
+          console.warn('Image loading error for product:', productName);
+
+          // AsyncStorageから無効な参照を削除
+          AsyncStorage.removeItem(imageKey).catch((err) =>
+            console.error('Failed to remove invalid image key:', err)
           );
+
           setImageUris((prev) => {
             const next = { ...prev };
             delete next[imageKey];
             return next;
           });
+
+          // エラーが発生した画像キーを記録
+          setLoadingErrors((prev) => ({ ...prev, [imageKey]: true }));
         }}
         accessible={true}
         accessibilityLabel={`${productName}の画像`}
@@ -313,23 +366,6 @@ export default function FrequentProductsScreen() {
           ) : null}
         </View>
 
-        {!isSelectionMode && (
-          <Link href="/(products)/add" asChild>
-            <Pressable
-              style={[
-                styles.addButton,
-                { backgroundColor: colors.accent.primary },
-              ]}
-            >
-              <Text
-                style={[styles.addButtonText, { color: colors.text.inverse }]}
-              >
-                商品を追加
-              </Text>
-            </Pressable>
-          </Link>
-        )}
-
         <FlatList
           data={filteredProducts}
           keyExtractor={(item) => item.id}
@@ -416,6 +452,19 @@ export default function FrequentProductsScreen() {
               {selectedProducts.size}個の商品をリストに追加
             </Text>
           </Pressable>
+        )}
+
+        {!isSelectionMode && (
+          <Link href="/(products)/add" asChild>
+            <Pressable
+              style={[
+                styles.fabButton,
+                { backgroundColor: colors.accent.primary },
+              ]}
+            >
+              <Ionicons name="add" size={24} color={colors.text.inverse} />
+            </Pressable>
+          </Link>
         )}
       </View>
     </SafeAreaView>
@@ -560,16 +609,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
-  addButton: {
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  addButtonText: {
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   categorySpaceholder: {
     height: 40,
     marginBottom: 8,
@@ -577,5 +616,21 @@ const styles = StyleSheet.create({
   categoryArea: {
     height: 40,
     marginBottom: 16,
+  },
+  fabButton: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    zIndex: 100,
   },
 });
