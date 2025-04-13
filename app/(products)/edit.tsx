@@ -15,8 +15,10 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { CustomImagePicker } from '../../src/components/ImagePicker';
 import { Ionicons } from '@expo/vector-icons';
 import { Menu } from 'react-native-paper';
+import { useThemeContext } from '../../src/components/ThemeProvider';
 
 export default function EditProductScreen() {
+  const { colors } = useThemeContext();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { products, updateProduct, deleteProduct } = useFrequentProductStore();
   const { categories, addCategory } = useCategoryStore();
@@ -141,12 +143,28 @@ export default function EditProductScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background.primary }]}
+    >
+      <View
+        style={[
+          styles.header,
+          {
+            borderBottomColor: colors.border.secondary,
+            backgroundColor: colors.background.primary,
+          },
+        ]}
+      >
         <Pressable style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#007AFF" />
+          <Ionicons
+            name="chevron-back"
+            size={24}
+            color={colors.accent.primary}
+          />
         </Pressable>
-        <Text style={styles.headerTitle}>商品を編集</Text>
+        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
+          商品を編集
+        </Text>
         <View style={styles.headerRight} />
       </View>
       <ScrollView style={styles.scrollView}>
@@ -159,33 +177,52 @@ export default function EditProductScreen() {
           />
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>商品名 *</Text>
+            <Text style={[styles.label, { color: colors.text.secondary }]}>
+              商品名 *
+            </Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.background.primary,
+                  color: colors.text.primary,
+                },
+              ]}
               value={productData.name}
               onChangeText={(text) =>
                 setProductData({ ...productData, name: text })
               }
               placeholder="商品名を入力"
+              placeholderTextColor={colors.text.tertiary}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>カテゴリー</Text>
+            <Text style={[styles.label, { color: colors.text.secondary }]}>
+              カテゴリー
+            </Text>
             <Menu
               visible={menuVisible}
               onDismiss={() => setMenuVisible(false)}
+              contentStyle={{ backgroundColor: colors.background.primary }}
               anchor={
                 <Pressable
-                  style={styles.categoryButton}
+                  style={[
+                    styles.categoryButton,
+                    {
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.background.primary,
+                    },
+                  ]}
                   onPress={() => setMenuVisible(true)}
                 >
                   <Text
                     style={[
                       styles.categoryButtonText,
+                      { color: colors.text.primary },
                       !productData.category &&
-                        !isNewCategory &&
-                        styles.categoryButtonPlaceholder,
+                        !isNewCategory && { color: colors.text.tertiary },
                     ]}
                   >
                     {isNewCategory
@@ -193,7 +230,11 @@ export default function EditProductScreen() {
                       : categories.find((c) => c.id === productData.category)
                           ?.name || 'カテゴリーを選択'}
                   </Text>
-                  <Ionicons name="chevron-down" size={20} color="#666" />
+                  <Ionicons
+                    name="chevron-down"
+                    size={20}
+                    color={colors.text.secondary}
+                  />
                 </Pressable>
               }
             >
@@ -202,6 +243,7 @@ export default function EditProductScreen() {
                   key={category.id}
                   onPress={() => handleCategorySelect(category.id)}
                   title={category.name}
+                  titleStyle={{ color: colors.text.primary }}
                   leadingIcon={
                     productData.category === category.id ? 'check' : undefined
                   }
@@ -210,23 +252,42 @@ export default function EditProductScreen() {
               <Menu.Item
                 onPress={handleNewCategoryPress}
                 title="新しいカテゴリーを作成"
+                titleStyle={{ color: colors.text.primary }}
                 leadingIcon="plus"
               />
             </Menu>
             {isNewCategory && (
               <TextInput
-                style={[styles.input, styles.newCategoryInput]}
+                style={[
+                  styles.input,
+                  styles.newCategoryInput,
+                  {
+                    borderColor: colors.border.primary,
+                    backgroundColor: colors.background.primary,
+                    color: colors.text.primary,
+                  },
+                ]}
                 value={newCategoryName}
                 onChangeText={setNewCategoryName}
                 placeholder="新しいカテゴリー名を入力"
+                placeholderTextColor={colors.text.tertiary}
               />
             )}
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>デフォルト数量</Text>
+            <Text style={[styles.label, { color: colors.text.secondary }]}>
+              デフォルト数量
+            </Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.background.primary,
+                  color: colors.text.primary,
+                },
+              ]}
               value={productData.defaultQuantity}
               onChangeText={(text) => {
                 // 数値のみ許可（空文字または数字）
@@ -235,28 +296,59 @@ export default function EditProductScreen() {
                 }
               }}
               placeholder="数量を入力"
+              placeholderTextColor={colors.text.tertiary}
               keyboardType="numeric"
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>単位</Text>
+            <Text style={[styles.label, { color: colors.text.secondary }]}>
+              単位
+            </Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.background.primary,
+                  color: colors.text.primary,
+                },
+              ]}
               value={productData.unit}
               onChangeText={(text) =>
                 setProductData({ ...productData, unit: text })
               }
               placeholder="個、本、パックなど"
+              placeholderTextColor={colors.text.tertiary}
             />
           </View>
 
-          <Pressable style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>更新</Text>
+          <Pressable
+            style={[
+              styles.submitButton,
+              { backgroundColor: colors.accent.primary },
+            ]}
+            onPress={handleSubmit}
+          >
+            <Text
+              style={[styles.submitButtonText, { color: colors.text.inverse }]}
+            >
+              更新
+            </Text>
           </Pressable>
 
-          <Pressable style={styles.deleteButton} onPress={handleDelete}>
-            <Text style={styles.deleteButtonText}>削除</Text>
+          <Pressable
+            style={[
+              styles.deleteButton,
+              { backgroundColor: colors.state.error },
+            ]}
+            onPress={handleDelete}
+          >
+            <Text
+              style={[styles.deleteButtonText, { color: colors.text.inverse }]}
+            >
+              削除
+            </Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -267,7 +359,6 @@ export default function EditProductScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -276,7 +367,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     height: 44,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   headerTitle: {
     fontSize: 17,
@@ -302,19 +392,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 8,
-    color: '#374151',
   },
   input: {
     height: 40,
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 12,
   },
   categoryButton: {
     height: 40,
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 12,
     flexDirection: 'row',
@@ -323,34 +410,26 @@ const styles = StyleSheet.create({
   },
   categoryButtonText: {
     fontSize: 16,
-    color: '#000',
-  },
-  categoryButtonPlaceholder: {
-    color: '#999',
   },
   newCategoryInput: {
     marginTop: 8,
   },
   submitButton: {
-    backgroundColor: '#007AFF',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 16,
   },
   submitButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
   deleteButton: {
-    backgroundColor: '#ff3b30',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
   deleteButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },

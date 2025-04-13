@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Platform, View } from 'react-native';
+import { useThemeContext } from '../../src/components/ThemeProvider';
 
 type IconName =
   | 'cart-outline'
@@ -11,6 +12,7 @@ type IconName =
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useThemeContext();
 
   const renderTabBarIcon = (
     name: IconName,
@@ -46,11 +48,12 @@ export default function TabLayout() {
         headerShown: true,
         headerStyle: {
           height: 44 + insets.top,
+          backgroundColor: colors.background.primary,
           ...Platform.select({
             ios: {
-              shadowColor: '#000',
+              shadowColor: colors.shadow,
               shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.1,
+              shadowOpacity: isDark ? 0.3 : 0.1,
               shadowRadius: 4,
             },
             android: {
@@ -58,19 +61,23 @@ export default function TabLayout() {
             },
           }),
         },
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: '#8E8E93',
+        headerTitleStyle: {
+          color: colors.text.primary,
+        },
+        headerShadowVisible: false,
+        tabBarActiveTintColor: colors.tabBar.active,
+        tabBarInactiveTintColor: colors.tabBar.inactive,
         tabBarStyle: {
           height: 80 + insets.bottom,
           paddingBottom: insets.bottom,
           paddingTop: 8,
-          backgroundColor: '#FFF',
+          backgroundColor: colors.tabBar.background,
           borderTopWidth: 0,
           ...Platform.select({
             ios: {
-              shadowColor: '#000',
+              shadowColor: colors.shadow,
               shadowOffset: { width: 0, height: -4 },
-              shadowOpacity: 0.15,
+              shadowOpacity: isDark ? 0.4 : 0.15,
               shadowRadius: 8,
             },
             android: {
@@ -82,6 +89,7 @@ export default function TabLayout() {
           fontSize: 12,
           fontWeight: '500',
           marginTop: 8,
+          color: colors.text.primary,
         },
         tabBarIconStyle: {
           marginBottom: 0,

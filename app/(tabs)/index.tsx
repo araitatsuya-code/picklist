@@ -12,13 +12,20 @@ import { usePicklistStore } from '../../src/stores/usePicklistStore';
 import { Link } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useThemeContext } from '../../src/components/ThemeProvider';
 
 export default function PicklistScreen() {
   const picklists = usePicklistStore((state) => state.picklists);
   const { addPicklist, removePicklist } = usePicklistStore();
+  const { colors, isDark } = useThemeContext();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: colors.background.secondary },
+      ]}
+    >
       <View style={styles.content}>
         <View style={styles.listContainer}>
           <Pressable
@@ -26,7 +33,7 @@ export default function PicklistScreen() {
             onPress={() => addPicklist('新しいリスト')}
           >
             <LinearGradient
-              colors={['#007AFF', '#00A2FF']}
+              colors={isDark ? ['#0A84FF', '#0A84FF'] : ['#007AFF', '#00A2FF']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.gradientButton}
@@ -38,14 +45,22 @@ export default function PicklistScreen() {
 
           {picklists.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Ionicons name="cart" size={64} color="#DDD" />
-              <Text style={styles.emptyText}>
+              <Ionicons name="cart" size={64} color={colors.text.tertiary} />
+              <Text
+                style={[styles.emptyText, { color: colors.text.secondary }]}
+              >
                 買い物リストを作成してください
               </Text>
             </View>
           ) : (
             picklists.map((list) => (
-              <View key={list.id} style={styles.card}>
+              <View
+                key={list.id}
+                style={[
+                  styles.card,
+                  { backgroundColor: colors.card.background },
+                ]}
+              >
                 <Link href={`/list/${list.id}`} asChild>
                   <Pressable style={styles.cardContent}>
                     <View style={styles.cardHeader}>
@@ -53,10 +68,17 @@ export default function PicklistScreen() {
                         <Ionicons
                           name="list"
                           size={24}
-                          color="#007AFF"
+                          color={colors.accent.primary}
                           style={styles.cardIcon}
                         />
-                        <Text style={styles.cardTitle}>{list.name}</Text>
+                        <Text
+                          style={[
+                            styles.cardTitle,
+                            { color: colors.text.primary },
+                          ]}
+                        >
+                          {list.name}
+                        </Text>
                       </View>
                       <Pressable
                         style={styles.deleteButton}
@@ -76,12 +98,26 @@ export default function PicklistScreen() {
                           );
                         }}
                       >
-                        <View style={styles.deleteIconContainer}>
-                          <Ionicons name="close" size={16} color="#FF6B6B" />
+                        <View
+                          style={[
+                            styles.deleteIconContainer,
+                            { backgroundColor: colors.accent.tertiary },
+                          ]}
+                        >
+                          <Ionicons
+                            name="close"
+                            size={16}
+                            color={colors.state.error}
+                          />
                         </View>
                       </Pressable>
                     </View>
-                    <Text style={styles.itemCount}>
+                    <Text
+                      style={[
+                        styles.itemCount,
+                        { color: colors.text.secondary },
+                      ]}
+                    >
                       {list.items.length}個のアイテム
                     </Text>
                   </Pressable>
@@ -98,7 +134,6 @@ export default function PicklistScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
   },
   content: {
     flex: 1,
@@ -116,7 +151,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
     textAlign: 'center',
   },
   createButton: {
@@ -147,7 +181,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   card: {
-    backgroundColor: '#FFF',
     borderRadius: 12,
     ...Platform.select({
       ios: {
@@ -181,19 +214,16 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1A1A1A',
     flex: 1,
   },
   itemCount: {
     fontSize: 14,
-    color: '#666',
   },
   deleteButton: {
     padding: 4,
     marginLeft: 8,
   },
   deleteIconContainer: {
-    backgroundColor: '#FFE8E8',
     width: 32,
     height: 32,
     borderRadius: 16,

@@ -9,6 +9,7 @@ import {
   Image,
   ScrollView,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
 import { useCategoryStore } from '../../src/stores/useCategoryStore';
@@ -18,23 +19,26 @@ import { Menu } from 'react-native-paper';
 import { FrequentProduct } from '../../src/types/frequentProduct';
 import noImage from '../../assets/no-image.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useThemeContext } from '../../src/components/ThemeProvider';
 
 /**
  * よく買う商品リストを表示する画面
  */
 export default function FrequentProductsScreen() {
+  const { colors } = useThemeContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
     new Set()
   );
   const [menuVisible, setMenuVisible] = useState(false);
-  const { products, searchProducts } = useFrequentProductStore();
+  const { products, searchProducts, updateProduct } = useFrequentProductStore();
   const { categories } = useCategoryStore();
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set()
   );
   const [imageUris, setImageUris] = useState<Record<string, string>>({});
+  const [errorProducts, setErrorProducts] = useState<Set<string>>(new Set());
 
   // カテゴリーを優先順位でソート
   const sortedCategories = useMemo(() => {
@@ -98,29 +102,51 @@ export default function FrequentProductsScreen() {
     router.push(`/(products)/add-to-list?selectedIds=${selectedIds}`);
   };
 
-  const loadImageUri = useCallback(async (imageKey: string) => {
-    try {
-      const uri = await AsyncStorage.getItem(imageKey);
-      if (uri) {
-        const finalUri = uri.startsWith('file://') ? uri : `file://${uri}`;
-        setImageUris((prev) => ({ ...prev, [imageKey]: finalUri }));
+  const loadImageUri = useCallback(
+    async (imageKey: string) => {
+      try {
+        // すでにエラーが発生した画像キーはスキップ
+        if (errorProducts.has(imageKey)) return;
+
+        const uri = await AsyncStorage.getItem(imageKey);
+        if (uri) {
+          const finalUri = uri.startsWith('file://') ? uri : `file://${uri}`;
+          setImageUris((prev) => ({ ...prev, [imageKey]: finalUri }));
+        }
+      } catch (error) {
+        console.error('Failed to load image:', error);
+        setErrorProducts((prev) => new Set(prev).add(imageKey));
       }
-    } catch (error) {
-      console.error('Failed to load image:', error);
-    }
-  }, []);
+    },
+    [errorProducts]
+  );
 
   const renderProductImage = (
     imageKey: string | null | undefined,
-    productName: string
+    productName: string,
+    productId: string
   ) => {
-    if (!imageKey) {
-      return <View style={styles.imagePlaceholder} />;
+    if (!imageKey || errorProducts.has(imageKey)) {
+      return (
+        <View
+          style={[
+            styles.imagePlaceholder,
+            { backgroundColor: colors.background.tertiary },
+          ]}
+        />
+      );
     }
 
     if (!imageUris[imageKey]) {
       loadImageUri(imageKey);
-      return <View style={styles.imagePlaceholder} />;
+      return (
+        <View
+          style={[
+            styles.imagePlaceholder,
+            { backgroundColor: colors.background.tertiary },
+          ]}
+        />
+      );
     }
 
     const imageUri = imageUris[imageKey];
@@ -130,18 +156,38 @@ export default function FrequentProductsScreen() {
         source={{ uri: imageUri }}
         style={styles.productImage}
         defaultSource={noImage}
-        onError={(e) => {
-          console.warn(
-            'Image loading error:',
-            e.nativeEvent.error,
-            'for URI:',
-            imageUri
-          );
+        onError={() => {
+          // エラーが発生したことを記録
+          setErrorProducts((prev) => new Set(prev).add(imageKey));
+
+          // 画像URIをクリア
           setImageUris((prev) => {
             const next = { ...prev };
             delete next[imageKey];
             return next;
           });
+
+          // 商品データと画像情報を自動的にクリア
+          const product = products.find((p) => p.id === productId);
+          if (product && product.imageUrl) {
+            // AsyncStorageから該当の画像キーを削除
+            AsyncStorage.removeItem(product.imageUrl).catch((err) =>
+              console.error('Failed to remove invalid image key:', err)
+            );
+
+            // 商品データを更新
+            updateProduct(productId, {
+              ...product,
+              imageUrl: undefined,
+            });
+
+            // 通知メッセージを表示
+            Alert.alert(
+              '画像情報をクリアしました',
+              `「${productName}」の画像が見つからなかったため、画像情報をクリアしました。`,
+              [{ text: 'OK' }]
+            );
+          }
         }}
         accessible={true}
         accessibilityLabel={`${productName}の画像`}
@@ -151,33 +197,54 @@ export default function FrequentProductsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background.primary }]}
+    >
       <View style={styles.content}>
         <View style={styles.header}>
           <TextInput
-            style={styles.searchInput}
+            style={[
+              styles.searchInput,
+              {
+                borderColor: colors.border.primary,
+                backgroundColor: colors.background.primary,
+                color: colors.text.primary,
+              },
+            ]}
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="商品を検索"
+            placeholderTextColor={colors.text.tertiary}
           />
 
           <Pressable
             style={[
               styles.selectionButton,
-              isSelectionMode && styles.selectionButtonActive,
+              {
+                borderColor: colors.accent.primary,
+                backgroundColor: isSelectionMode
+                  ? colors.accent.primary
+                  : 'transparent',
+              },
             ]}
             onPress={toggleSelectionMode}
           >
             <Ionicons
               name={isSelectionMode ? 'checkmark-circle' : 'cart-outline'}
               size={20}
-              color={isSelectionMode ? '#fff' : '#007AFF'}
+              color={
+                isSelectionMode ? colors.text.inverse : colors.accent.primary
+              }
               style={styles.selectionButtonIcon}
             />
             <Text
               style={[
                 styles.selectionButtonText,
-                isSelectionMode && styles.selectionButtonTextActive,
+                {
+                  color: isSelectionMode
+                    ? colors.text.inverse
+                    : colors.accent.primary,
+                },
               ]}
             >
               {isSelectionMode ? '選択中' : 'リストへ一括追加'}
@@ -188,9 +255,13 @@ export default function FrequentProductsScreen() {
             <Menu
               visible={menuVisible}
               onDismiss={() => setMenuVisible(false)}
+              contentStyle={{ backgroundColor: colors.background.primary }}
               anchor={
                 <Pressable
-                  style={styles.filterButton}
+                  style={[
+                    styles.filterButton,
+                    { borderColor: colors.border.primary },
+                  ]}
                   onPress={() => setMenuVisible(true)}
                 >
                   <Ionicons
@@ -198,10 +269,15 @@ export default function FrequentProductsScreen() {
                       selectedCategories.size > 0 ? 'filter' : 'filter-outline'
                     }
                     size={24}
-                    color="#007AFF"
+                    color={colors.accent.primary}
                   />
                   {selectedCategories.size > 0 && (
-                    <View style={styles.filterBadge}>
+                    <View
+                      style={[
+                        styles.filterBadge,
+                        { backgroundColor: colors.accent.primary },
+                      ]}
+                    >
                       <Text style={styles.filterBadgeText}>
                         {selectedCategories.size}
                       </Text>
@@ -215,6 +291,7 @@ export default function FrequentProductsScreen() {
                   key={category.id}
                   onPress={() => toggleCategory(category.id)}
                   title={category.name}
+                  titleStyle={{ color: colors.text.primary }}
                   leadingIcon={
                     selectedCategories.has(category.id) ? 'check' : undefined
                   }
@@ -237,16 +314,25 @@ export default function FrequentProductsScreen() {
                   key={category.id}
                   style={[
                     styles.categoryChip,
-                    selectedCategories.has(category.id) &&
-                      styles.categoryChipSelected,
+                    {
+                      backgroundColor: selectedCategories.has(category.id)
+                        ? colors.accent.primary
+                        : colors.background.tertiary,
+                      borderColor: selectedCategories.has(category.id)
+                        ? colors.accent.primary
+                        : colors.border.primary,
+                    },
                   ]}
                   onPress={() => toggleCategory(category.id)}
                 >
                   <Text
                     style={[
                       styles.categoryChipText,
-                      selectedCategories.has(category.id) &&
-                        styles.categoryChipTextSelected,
+                      {
+                        color: selectedCategories.has(category.id)
+                          ? colors.text.inverse
+                          : colors.text.secondary,
+                      },
                     ]}
                   >
                     {category.name}
@@ -257,14 +343,6 @@ export default function FrequentProductsScreen() {
           ) : null}
         </View>
 
-        {!isSelectionMode && (
-          <Link href="/(products)/add" asChild>
-            <Pressable style={styles.addButton}>
-              <Text style={styles.addButtonText}>商品を追加</Text>
-            </Pressable>
-          </Link>
-        )}
-
         <FlatList
           data={filteredProducts}
           keyExtractor={(item) => item.id}
@@ -273,9 +351,14 @@ export default function FrequentProductsScreen() {
             <Pressable
               style={[
                 styles.productItem,
+                {
+                  borderBottomColor: colors.border.secondary,
+                  backgroundColor: colors.background.primary,
+                },
                 isSelectionMode &&
-                  selectedProducts.has(item.id) &&
-                  styles.productItemSelected,
+                  selectedProducts.has(item.id) && {
+                    backgroundColor: colors.accent.secondary,
+                  },
               ]}
               onPress={() => handleProductPress(item)}
             >
@@ -288,21 +371,39 @@ export default function FrequentProductsScreen() {
                         : 'ellipse-outline'
                     }
                     size={24}
-                    color={selectedProducts.has(item.id) ? '#007AFF' : '#999'}
+                    color={
+                      selectedProducts.has(item.id)
+                        ? colors.accent.primary
+                        : colors.text.tertiary
+                    }
                   />
                 </View>
               )}
-              {renderProductImage(item.imageUrl, item.name)}
+              {renderProductImage(item.imageUrl, item.name, item.id)}
               <View style={styles.productInfo}>
-                <Text style={styles.productName}>{item.name}</Text>
+                <Text
+                  style={[styles.productName, { color: colors.text.primary }]}
+                >
+                  {item.name}
+                </Text>
                 <View style={styles.productDetails}>
                   {item.category && (
-                    <Text style={styles.productCategory}>
+                    <Text
+                      style={[
+                        styles.productCategory,
+                        {
+                          color: colors.text.secondary,
+                          backgroundColor: colors.background.tertiary,
+                        },
+                      ]}
+                    >
                       {categories.find((c) => c.id === item.category)?.name ||
                         ''}
                     </Text>
                   )}
-                  <Text style={styles.addCount}>
+                  <Text
+                    style={[styles.addCount, { color: colors.text.secondary }]}
+                  >
                     追加回数: {item.addCount || 0}回
                   </Text>
                 </View>
@@ -312,11 +413,35 @@ export default function FrequentProductsScreen() {
         />
 
         {isSelectionMode && selectedProducts.size > 0 && (
-          <Pressable style={styles.addToListButton} onPress={handleAddToList}>
-            <Text style={styles.addToListButtonText}>
+          <Pressable
+            style={[
+              styles.addToListButton,
+              { backgroundColor: colors.accent.primary },
+            ]}
+            onPress={handleAddToList}
+          >
+            <Text
+              style={[
+                styles.addToListButtonText,
+                { color: colors.text.inverse },
+              ]}
+            >
               {selectedProducts.size}個の商品をリストに追加
             </Text>
           </Pressable>
+        )}
+
+        {!isSelectionMode && (
+          <Link href="/(products)/add" asChild>
+            <Pressable
+              style={[
+                styles.fabButton,
+                { backgroundColor: colors.accent.primary },
+              ]}
+            >
+              <Ionicons name="add" size={24} color={colors.text.inverse} />
+            </Pressable>
+          </Link>
         )}
       </View>
     </SafeAreaView>
@@ -326,7 +451,6 @@ export default function FrequentProductsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   content: {
     flex: 1,
@@ -342,7 +466,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 12,
   },
@@ -352,14 +475,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
   },
   filterBadge: {
     position: 'absolute',
     top: -4,
     right: -4,
-    backgroundColor: '#007AFF',
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -383,23 +504,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginRight: 8,
     borderRadius: 18,
-    backgroundColor: '#f3f4f6',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  categoryChipSelected: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
   },
   categoryChipText: {
     fontSize: 14,
-    color: '#374151',
     maxWidth: 100,
-  },
-  categoryChipTextSelected: {
-    color: '#fff',
   },
   selectionButton: {
     flexDirection: 'row',
@@ -408,25 +519,15 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#007AFF',
-    backgroundColor: 'transparent',
     minWidth: 140,
     height: 40,
-  },
-  selectionButtonActive: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
   },
   selectionButtonIcon: {
     marginRight: 4,
   },
   selectionButtonText: {
-    color: '#007AFF',
     fontSize: 14,
     fontWeight: '600',
-  },
-  selectionButtonTextActive: {
-    color: '#fff',
   },
   productList: {
     paddingTop: 8,
@@ -434,12 +535,8 @@ const styles = StyleSheet.create({
   productItem: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  productItemSelected: {
-    backgroundColor: '#f0f9ff',
   },
   checkbox: {
     marginRight: 12,
@@ -448,13 +545,11 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 8,
-    backgroundColor: '#f0f0f0',
   },
   imagePlaceholder: {
     width: 48,
     height: 48,
     borderRadius: 8,
-    backgroundColor: '#f0f0f0',
   },
   productInfo: {
     flex: 1,
@@ -473,40 +568,23 @@ const styles = StyleSheet.create({
   },
   productCategory: {
     fontSize: 14,
-    color: '#666',
-    backgroundColor: '#f3f4f6',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
   },
   addCount: {
     fontSize: 14,
-    color: '#666',
   },
   addToListButton: {
-    backgroundColor: '#007AFF',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 8,
     marginTop: 16,
   },
   addToListButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
-  },
-  addButton: {
-    backgroundColor: '#007AFF',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  addButtonText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
   },
   categorySpaceholder: {
     height: 40,
@@ -515,5 +593,21 @@ const styles = StyleSheet.create({
   categoryArea: {
     height: 40,
     marginBottom: 16,
+  },
+  fabButton: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    zIndex: 100,
   },
 });

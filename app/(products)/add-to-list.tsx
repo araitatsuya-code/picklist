@@ -14,8 +14,10 @@ import { useFrequentProductStore } from '../../src/stores/useFrequentProductStor
 import { usePicklistStore } from '../../src/stores/usePicklistStore';
 import { Menu, Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { useThemeContext } from '../../src/components/ThemeProvider';
 
 export default function AddToListScreen() {
+  const { colors } = useThemeContext();
   const { selectedIds } = useLocalSearchParams<{ selectedIds: string }>();
   const selectedIdArray = useMemo(() => {
     if (!selectedIds) return [];
@@ -82,21 +84,47 @@ export default function AddToListScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background.primary }]}
+    >
+      <View
+        style={[
+          styles.header,
+          {
+            borderBottomColor: colors.border.secondary,
+            backgroundColor: colors.background.primary,
+          },
+        ]}
+      >
         <Pressable style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#007AFF" />
+          <Ionicons
+            name="chevron-back"
+            size={24}
+            color={colors.accent.primary}
+          />
         </Pressable>
-        <Text style={styles.headerTitle}>リストに追加</Text>
+        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
+          リストに追加
+        </Text>
         <View style={styles.headerRight} />
       </View>
       <ScrollView style={styles.content}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>買い物リストを選択</Text>
+        <View
+          style={[
+            styles.section,
+            { borderBottomColor: colors.border.secondary },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+            買い物リストを選択
+          </Text>
           <Button
             mode="outlined"
             onPress={handleListSelectorPress}
             style={styles.listSelector}
+            textColor={colors.text.primary}
+            buttonColor={colors.background.primary}
+            theme={{ colors: { outline: colors.border.primary } }}
           >
             {selectedList
               ? picklists.find((l) => l.id === selectedList)?.name
@@ -106,6 +134,7 @@ export default function AddToListScreen() {
             visible={menuVisible}
             onDismiss={() => setMenuVisible(false)}
             anchor={menuAnchor}
+            contentStyle={{ backgroundColor: colors.background.primary }}
           >
             {picklists.map((list) => (
               <Menu.Item
@@ -115,21 +144,42 @@ export default function AddToListScreen() {
                   setMenuVisible(false);
                 }}
                 title={list.name}
+                titleStyle={{ color: colors.text.primary }}
               />
             ))}
           </Menu>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>商品の詳細を設定</Text>
+        <View
+          style={[
+            styles.section,
+            { borderBottomColor: colors.border.secondary },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+            商品の詳細を設定
+          </Text>
           {selectedProducts.map((product) => (
             <View key={product.id} style={styles.productItem}>
-              <Text style={styles.productName}>{product.name}</Text>
+              <Text
+                style={[styles.productName, { color: colors.text.primary }]}
+              >
+                {product.name}
+              </Text>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>数量</Text>
+                <Text style={[styles.label, { color: colors.text.secondary }]}>
+                  数量
+                </Text>
                 <TextInput
-                  style={styles.input}
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.background.primary,
+                      color: colors.text.primary,
+                    },
+                  ]}
                   value={
                     quantities[product.id] ||
                     product.defaultQuantity?.toString() ||
@@ -140,33 +190,59 @@ export default function AddToListScreen() {
                   }
                   keyboardType="numeric"
                   placeholder="数量"
+                  placeholderTextColor={colors.text.tertiary}
                 />
-                <Text style={styles.unit}>{product.unit || '個'}</Text>
+                <Text style={[styles.unit, { color: colors.text.secondary }]}>
+                  {product.unit || '個'}
+                </Text>
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>価格上限</Text>
+                <Text style={[styles.label, { color: colors.text.secondary }]}>
+                  価格上限
+                </Text>
                 <TextInput
-                  style={styles.input}
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.background.primary,
+                      color: colors.text.primary,
+                    },
+                  ]}
                   value={maxPrices[product.id]}
                   onChangeText={(text) =>
                     setMaxPrices({ ...maxPrices, [product.id]: text })
                   }
                   keyboardType="numeric"
                   placeholder="任意"
+                  placeholderTextColor={colors.text.tertiary}
                 />
-                <Text style={styles.unit}>円</Text>
+                <Text style={[styles.unit, { color: colors.text.secondary }]}>
+                  円
+                </Text>
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>メモ</Text>
+                <Text style={[styles.label, { color: colors.text.secondary }]}>
+                  メモ
+                </Text>
                 <TextInput
-                  style={[styles.input, styles.noteInput]}
+                  style={[
+                    styles.input,
+                    styles.noteInput,
+                    {
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.background.primary,
+                      color: colors.text.primary,
+                    },
+                  ]}
                   value={notes[product.id]}
                   onChangeText={(text) =>
                     setNotes({ ...notes, [product.id]: text })
                   }
                   placeholder="メモを入力"
+                  placeholderTextColor={colors.text.tertiary}
                   multiline
                 />
               </View>
@@ -174,16 +250,29 @@ export default function AddToListScreen() {
           ))}
         </View>
       </ScrollView>
-      <View style={styles.footer}>
+      <View
+        style={[
+          styles.footer,
+          {
+            borderTopColor: colors.border.secondary,
+            backgroundColor: colors.background.primary,
+          },
+        ]}
+      >
         <Pressable
           style={[
             styles.submitButton,
-            !selectedList && styles.submitButtonDisabled,
+            { backgroundColor: colors.accent.primary },
+            !selectedList && { backgroundColor: colors.text.tertiary },
           ]}
           onPress={handleSubmit}
           disabled={!selectedList}
         >
-          <Text style={styles.submitButtonText}>追加</Text>
+          <Text
+            style={[styles.submitButtonText, { color: colors.text.inverse }]}
+          >
+            追加
+          </Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -193,7 +282,6 @@ export default function AddToListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -202,7 +290,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     height: 44,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   headerTitle: {
     fontSize: 17,
@@ -221,7 +308,6 @@ const styles = StyleSheet.create({
   section: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   sectionTitle: {
     fontSize: 18,
@@ -248,13 +334,11 @@ const styles = StyleSheet.create({
   label: {
     width: 80,
     fontSize: 14,
-    color: '#666',
   },
   input: {
     flex: 1,
     height: 40,
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 12,
     marginRight: 8,
@@ -267,24 +351,17 @@ const styles = StyleSheet.create({
   unit: {
     width: 30,
     fontSize: 14,
-    color: '#666',
   },
   footer: {
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
   },
   submitButton: {
-    backgroundColor: '#007AFF',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
-  submitButtonDisabled: {
-    backgroundColor: '#ccc',
-  },
   submitButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
