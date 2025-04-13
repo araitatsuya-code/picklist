@@ -15,8 +15,10 @@ import { CustomImagePicker } from '../../src/components/ImagePicker';
 import * as Crypto from 'expo-crypto';
 import { Ionicons } from '@expo/vector-icons';
 import { Menu } from 'react-native-paper';
+import { useThemeContext } from '../../src/components/ThemeProvider';
 
 export default function AddProductScreen() {
+  const { colors } = useThemeContext();
   const { addProduct } = useFrequentProductStore();
   const { categories, addCategory } = useCategoryStore();
   const [productData, setProductData] = useState<{
@@ -101,45 +103,80 @@ export default function AddProductScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background.primary }]}
+    >
       <ScrollView style={styles.content}>
-        <View style={styles.header}>
+        <View
+          style={[
+            styles.header,
+            {
+              borderBottomColor: colors.border.secondary,
+              backgroundColor: colors.background.primary,
+            },
+          ]}
+        >
           <Pressable style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={24} color="#007AFF" />
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color={colors.accent.primary}
+            />
           </Pressable>
-          <Text style={styles.headerTitle}>商品を追加</Text>
+          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
+            商品を追加
+          </Text>
           <View style={styles.headerRight} />
         </View>
 
         <View style={styles.form}>
           <View style={styles.formGroup}>
-            <Text style={styles.label}>商品名</Text>
+            <Text style={[styles.label, { color: colors.text.secondary }]}>
+              商品名
+            </Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.background.primary,
+                  color: colors.text.primary,
+                },
+              ]}
               value={productData.name}
               onChangeText={(text) =>
                 setProductData((prev) => ({ ...prev, name: text }))
               }
               placeholder="商品名を入力"
+              placeholderTextColor={colors.text.tertiary}
             />
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>カテゴリー</Text>
+            <Text style={[styles.label, { color: colors.text.secondary }]}>
+              カテゴリー
+            </Text>
             <Menu
               visible={menuVisible}
               onDismiss={() => setMenuVisible(false)}
+              contentStyle={{ backgroundColor: colors.background.primary }}
               anchor={
                 <Pressable
-                  style={styles.categoryButton}
+                  style={[
+                    styles.categoryButton,
+                    {
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.background.primary,
+                    },
+                  ]}
                   onPress={() => setMenuVisible(true)}
                 >
                   <Text
                     style={[
                       styles.categoryButtonText,
+                      { color: colors.text.primary },
                       !productData.category &&
-                        !isNewCategory &&
-                        styles.categoryButtonPlaceholder,
+                        !isNewCategory && { color: colors.text.tertiary },
                     ]}
                   >
                     {isNewCategory
@@ -147,7 +184,11 @@ export default function AddProductScreen() {
                       : categories.find((c) => c.id === productData.category)
                           ?.name || 'カテゴリーを選択'}
                   </Text>
-                  <Ionicons name="chevron-down" size={20} color="#666" />
+                  <Ionicons
+                    name="chevron-down"
+                    size={20}
+                    color={colors.text.secondary}
+                  />
                 </Pressable>
               }
             >
@@ -156,6 +197,7 @@ export default function AddProductScreen() {
                   key={category.id}
                   onPress={() => handleCategorySelect(category.id)}
                   title={category.name}
+                  titleStyle={{ color: colors.text.primary }}
                   leadingIcon={
                     productData.category === category.id ? 'check' : undefined
                   }
@@ -164,24 +206,44 @@ export default function AddProductScreen() {
               <Menu.Item
                 onPress={handleNewCategoryPress}
                 title="新しいカテゴリーを作成"
+                titleStyle={{ color: colors.text.primary }}
                 leadingIcon="plus"
               />
             </Menu>
             {isNewCategory && (
               <TextInput
-                style={[styles.input, styles.newCategoryInput]}
+                style={[
+                  styles.input,
+                  styles.newCategoryInput,
+                  {
+                    borderColor: colors.border.primary,
+                    backgroundColor: colors.background.primary,
+                    color: colors.text.primary,
+                  },
+                ]}
                 value={newCategoryName}
                 onChangeText={setNewCategoryName}
                 placeholder="新しいカテゴリー名を入力"
+                placeholderTextColor={colors.text.tertiary}
               />
             )}
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>デフォルト数量</Text>
+            <Text style={[styles.label, { color: colors.text.secondary }]}>
+              デフォルト数量
+            </Text>
             <View style={styles.quantityContainer}>
               <TextInput
-                style={[styles.input, styles.quantityInput]}
+                style={[
+                  styles.input,
+                  styles.quantityInput,
+                  {
+                    borderColor: colors.border.primary,
+                    backgroundColor: colors.background.primary,
+                    color: colors.text.primary,
+                  },
+                ]}
                 value={productData.defaultQuantity}
                 onChangeText={(text) =>
                   setProductData((prev) => ({
@@ -191,20 +253,32 @@ export default function AddProductScreen() {
                 }
                 keyboardType="numeric"
                 placeholder="1"
+                placeholderTextColor={colors.text.tertiary}
               />
               <TextInput
-                style={[styles.input, styles.unitInput]}
+                style={[
+                  styles.input,
+                  styles.unitInput,
+                  {
+                    borderColor: colors.border.primary,
+                    backgroundColor: colors.background.primary,
+                    color: colors.text.primary,
+                  },
+                ]}
                 value={productData.unit}
                 onChangeText={(text) =>
                   setProductData((prev) => ({ ...prev, unit: text }))
                 }
                 placeholder="個"
+                placeholderTextColor={colors.text.tertiary}
               />
             </View>
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>商品画像</Text>
+            <Text style={[styles.label, { color: colors.text.secondary }]}>
+              商品画像
+            </Text>
             <CustomImagePicker
               imageKey={productData.imageUrl}
               onImageSelected={handleImageSelected}
@@ -215,16 +289,29 @@ export default function AddProductScreen() {
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View
+        style={[
+          styles.footer,
+          {
+            borderTopColor: colors.border.secondary,
+            backgroundColor: colors.background.primary,
+          },
+        ]}
+      >
         <Pressable
           style={[
             styles.submitButton,
-            !productData.name && styles.submitButtonDisabled,
+            { backgroundColor: colors.accent.primary },
+            !productData.name && { backgroundColor: colors.text.tertiary },
           ]}
           onPress={handleSubmit}
           disabled={!productData.name}
         >
-          <Text style={styles.submitButtonText}>追加</Text>
+          <Text
+            style={[styles.submitButtonText, { color: colors.text.inverse }]}
+          >
+            追加
+          </Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -234,7 +321,6 @@ export default function AddProductScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   content: {
     flex: 1,
@@ -246,7 +332,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     height: 44,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   headerTitle: {
     fontSize: 17,
@@ -269,19 +354,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 8,
-    color: '#374151',
   },
   input: {
     height: 40,
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 12,
   },
   categoryButton: {
     height: 40,
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 12,
     flexDirection: 'row',
@@ -290,10 +372,6 @@ const styles = StyleSheet.create({
   },
   categoryButtonText: {
     fontSize: 16,
-    color: '#000',
-  },
-  categoryButtonPlaceholder: {
-    color: '#999',
   },
   newCategoryInput: {
     marginTop: 8,
@@ -312,19 +390,13 @@ const styles = StyleSheet.create({
   footer: {
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
   },
   submitButton: {
-    backgroundColor: '#007AFF',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
-  submitButtonDisabled: {
-    backgroundColor: '#ccc',
-  },
   submitButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },

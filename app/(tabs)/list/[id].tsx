@@ -19,8 +19,10 @@ import { IconButton, Menu } from 'react-native-paper';
 import { useCategoryStore } from '../../../src/stores/useCategoryStore';
 import { GroupedPicklistItems } from '../../../src/components/GroupedPicklistItems';
 import { useFrequentProductStore } from '../../../src/stores/useFrequentProductStore';
+import { useThemeContext } from '../../../src/components/ThemeProvider';
 
 export default function ListDetailScreen() {
+  const { colors, isDark } = useThemeContext();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [editMode, setEditMode] = useState(false);
   const [listName, setListName] = useState('');
@@ -134,24 +136,52 @@ export default function ListDetailScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background.primary }]}
+    >
       <View style={styles.content}>
-        <View style={styles.header}>
+        <View
+          style={[
+            styles.header,
+            {
+              borderBottomColor: colors.border.secondary,
+              backgroundColor: colors.background.primary,
+            },
+          ]}
+        >
           <View style={styles.headerContent}>
             {editMode ? (
               <View style={styles.editNameContainer}>
                 <TextInput
-                  style={styles.nameInput}
+                  style={[
+                    styles.nameInput,
+                    {
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.background.primary,
+                      color: colors.text.primary,
+                    },
+                  ]}
                   value={listName}
                   onChangeText={setListName}
                   placeholder="リスト名を入力"
+                  placeholderTextColor={colors.text.tertiary}
                   autoFocus
                 />
                 <Pressable
-                  style={styles.saveButton}
+                  style={[
+                    styles.saveButton,
+                    { backgroundColor: colors.accent.primary },
+                  ]}
                   onPress={handleSaveListName}
                 >
-                  <Text style={styles.saveButtonText}>保存</Text>
+                  <Text
+                    style={[
+                      styles.saveButtonText,
+                      { color: colors.text.inverse },
+                    ]}
+                  >
+                    保存
+                  </Text>
                 </Pressable>
               </View>
             ) : (
@@ -163,8 +193,14 @@ export default function ListDetailScreen() {
                     setEditMode(true);
                   }}
                 >
-                  <Text style={styles.title}>{list.name}</Text>
-                  <Ionicons name="pencil" size={20} color="#666" />
+                  <Text style={[styles.title, { color: colors.text.primary }]}>
+                    {list.name}
+                  </Text>
+                  <Ionicons
+                    name="pencil"
+                    size={20}
+                    color={colors.text.secondary}
+                  />
                 </Pressable>
                 <View style={styles.headerActions}>
                   <Menu
@@ -175,32 +211,42 @@ export default function ListDetailScreen() {
                         icon="sort"
                         size={24}
                         onPress={() => setMenuVisible(true)}
+                        iconColor={colors.text.primary}
                       />
                     }
+                    contentStyle={{
+                      backgroundColor: colors.background.primary,
+                    }}
                   >
                     <Menu.Item
                       title="作成順（昇順）"
                       onPress={() => handleSortChange('created', 'asc')}
+                      titleStyle={{ color: colors.text.primary }}
                     />
                     <Menu.Item
                       title="作成順（降順）"
                       onPress={() => handleSortChange('created', 'desc')}
+                      titleStyle={{ color: colors.text.primary }}
                     />
                     <Menu.Item
                       title="名前順（昇順）"
                       onPress={() => handleSortChange('name', 'asc')}
+                      titleStyle={{ color: colors.text.primary }}
                     />
                     <Menu.Item
                       title="名前順（降順）"
                       onPress={() => handleSortChange('name', 'desc')}
+                      titleStyle={{ color: colors.text.primary }}
                     />
                     <Menu.Item
                       title="カテゴリ順（昇順）"
                       onPress={() => handleSortChange('category', 'asc')}
+                      titleStyle={{ color: colors.text.primary }}
                     />
                     <Menu.Item
                       title="カテゴリ順（降順）"
                       onPress={() => handleSortChange('category', 'desc')}
+                      titleStyle={{ color: colors.text.primary }}
                     />
                   </Menu>
                   <Pressable
@@ -215,10 +261,26 @@ export default function ListDetailScreen() {
           </View>
         </View>
 
-        <View style={styles.quickAdd}>
+        <View
+          style={[
+            styles.quickAdd,
+            {
+              borderBottomColor: colors.border.secondary,
+              backgroundColor: colors.background.primary,
+            },
+          ]}
+        >
           <TextInput
-            style={styles.quickAddInput}
+            style={[
+              styles.quickAddInput,
+              {
+                borderColor: colors.border.primary,
+                backgroundColor: colors.background.primary,
+                color: colors.text.primary,
+              },
+            ]}
             placeholder="商品名を入力して追加"
+            placeholderTextColor={colors.text.tertiary}
             ref={quickAddInputRef}
             onSubmitEditing={(event) => handleQuickAdd(event.nativeEvent.text)}
             returnKeyType="done"
@@ -235,61 +297,127 @@ export default function ListDetailScreen() {
 
         {editingItem && (
           <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>アイテムを編集</Text>
+            <View
+              style={[
+                styles.modalContent,
+                { backgroundColor: colors.background.primary },
+              ]}
+            >
+              <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
+                アイテムを編集
+              </Text>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>数量</Text>
+                <Text style={[styles.label, { color: colors.text.primary }]}>
+                  数量
+                </Text>
                 <TextInput
-                  style={styles.input}
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.background.primary,
+                      color: colors.text.primary,
+                    },
+                  ]}
                   value={editingItem.quantity}
                   onChangeText={(text) =>
                     setEditingItem({ ...editingItem, quantity: text })
                   }
                   keyboardType="numeric"
                   placeholder="数量を入力"
+                  placeholderTextColor={colors.text.tertiary}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>価格上限</Text>
+                <Text style={[styles.label, { color: colors.text.primary }]}>
+                  価格上限
+                </Text>
                 <TextInput
-                  style={styles.input}
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.background.primary,
+                      color: colors.text.primary,
+                    },
+                  ]}
                   value={editingItem.maxPrice}
                   onChangeText={(text) =>
                     setEditingItem({ ...editingItem, maxPrice: text })
                   }
                   keyboardType="numeric"
                   placeholder="任意"
+                  placeholderTextColor={colors.text.tertiary}
                 />
-                <Text style={styles.unit}>円</Text>
+                <Text style={[styles.unit, { color: colors.text.secondary }]}>
+                  円
+                </Text>
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>メモ</Text>
+                <Text style={[styles.label, { color: colors.text.primary }]}>
+                  メモ
+                </Text>
                 <TextInput
-                  style={[styles.input, styles.noteInput]}
+                  style={[
+                    styles.input,
+                    styles.noteInput,
+                    {
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.background.primary,
+                      color: colors.text.primary,
+                    },
+                  ]}
                   value={editingItem.note}
                   onChangeText={(text) =>
                     setEditingItem({ ...editingItem, note: text })
                   }
                   placeholder="任意"
+                  placeholderTextColor={colors.text.tertiary}
                   multiline
                 />
               </View>
 
               <View style={styles.modalButtons}>
                 <Pressable
-                  style={[styles.modalButton, styles.modalCancelButton]}
+                  style={[
+                    styles.modalButton,
+                    styles.modalCancelButton,
+                    {
+                      backgroundColor: isDark ? '#333' : '#f0f0f0',
+                    },
+                  ]}
                   onPress={() => setEditingItem(null)}
                 >
-                  <Text style={styles.modalCancelButtonText}>キャンセル</Text>
+                  <Text
+                    style={[
+                      styles.modalCancelButtonText,
+                      { color: colors.text.primary },
+                    ]}
+                  >
+                    キャンセル
+                  </Text>
                 </Pressable>
                 <Pressable
-                  style={[styles.modalButton, styles.modalSaveButton]}
+                  style={[
+                    styles.modalButton,
+                    styles.modalSaveButton,
+                    {
+                      backgroundColor: colors.accent.primary,
+                    },
+                  ]}
                   onPress={handleSaveItem}
                 >
-                  <Text style={styles.modalSaveButtonText}>保存</Text>
+                  <Text
+                    style={[
+                      styles.modalSaveButtonText,
+                      { color: colors.text.inverse },
+                    ]}
+                  >
+                    保存
+                  </Text>
                 </Pressable>
               </View>
             </View>
@@ -298,18 +426,40 @@ export default function ListDetailScreen() {
 
         {showDeleteConfirm && (
           <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>買い物リストを削除</Text>
-              <Text style={styles.modalMessage}>
+            <View
+              style={[
+                styles.modalContent,
+                { backgroundColor: colors.background.primary },
+              ]}
+            >
+              <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
+                買い物リストを削除
+              </Text>
+              <Text
+                style={[styles.modalMessage, { color: colors.text.secondary }]}
+              >
                 「{list.name}」を削除してもよろしいですか？
                 {'\n'}この操作は取り消せません。
               </Text>
               <View style={styles.modalButtons}>
                 <Pressable
-                  style={[styles.modalButton, styles.modalCancelButton]}
+                  style={[
+                    styles.modalButton,
+                    styles.modalCancelButton,
+                    {
+                      backgroundColor: isDark ? '#333' : '#f0f0f0',
+                    },
+                  ]}
                   onPress={() => setShowDeleteConfirm(false)}
                 >
-                  <Text style={styles.modalCancelButtonText}>キャンセル</Text>
+                  <Text
+                    style={[
+                      styles.modalCancelButtonText,
+                      { color: colors.text.primary },
+                    ]}
+                  >
+                    キャンセル
+                  </Text>
                 </Pressable>
                 <Pressable
                   style={[styles.modalButton, styles.modalDeleteButton]}
@@ -337,7 +487,6 @@ export default function ListDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   content: {
     flex: 1,
@@ -345,7 +494,6 @@ const styles = StyleSheet.create({
   header: {
     padding: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   headerContent: {
     flexDirection: 'row',
@@ -377,18 +525,15 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 12,
   },
   saveButton: {
-    backgroundColor: '#007AFF',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
   },
   saveButtonText: {
-    color: '#fff',
     fontWeight: '600',
   },
   itemContainer: {
@@ -396,7 +541,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   checkbox: {
     marginRight: 12,
@@ -415,11 +559,9 @@ const styles = StyleSheet.create({
   },
   itemQuantity: {
     fontSize: 14,
-    color: '#666',
   },
   itemNote: {
     fontSize: 14,
-    color: '#666',
     marginTop: 4,
   },
   deleteButton: {
@@ -439,7 +581,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 24,
     width: '80%',
@@ -452,7 +593,6 @@ const styles = StyleSheet.create({
   },
   modalMessage: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 24,
     lineHeight: 20,
   },
@@ -466,14 +606,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
   },
-  modalCancelButton: {
-    backgroundColor: '#f0f0f0',
-  },
+  modalCancelButton: {},
   modalDeleteButton: {
     backgroundColor: '#FF3B30',
   },
   modalCancelButtonText: {
-    color: '#333',
     fontWeight: '600',
   },
   modalDeleteButtonText: {
@@ -501,7 +638,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 12,
   },
@@ -513,11 +649,8 @@ const styles = StyleSheet.create({
     height: 80,
     padding: 12,
   },
-  modalSaveButton: {
-    backgroundColor: '#007AFF',
-  },
+  modalSaveButton: {},
   modalSaveButtonText: {
-    color: '#fff',
     fontWeight: '600',
   },
   fab: {
@@ -542,15 +675,12 @@ const styles = StyleSheet.create({
   quickAdd: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   quickAddInput: {
     height: 40,
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#fff',
   },
   listContent: {
     flex: 1,
