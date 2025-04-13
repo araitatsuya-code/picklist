@@ -1,9 +1,17 @@
-import { View, Text, StyleSheet, Pressable, Alert, Switch } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Alert,
+  Switch,
+  ScrollView,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { List } from 'react-native-paper';
 import { router } from 'expo-router';
 import { useTheme } from '../../src/hooks/useTheme';
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 
 export default function SettingsScreen() {
   const { colors, isDark, setTheme, followSystem, setFollowSystem } =
@@ -25,249 +33,253 @@ export default function SettingsScreen() {
         { backgroundColor: colors.background.secondary },
       ]}
     >
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text.secondary }]}>
-          一般
-        </Text>
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text.secondary }]}>
+            一般
+          </Text>
 
-        <View
-          style={[
-            styles.menuList,
-            {
-              backgroundColor: colors.background.primary,
-              borderColor: colors.border.primary,
-            },
-          ]}
-        >
-          <Pressable
+          <View
             style={[
-              styles.menuItem,
-              { borderBottomColor: colors.border.secondary },
+              styles.menuList,
+              {
+                backgroundColor: colors.background.primary,
+                borderColor: colors.border.primary,
+              },
             ]}
           >
-            <View style={styles.menuContent}>
-              <Ionicons
-                name="language-outline"
-                size={24}
-                color={colors.text.secondary}
-              />
-              <Text style={[styles.menuText, { color: colors.text.primary }]}>
-                言語
-              </Text>
-            </View>
-            <View style={styles.menuRight}>
-              <Text
-                style={[styles.menuValue, { color: colors.text.secondary }]}
-              >
-                日本語
-              </Text>
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={colors.text.secondary}
-              />
-            </View>
-          </Pressable>
+            <Pressable
+              style={[
+                styles.menuItem,
+                { borderBottomColor: colors.border.secondary },
+              ]}
+            >
+              <View style={styles.menuContent}>
+                <Ionicons
+                  name="language-outline"
+                  size={24}
+                  color={colors.text.secondary}
+                />
+                <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                  言語
+                </Text>
+              </View>
+              <View style={styles.menuRight}>
+                <Text
+                  style={[styles.menuValue, { color: colors.text.secondary }]}
+                >
+                  日本語
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={20}
+                  color={colors.text.secondary}
+                />
+              </View>
+            </Pressable>
 
-          <Pressable
-            style={[
-              styles.menuItem,
-              { borderBottomColor: colors.border.secondary },
-            ]}
-            onPress={() => setShowThemeModal(true)}
-          >
-            <View style={styles.menuContent}>
-              <Ionicons
-                name={isDark ? 'moon' : 'moon-outline'}
-                size={24}
-                color={colors.text.secondary}
-              />
-              <Text style={[styles.menuText, { color: colors.text.primary }]}>
-                ダークモード
-              </Text>
-            </View>
-            <View style={styles.menuRight}>
-              <Text
-                style={[styles.menuValue, { color: colors.text.secondary }]}
-              >
-                {getThemeText()}
-              </Text>
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={colors.text.secondary}
-              />
-            </View>
-          </Pressable>
+            <Pressable
+              style={[
+                styles.menuItem,
+                { borderBottomColor: colors.border.secondary },
+              ]}
+              onPress={() => setShowThemeModal(true)}
+            >
+              <View style={styles.menuContent}>
+                <Ionicons
+                  name={isDark ? 'moon' : 'moon-outline'}
+                  size={24}
+                  color={colors.text.secondary}
+                />
+                <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                  ダークモード
+                </Text>
+              </View>
+              <View style={styles.menuRight}>
+                <Text
+                  style={[styles.menuValue, { color: colors.text.secondary }]}
+                >
+                  {getThemeText()}
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={20}
+                  color={colors.text.secondary}
+                />
+              </View>
+            </Pressable>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text.secondary }]}>
-          データ管理
-        </Text>
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text.secondary }]}>
+            データ管理
+          </Text>
 
-        <View
-          style={[
-            styles.menuList,
-            {
-              backgroundColor: colors.background.primary,
-              borderColor: colors.border.primary,
-            },
-          ]}
-        >
-          <Pressable
+          <View
             style={[
-              styles.menuItem,
-              { borderBottomColor: colors.border.secondary },
+              styles.menuList,
+              {
+                backgroundColor: colors.background.primary,
+                borderColor: colors.border.primary,
+              },
             ]}
           >
-            <View style={styles.menuContent}>
+            <Pressable
+              style={[
+                styles.menuItem,
+                { borderBottomColor: colors.border.secondary },
+              ]}
+            >
+              <View style={styles.menuContent}>
+                <Ionicons
+                  name="cloud-upload-outline"
+                  size={24}
+                  color={colors.text.secondary}
+                />
+                <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                  データのエクスポート
+                </Text>
+              </View>
               <Ionicons
-                name="cloud-upload-outline"
-                size={24}
+                name="chevron-forward"
+                size={20}
                 color={colors.text.secondary}
               />
-              <Text style={[styles.menuText, { color: colors.text.primary }]}>
-                データのエクスポート
-              </Text>
-            </View>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.text.secondary}
-            />
-          </Pressable>
+            </Pressable>
 
-          <Pressable
-            style={[
-              styles.menuItem,
-              { borderBottomColor: colors.border.secondary },
-            ]}
-          >
-            <View style={styles.menuContent}>
+            <Pressable
+              style={[
+                styles.menuItem,
+                { borderBottomColor: colors.border.secondary },
+              ]}
+            >
+              <View style={styles.menuContent}>
+                <Ionicons
+                  name="cloud-download-outline"
+                  size={24}
+                  color={colors.text.secondary}
+                />
+                <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                  データのインポート
+                </Text>
+              </View>
               <Ionicons
-                name="cloud-download-outline"
-                size={24}
+                name="chevron-forward"
+                size={20}
                 color={colors.text.secondary}
               />
-              <Text style={[styles.menuText, { color: colors.text.primary }]}>
-                データのインポート
-              </Text>
-            </View>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.text.secondary}
-            />
-          </Pressable>
+            </Pressable>
 
-          <Pressable
-            style={[styles.menuItem, styles.dangerItem]}
-            onPress={() => {
-              Alert.alert(
-                'データの削除',
-                '全てのデータを削除しますか？この操作は元に戻せません。',
-                [
-                  { text: 'キャンセル', style: 'cancel' },
-                  {
-                    text: '削除',
-                    style: 'destructive',
-                    onPress: () => {
-                      /* 削除処理を実装 */
+            <Pressable
+              style={[styles.menuItem, styles.dangerItem]}
+              onPress={() => {
+                Alert.alert(
+                  'データの削除',
+                  '全てのデータを削除しますか？この操作は元に戻せません。',
+                  [
+                    { text: 'キャンセル', style: 'cancel' },
+                    {
+                      text: '削除',
+                      style: 'destructive',
+                      onPress: () => {
+                        /* 削除処理を実装 */
+                      },
                     },
-                  },
-                ]
-              );
-            }}
-          >
-            <View style={styles.menuContent}>
+                  ]
+                );
+              }}
+            >
+              <View style={styles.menuContent}>
+                <Ionicons
+                  name="trash-outline"
+                  size={24}
+                  color={colors.state.error}
+                />
+                <Text
+                  style={[styles.dangerText, { color: colors.state.error }]}
+                >
+                  全データを削除
+                </Text>
+              </View>
               <Ionicons
-                name="trash-outline"
-                size={24}
+                name="chevron-forward"
+                size={20}
                 color={colors.state.error}
               />
-              <Text style={[styles.dangerText, { color: colors.state.error }]}>
-                全データを削除
-              </Text>
-            </View>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.state.error}
-            />
-          </Pressable>
+            </Pressable>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text.secondary }]}>
-          情報
-        </Text>
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text.secondary }]}>
+            情報
+          </Text>
 
-        <View
-          style={[
-            styles.menuList,
-            {
-              backgroundColor: colors.background.primary,
-              borderColor: colors.border.primary,
-            },
-          ]}
-        >
-          <Pressable style={[styles.menuItem]}>
-            <View style={styles.menuContent}>
-              <Ionicons
-                name="information-circle-outline"
-                size={24}
+          <View
+            style={[
+              styles.menuList,
+              {
+                backgroundColor: colors.background.primary,
+                borderColor: colors.border.primary,
+              },
+            ]}
+          >
+            <Pressable style={[styles.menuItem]}>
+              <View style={styles.menuContent}>
+                <Ionicons
+                  name="information-circle-outline"
+                  size={24}
+                  color={colors.text.secondary}
+                />
+                <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                  アプリについて
+                </Text>
+              </View>
+              <View style={styles.menuRight}>
+                <Text
+                  style={[styles.menuValue, { color: colors.text.secondary }]}
+                >
+                  v1.0.0
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={20}
+                  color={colors.text.secondary}
+                />
+              </View>
+            </Pressable>
+          </View>
+        </View>
+
+        <List.Section>
+          <List.Subheader style={{ color: colors.text.secondary }}>
+            買い物リスト設定
+          </List.Subheader>
+          <List.Item
+            title="カテゴリ管理"
+            description="カテゴリの追加・編集・並び替え"
+            titleStyle={{ color: colors.text.primary }}
+            descriptionStyle={{ color: colors.text.secondary }}
+            left={(props) => (
+              <List.Icon
+                {...props}
+                icon="tag-multiple"
                 color={colors.text.secondary}
               />
-              <Text style={[styles.menuText, { color: colors.text.primary }]}>
-                アプリについて
-              </Text>
-            </View>
-            <View style={styles.menuRight}>
-              <Text
-                style={[styles.menuValue, { color: colors.text.secondary }]}
-              >
-                v1.0.0
-              </Text>
-              <Ionicons
-                name="chevron-forward"
-                size={20}
+            )}
+            right={(props) => (
+              <List.Icon
+                {...props}
+                icon="chevron-right"
                 color={colors.text.secondary}
               />
-            </View>
-          </Pressable>
-        </View>
-      </View>
-
-      <List.Section>
-        <List.Subheader style={{ color: colors.text.secondary }}>
-          買い物リスト設定
-        </List.Subheader>
-        <List.Item
-          title="カテゴリ管理"
-          description="カテゴリの追加・編集・並び替え"
-          titleStyle={{ color: colors.text.primary }}
-          descriptionStyle={{ color: colors.text.secondary }}
-          left={(props) => (
-            <List.Icon
-              {...props}
-              icon="tag-multiple"
-              color={colors.text.secondary}
-            />
-          )}
-          right={(props) => (
-            <List.Icon
-              {...props}
-              icon="chevron-right"
-              color={colors.text.secondary}
-            />
-          )}
-          onPress={() => router.push('/settings/categories')}
-          style={{ backgroundColor: colors.background.primary }}
-        />
-      </List.Section>
+            )}
+            onPress={() => router.push('/settings/categories')}
+            style={{ backgroundColor: colors.background.primary }}
+          />
+        </List.Section>
+      </ScrollView>
 
       {/* テーマ設定モーダル */}
       {showThemeModal && (
@@ -312,7 +324,7 @@ export default function SettingsScreen() {
             </View>
 
             {!followSystem && (
-              <>
+              <Fragment>
                 <View
                   style={[
                     styles.themeOption,
@@ -382,7 +394,7 @@ export default function SettingsScreen() {
                     thumbColor="#f4f3f4"
                   />
                 </View>
-              </>
+              </Fragment>
             )}
 
             <View style={styles.modalButtons}>
@@ -412,6 +424,9 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  scrollView: {
     flex: 1,
   },
   header: {

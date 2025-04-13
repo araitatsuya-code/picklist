@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Image,
   ScrollView,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
 import { useCategoryStore } from '../../src/stores/useCategoryStore';
@@ -30,16 +31,14 @@ export default function FrequentProductsScreen() {
     new Set()
   );
   const [menuVisible, setMenuVisible] = useState(false);
-  const { products, searchProducts } = useFrequentProductStore();
+  const { products, searchProducts, updateProduct } = useFrequentProductStore();
   const { categories } = useCategoryStore();
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set()
   );
   const [imageUris, setImageUris] = useState<Record<string, string>>({});
-  const [loadingErrors, setLoadingErrors] = useState<Record<string, boolean>>(
-    {}
-  );
+  const [errorProducts, setErrorProducts] = useState<Set<string>>(new Set());
 
   // カテゴリーを優先順位でソート
   const sortedCategories = useMemo(() => {
@@ -103,12 +102,11 @@ export default function FrequentProductsScreen() {
     router.push(`/(products)/add-to-list?selectedIds=${selectedIds}`);
   };
 
-  // 画像URIのロードを試みる
   const loadImageUri = useCallback(
     async (imageKey: string) => {
       try {
         // すでにエラーが発生した画像キーはスキップ
-        if (loadingErrors[imageKey]) return;
+        if (errorProducts.has(imageKey)) return;
 
         const uri = await AsyncStorage.getItem(imageKey);
         if (uri) {
@@ -117,55 +115,18 @@ export default function FrequentProductsScreen() {
         }
       } catch (error) {
         console.error('Failed to load image:', error);
-        // エラーが発生した画像キーを記録
-        setLoadingErrors((prev) => ({ ...prev, [imageKey]: true }));
+        setErrorProducts((prev) => new Set(prev).add(imageKey));
       }
     },
-    [loadingErrors]
+    [errorProducts]
   );
-
-  // 無効な画像参照をクリーンアップ
-  useEffect(() => {
-    // すでに発生したエラーをローカルストレージに保存
-    const saveErrorsToStorage = async () => {
-      try {
-        const errorKeys = Object.keys(loadingErrors);
-        if (errorKeys.length > 0) {
-          await AsyncStorage.setItem(
-            'imageLoadingErrors',
-            JSON.stringify(loadingErrors)
-          );
-        }
-      } catch (error) {
-        console.error('Failed to save image errors:', error);
-      }
-    };
-
-    saveErrorsToStorage();
-  }, [loadingErrors]);
-
-  // 保存されていたエラーを読み込む
-  useEffect(() => {
-    const loadErrorsFromStorage = async () => {
-      try {
-        const errorsJson = await AsyncStorage.getItem('imageLoadingErrors');
-        if (errorsJson) {
-          const errors = JSON.parse(errorsJson);
-          setLoadingErrors(errors);
-        }
-      } catch (error) {
-        console.error('Failed to load image errors:', error);
-      }
-    };
-
-    loadErrorsFromStorage();
-  }, []);
 
   const renderProductImage = (
     imageKey: string | null | undefined,
-    productName: string
+    productName: string,
+    productId: string
   ) => {
-    if (!imageKey || loadingErrors[imageKey]) {
+    if (!imageKey || errorProducts.has(imageKey)) {
       return (
         <View
           style={[
@@ -196,21 +157,37 @@ export default function FrequentProductsScreen() {
         style={styles.productImage}
         defaultSource={noImage}
         onError={() => {
-          console.warn('Image loading error for product:', productName);
+          // エラーが発生したことを記録
+          setErrorProducts((prev) => new Set(prev).add(imageKey));
 
-          // AsyncStorageから無効な参照を削除
-          AsyncStorage.removeItem(imageKey).catch((err) =>
-            console.error('Failed to remove invalid image key:', err)
-          );
-
+          // 画像URIをクリア
           setImageUris((prev) => {
             const next = { ...prev };
             delete next[imageKey];
             return next;
           });
 
-          // エラーが発生した画像キーを記録
-          setLoadingErrors((prev) => ({ ...prev, [imageKey]: true }));
+          // 商品データと画像情報を自動的にクリア
+          const product = products.find((p) => p.id === productId);
+          if (product && product.imageUrl) {
+            // AsyncStorageから該当の画像キーを削除
+            AsyncStorage.removeItem(product.imageUrl).catch((err) =>
+              console.error('Failed to remove invalid image key:', err)
+            );
+
+            // 商品データを更新
+            updateProduct(productId, {
+              ...product,
+              imageUrl: undefined,
+            });
+
+            // 通知メッセージを表示
+            Alert.alert(
+              '画像情報をクリアしました',
+              `「${productName}」の画像が見つからなかったため、画像情報をクリアしました。`,
+              [{ text: 'OK' }]
+            );
+          }
         }}
         accessible={true}
         accessibilityLabel={`${productName}の画像`}
@@ -402,7 +379,7 @@ export default function FrequentProductsScreen() {
                   />
                 </View>
               )}
-              {renderProductImage(item.imageUrl, item.name)}
+              {renderProductImage(item.imageUrl, item.name, item.id)}
               <View style={styles.productInfo}>
                 <Text
                   style={[styles.productName, { color: colors.text.primary }]}
