@@ -18,15 +18,24 @@ const WelcomePage: React.FC = () => {
         <View
           style={[
             styles.overlay,
-            { backgroundColor: theme.colors.background + '80' },
+            {
+              backgroundColor: (theme?.colors?.background || '#ffffff') + '80',
+            },
           ]}
         />
       </View>
       <View style={styles.content}>
-        <Text style={[styles.title, { color: theme.colors.text }]}>
+        <Text
+          style={[styles.title, { color: theme?.colors?.text || '#000000' }]}
+        >
           Picklistへようこそ
         </Text>
-        <Text style={[styles.description, { color: theme.colors.text }]}>
+        <Text
+          style={[
+            styles.description,
+            { color: theme?.colors?.text || '#000000' },
+          ]}
+        >
           買い物リストを簡単に管理できる{'\n'}
           あなたの買い物アシスタント
         </Text>

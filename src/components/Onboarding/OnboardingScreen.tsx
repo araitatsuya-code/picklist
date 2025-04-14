@@ -30,7 +30,10 @@ export const OnboardingScreen: React.FC = () => {
 
   return (
     <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      style={[
+        styles.container,
+        { backgroundColor: theme?.colors?.background || '#ffffff' },
+      ]}
     >
       <OnboardingPager currentPage={currentPage} />
       <OnboardingControls

@@ -26,8 +26,8 @@ const OnboardingControls: React.FC<OnboardingControlsProps> = ({
               {
                 backgroundColor:
                   page === currentPage
-                    ? theme.colors.primary
-                    : theme.colors.border,
+                    ? theme?.colors?.primary || '#007AFF'
+                    : theme?.colors?.border || '#E5E5EA',
               },
             ]}
           />
@@ -38,7 +38,12 @@ const OnboardingControls: React.FC<OnboardingControlsProps> = ({
           style={[styles.button, styles.skipButton]}
           onPress={onSkip}
         >
-          <Text style={[styles.buttonText, { color: theme.colors.text }]}>
+          <Text
+            style={[
+              styles.buttonText,
+              { color: theme?.colors?.text || '#000000' },
+            ]}
+          >
             スキップ
           </Text>
         </TouchableOpacity>
@@ -46,7 +51,12 @@ const OnboardingControls: React.FC<OnboardingControlsProps> = ({
           style={[styles.button, styles.nextButton]}
           onPress={onNext}
         >
-          <Text style={[styles.buttonText, { color: theme.colors.background }]}>
+          <Text
+            style={[
+              styles.buttonText,
+              { color: theme?.colors?.background || '#ffffff' },
+            ]}
+          >
             {currentPage === 3 ? '完了' : '次へ'}
           </Text>
         </TouchableOpacity>

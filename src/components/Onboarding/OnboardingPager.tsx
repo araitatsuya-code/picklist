@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
+import WelcomePage from './WelcomePage';
 
 const { width } = Dimensions.get('window');
 
@@ -14,9 +15,7 @@ const OnboardingPager: React.FC<OnboardingPagerProps> = ({ currentPage }) => {
   const renderPage = () => {
     switch (currentPage) {
       case 0:
-        return (
-          <View style={styles.page}>{/* ウェルカム画面のコンテンツ */}</View>
-        );
+        return <WelcomePage />;
       case 1:
         return <View style={styles.page}>{/* 買い物リスト機能の説明 */}</View>;
       case 2:
@@ -30,7 +29,10 @@ const OnboardingPager: React.FC<OnboardingPagerProps> = ({ currentPage }) => {
 
   return (
     <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      style={[
+        styles.container,
+        { backgroundColor: theme?.colors?.background || '#ffffff' },
+      ]}
     >
       {renderPage()}
     </View>
