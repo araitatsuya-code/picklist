@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from '../../hooks/useTheme';
 
 interface OnboardingContextType {
   isFirstLaunch: boolean;
@@ -21,7 +20,6 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isFirstLaunch, setIsFirstLaunch] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
-  const { theme } = useTheme();
 
   useEffect(() => {
     checkFirstLaunch();

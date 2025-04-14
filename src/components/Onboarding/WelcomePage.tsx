@@ -1,41 +1,29 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
-
-const { width, height } = Dimensions.get('window');
+import welcomeImage from '../../assets/onboarding/welcome.png';
 
 const WelcomePage: React.FC = () => {
-  const { theme } = useTheme();
+  const { colors } = useTheme();
 
   return (
     <View style={styles.container}>
       <View style={styles.imageContainer}>
-        <Image
-          source={require('../../assets/onboarding/welcome.png')}
-          style={styles.image}
-          resizeMode="cover"
-        />
+        <Image source={welcomeImage} style={styles.image} resizeMode="cover" />
         <View
           style={[
             styles.overlay,
             {
-              backgroundColor: (theme?.colors?.background || '#ffffff') + '80',
+              backgroundColor: colors.background.primary + '80',
             },
           ]}
         />
       </View>
       <View style={styles.content}>
-        <Text
-          style={[styles.title, { color: theme?.colors?.text || '#000000' }]}
-        >
+        <Text style={[styles.title, { color: colors.text.primary }]}>
           Picklistへようこそ
         </Text>
-        <Text
-          style={[
-            styles.description,
-            { color: theme?.colors?.text || '#000000' },
-          ]}
-        >
+        <Text style={[styles.description, { color: colors.text.primary }]}>
           買い物リストを簡単に管理できる{'\n'}
           あなたの買い物アシスタント
         </Text>

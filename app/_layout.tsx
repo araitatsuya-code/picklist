@@ -2,11 +2,26 @@ import { Stack } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
+import { useEffect } from 'react';
 import { ThemeProvider } from '../src/components/ThemeProvider';
 import { OnboardingProvider } from '../src/components/Onboarding/OnboardingProvider';
 import OnboardingScreen from '../src/components/Onboarding/OnboardingScreen';
+import { useFrequentProductStore } from '../src/stores/useFrequentProductStore';
+import * as imageUtils from '../src/utils/imageUtils';
 
 export default function Layout() {
+  const products = useFrequentProductStore((state) => state.products);
+
+  // 画像の同期処理
+  useEffect(() => {
+    const imageKeys = products
+      .map((product) => product.imageUrl)
+      .filter((key): key is string => !!key);
+
+    imageUtils.saveImageKeys(imageKeys);
+    imageUtils.cleanupUnusedImages();
+  }, [products]);
+
   return (
     <ThemeProvider>
       <OnboardingProvider>

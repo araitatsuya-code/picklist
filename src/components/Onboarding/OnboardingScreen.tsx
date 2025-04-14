@@ -8,7 +8,7 @@ import OnboardingControls from './OnboardingControls';
 const { width, height } = Dimensions.get('window');
 
 export const OnboardingScreen: React.FC = () => {
-  const { theme } = useTheme();
+  const { colors } = useTheme();
   const { isFirstLaunch, currentPage, setCurrentPage, completeOnboarding } =
     useOnboarding();
 
@@ -30,10 +30,7 @@ export const OnboardingScreen: React.FC = () => {
 
   return (
     <View
-      style={[
-        styles.container,
-        { backgroundColor: theme?.colors?.background || '#ffffff' },
-      ]}
+      style={[styles.container, { backgroundColor: colors.background.primary }]}
     >
       <OnboardingPager currentPage={currentPage} />
       <OnboardingControls

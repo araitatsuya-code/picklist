@@ -10,7 +10,7 @@ interface OnboardingPagerProps {
 }
 
 const OnboardingPager: React.FC<OnboardingPagerProps> = ({ currentPage }) => {
-  const { theme } = useTheme();
+  const { colors } = useTheme();
 
   const renderPage = () => {
     switch (currentPage) {
@@ -29,10 +29,7 @@ const OnboardingPager: React.FC<OnboardingPagerProps> = ({ currentPage }) => {
 
   return (
     <View
-      style={[
-        styles.container,
-        { backgroundColor: theme?.colors?.background || '#ffffff' },
-      ]}
+      style={[styles.container, { backgroundColor: colors.background.primary }]}
     >
       {renderPage()}
     </View>
