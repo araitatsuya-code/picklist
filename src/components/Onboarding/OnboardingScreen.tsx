@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
-import { useOnboarding } from './OnboardingProvider';
+import { useOnboardingStore } from '../../stores/useOnboardingStore';
 import OnboardingPager from './OnboardingPager';
 import OnboardingControls from './OnboardingControls';
 
@@ -10,7 +10,7 @@ const { width, height } = Dimensions.get('window');
 export const OnboardingScreen: React.FC = () => {
   const { colors } = useTheme();
   const { isFirstLaunch, currentPage, setCurrentPage, completeOnboarding } =
-    useOnboarding();
+    useOnboardingStore();
 
   if (!isFirstLaunch) {
     return null;
