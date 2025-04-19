@@ -19,13 +19,13 @@ import { Menu } from 'react-native-paper';
 import { FrequentProduct } from '../../src/types/frequentProduct';
 import noImage from '../../assets/no-image.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useThemeContext } from '../../src/components/ThemeProvider';
+import { useTheme } from '../../src/hooks/useTheme';
 
 /**
  * よく買う商品リストを表示する画面
  */
 export default function FrequentProductsScreen() {
-  const { colors } = useThemeContext();
+  const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
     new Set()

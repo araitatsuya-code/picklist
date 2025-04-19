@@ -12,12 +12,12 @@ import { usePicklistStore } from '../../src/stores/usePicklistStore';
 import { Link } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeContext } from '../../src/components/ThemeProvider';
+import { useTheme } from '../../src/hooks/useTheme';
 
 export default function PicklistScreen() {
   const picklists = usePicklistStore((state) => state.picklists);
   const { addPicklist, removePicklist } = usePicklistStore();
-  const { colors, isDark } = useThemeContext();
+  const { colors, isDark } = useTheme();
 
   return (
     <SafeAreaView
