@@ -10,9 +10,11 @@ import {
   ScrollView,
   SafeAreaView,
   Alert,
+  useColorScheme,
 } from 'react-native';
 import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
 import { useCategoryStore } from '../../src/stores/useCategoryStore';
+import { useThemeStore } from '../../src/stores/useThemeStore';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Menu } from 'react-native-paper';
@@ -21,24 +23,233 @@ import noImage from '../../assets/no-image.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../../src/hooks/useTheme';
 
+interface CategoryChipProps {
+  category: {
+    id: string;
+    name: string;
+  };
+  selectedCategories: Set<string>;
+  toggleCategory: (id: string) => void;
+  colors: {
+    accent: {
+      primary: string;
+    };
+    background: {
+      primary: string;
+      secondary: string;
+      tertiary: string;
+    };
+    border: {
+      primary: string;
+      secondary: string;
+    };
+    text: {
+      primary: string;
+      secondary: string;
+      tertiary: string;
+      inverse: string;
+    };
+  };
+}
+
+const CategoryChip: React.FC<CategoryChipProps> = ({
+  category,
+  selectedCategories,
+  toggleCategory,
+  colors,
+}) => {
+  const isSelected = selectedCategories.has(category.id);
+
+  return (
+    <Pressable
+      style={[
+        styles.categoryChip,
+        {
+          backgroundColor: isSelected
+            ? colors.accent.primary
+            : colors.background.tertiary,
+          borderColor: isSelected
+            ? colors.accent.primary
+            : colors.border.primary,
+        },
+      ]}
+      onPress={() => toggleCategory(category.id)}
+    >
+      <Text
+        style={[
+          styles.categoryChipText,
+          {
+            color: isSelected ? colors.text.inverse : colors.text.secondary,
+          },
+        ]}
+      >
+        {category.name}
+      </Text>
+    </Pressable>
+  );
+};
+
+interface ProductItemProps {
+  item: FrequentProduct;
+  isSelectionMode: boolean;
+  selectedProducts: Set<string>;
+  handleProductPress: (product: FrequentProduct) => void;
+  renderProductImage: (
+    imageKey: string | null | undefined,
+    productName: string,
+    productId: string
+  ) => React.ReactNode;
+  categories: Array<{
+    id: string;
+    name: string;
+  }>;
+  colors: {
+    border: {
+      primary: string;
+      secondary: string;
+    };
+    background: {
+      primary: string;
+      secondary: string;
+      tertiary: string;
+    };
+    accent: {
+      primary: string;
+      secondary: string;
+    };
+    text: {
+      primary: string;
+      secondary: string;
+      tertiary: string;
+      inverse: string;
+    };
+  };
+}
+
+const ProductItem: React.FC<ProductItemProps> = ({
+  item,
+  isSelectionMode,
+  selectedProducts,
+  handleProductPress,
+  renderProductImage,
+  categories,
+  colors,
+}) => {
+  const isSelected = selectedProducts.has(item.id);
+
+  return (
+    <Pressable
+      style={[
+        styles.productItem,
+        {
+          borderBottomColor: colors.border.secondary,
+          backgroundColor: colors.background.primary,
+        },
+        isSelectionMode &&
+          isSelected && {
+            backgroundColor: colors.accent.secondary,
+          },
+      ]}
+      onPress={() => handleProductPress(item)}
+    >
+      {isSelectionMode && (
+        <View style={styles.checkbox}>
+          <Ionicons
+            name={isSelected ? 'checkmark-circle' : 'ellipse-outline'}
+            size={24}
+            color={isSelected ? colors.accent.primary : colors.text.tertiary}
+          />
+        </View>
+      )}
+      {renderProductImage(item.imageUrl, item.name, item.id)}
+      <View style={styles.productInfo}>
+        <Text style={[styles.productName, { color: colors.text.primary }]}>
+          {item.name}
+        </Text>
+        <View style={styles.productDetails}>
+          {item.category && (
+            <Text
+              style={[
+                styles.productCategory,
+                {
+                  color: colors.text.secondary,
+                  backgroundColor: colors.background.tertiary,
+                },
+              ]}
+            >
+              {categories.find((c) => c.id === item.category)?.name || ''}
+            </Text>
+          )}
+          <Text style={[styles.addCount, { color: colors.text.secondary }]}>
+            追加回数: {item.addCount || 0}回
+          </Text>
+        </View>
+      </View>
+    </Pressable>
+  );
+};
+
+interface AddToListButtonProps {
+  selectedProducts: Set<string>;
+  handleAddToList: () => void;
+  colors: {
+    accent: {
+      primary: string;
+    };
+    text: {
+      inverse: string;
+    };
+  };
+}
+
+const AddToListButton: React.FC<AddToListButtonProps> = ({
+  selectedProducts,
+  handleAddToList,
+  colors,
+}) => {
+  if (selectedProducts.size === 0) return null;
+
+  return (
+    <Pressable
+      style={[
+        styles.addToListButton,
+        { backgroundColor: colors.accent.primary },
+      ]}
+      onPress={handleAddToList}
+    >
+      <Text
+        style={[styles.addToListButtonText, { color: colors.text.inverse }]}
+      >
+        {selectedProducts.size}個の商品をリストに追加
+      </Text>
+    </Pressable>
+  );
+};
+
 /**
  * よく買う商品リストを表示する画面
  */
 export default function FrequentProductsScreen() {
   const { colors } = useTheme();
+  const systemColorScheme = useColorScheme();
+  const { theme, followSystem } = useThemeStore();
+
+  // State
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
     new Set()
   );
   const [menuVisible, setMenuVisible] = useState(false);
-  const { products, searchProducts, updateProduct } = useFrequentProductStore();
-  const { categories } = useCategoryStore();
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set()
   );
   const [imageUris, setImageUris] = useState<Record<string, string>>({});
   const [errorProducts, setErrorProducts] = useState<Set<string>>(new Set());
+
+  // Store hooks
+  const { products, searchProducts, updateProduct } = useFrequentProductStore();
+  const { categories } = useCategoryStore();
 
   // カテゴリーを優先順位でソート
   const sortedCategories = useMemo(() => {
@@ -59,6 +270,7 @@ export default function FrequentProductsScreen() {
     return filtered;
   }, [products, searchQuery, selectedCategories, searchProducts]);
 
+  // Event handlers
   const toggleCategory = (categoryId: string) => {
     setSelectedCategories((prev) => {
       const next = new Set(prev);
@@ -102,6 +314,7 @@ export default function FrequentProductsScreen() {
     router.push(`/(products)/add-to-list?selectedIds=${selectedIds}`);
   };
 
+  // Image handling
   const loadImageUri = useCallback(
     async (imageKey: string) => {
       try {
@@ -119,6 +332,43 @@ export default function FrequentProductsScreen() {
       }
     },
     [errorProducts]
+  );
+
+  const handleImageError = useCallback(
+    (imageKey: string, productName: string, productId: string) => {
+      // エラーが発生したことを記録
+      setErrorProducts((prev) => new Set(prev).add(imageKey));
+
+      // 画像URIをクリア
+      setImageUris((prev) => {
+        const next = { ...prev };
+        delete next[imageKey];
+        return next;
+      });
+
+      // 商品データと画像情報を自動的にクリア
+      const product = products.find((p) => p.id === productId);
+      if (product && product.imageUrl) {
+        // AsyncStorageから該当の画像キーを削除
+        AsyncStorage.removeItem(product.imageUrl).catch((err) =>
+          console.error('Failed to remove invalid image key:', err)
+        );
+
+        // 商品データを更新
+        updateProduct(productId, {
+          ...product,
+          imageUrl: undefined,
+        });
+
+        // 通知メッセージを表示
+        Alert.alert(
+          '画像情報をクリアしました',
+          `「${productName}」の画像が見つからなかったため、画像情報をクリアしました。`,
+          [{ text: 'OK' }]
+        );
+      }
+    },
+    [products, updateProduct]
   );
 
   const renderProductImage = (
@@ -156,39 +406,7 @@ export default function FrequentProductsScreen() {
         source={{ uri: imageUri }}
         style={styles.productImage}
         defaultSource={noImage}
-        onError={() => {
-          // エラーが発生したことを記録
-          setErrorProducts((prev) => new Set(prev).add(imageKey));
-
-          // 画像URIをクリア
-          setImageUris((prev) => {
-            const next = { ...prev };
-            delete next[imageKey];
-            return next;
-          });
-
-          // 商品データと画像情報を自動的にクリア
-          const product = products.find((p) => p.id === productId);
-          if (product && product.imageUrl) {
-            // AsyncStorageから該当の画像キーを削除
-            AsyncStorage.removeItem(product.imageUrl).catch((err) =>
-              console.error('Failed to remove invalid image key:', err)
-            );
-
-            // 商品データを更新
-            updateProduct(productId, {
-              ...product,
-              imageUrl: undefined,
-            });
-
-            // 通知メッセージを表示
-            Alert.alert(
-              '画像情報をクリアしました',
-              `「${productName}」の画像が見つからなかったため、画像情報をクリアしました。`,
-              [{ text: 'OK' }]
-            );
-          }
-        }}
+        onError={() => handleImageError(imageKey, productName, productId)}
         accessible={true}
         accessibilityLabel={`${productName}の画像`}
         resizeMode="cover"
@@ -201,6 +419,7 @@ export default function FrequentProductsScreen() {
       style={[styles.container, { backgroundColor: colors.background.primary }]}
     >
       <View style={styles.content}>
+        {/* Header section with search and filters */}
         <View style={styles.header}>
           <TextInput
             style={[
@@ -251,6 +470,7 @@ export default function FrequentProductsScreen() {
             </Text>
           </Pressable>
 
+          {/* Category filter menu */}
           {categories.length > 0 && (
             <Menu
               visible={menuVisible}
@@ -301,8 +521,9 @@ export default function FrequentProductsScreen() {
           )}
         </View>
 
+        {/* Category chips */}
         <View style={styles.categoryArea}>
-          {categories.length > 0 ? (
+          {categories.length > 0 && (
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -310,140 +531,54 @@ export default function FrequentProductsScreen() {
               style={styles.categoryScroll}
             >
               {sortedCategories.map((category) => (
-                <Pressable
+                <CategoryChip
                   key={category.id}
-                  style={[
-                    styles.categoryChip,
-                    {
-                      backgroundColor: selectedCategories.has(category.id)
-                        ? colors.accent.primary
-                        : colors.background.tertiary,
-                      borderColor: selectedCategories.has(category.id)
-                        ? colors.accent.primary
-                        : colors.border.primary,
-                    },
-                  ]}
-                  onPress={() => toggleCategory(category.id)}
-                >
-                  <Text
-                    style={[
-                      styles.categoryChipText,
-                      {
-                        color: selectedCategories.has(category.id)
-                          ? colors.text.inverse
-                          : colors.text.secondary,
-                      },
-                    ]}
-                  >
-                    {category.name}
-                  </Text>
-                </Pressable>
+                  category={category}
+                  selectedCategories={selectedCategories}
+                  toggleCategory={toggleCategory}
+                  colors={colors}
+                />
               ))}
             </ScrollView>
-          ) : null}
+          )}
         </View>
 
+        {/* Product list */}
         <FlatList
           data={filteredProducts}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.productList}
           renderItem={({ item }) => (
-            <Pressable
-              style={[
-                styles.productItem,
-                {
-                  borderBottomColor: colors.border.secondary,
-                  backgroundColor: colors.background.primary,
-                },
-                isSelectionMode &&
-                  selectedProducts.has(item.id) && {
-                    backgroundColor: colors.accent.secondary,
-                  },
-              ]}
-              onPress={() => handleProductPress(item)}
-            >
-              {isSelectionMode && (
-                <View style={styles.checkbox}>
-                  <Ionicons
-                    name={
-                      selectedProducts.has(item.id)
-                        ? 'checkmark-circle'
-                        : 'ellipse-outline'
-                    }
-                    size={24}
-                    color={
-                      selectedProducts.has(item.id)
-                        ? colors.accent.primary
-                        : colors.text.tertiary
-                    }
-                  />
-                </View>
-              )}
-              {renderProductImage(item.imageUrl, item.name, item.id)}
-              <View style={styles.productInfo}>
-                <Text
-                  style={[styles.productName, { color: colors.text.primary }]}
-                >
-                  {item.name}
-                </Text>
-                <View style={styles.productDetails}>
-                  {item.category && (
-                    <Text
-                      style={[
-                        styles.productCategory,
-                        {
-                          color: colors.text.secondary,
-                          backgroundColor: colors.background.tertiary,
-                        },
-                      ]}
-                    >
-                      {categories.find((c) => c.id === item.category)?.name ||
-                        ''}
-                    </Text>
-                  )}
-                  <Text
-                    style={[styles.addCount, { color: colors.text.secondary }]}
-                  >
-                    追加回数: {item.addCount || 0}回
-                  </Text>
-                </View>
-              </View>
-            </Pressable>
+            <ProductItem
+              item={item}
+              isSelectionMode={isSelectionMode}
+              selectedProducts={selectedProducts}
+              handleProductPress={handleProductPress}
+              renderProductImage={renderProductImage}
+              categories={categories}
+              colors={colors}
+            />
           )}
         />
 
+        {/* Add to list button when in selection mode */}
         {isSelectionMode && selectedProducts.size > 0 && (
-          <Pressable
-            style={[
-              styles.addToListButton,
-              { backgroundColor: colors.accent.primary },
-            ]}
-            onPress={handleAddToList}
-          >
-            <Text
-              style={[
-                styles.addToListButtonText,
-                { color: colors.text.inverse },
-              ]}
-            >
-              {selectedProducts.size}個の商品をリストに追加
-            </Text>
-          </Pressable>
-        )}
-
-        {!isSelectionMode && (
-          <Link href="/(products)/add" asChild>
-            <Pressable
-              style={[
-                styles.fabButton,
-                { backgroundColor: colors.accent.primary },
-              ]}
-            >
-              <Ionicons name="add" size={24} color={colors.text.inverse} />
-            </Pressable>
-          </Link>
+          <AddToListButton
+            selectedProducts={selectedProducts}
+            handleAddToList={handleAddToList}
+            colors={colors}
+          />
         )}
       </View>
+
+      {/* Floating Action Button */}
+      <Link href="/(products)/add" asChild>
+        <Pressable
+          style={[styles.fabButton, { backgroundColor: colors.accent.primary }]}
+        >
+          <Ionicons name="add" size={24} color={colors.text.inverse} />
+        </Pressable>
+      </Link>
     </SafeAreaView>
   );
 }
