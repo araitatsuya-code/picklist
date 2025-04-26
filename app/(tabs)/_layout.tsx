@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Platform, View } from 'react-native';
-import { useThemeContext } from '../../src/components/ThemeProvider';
+import { useTheme } from '../../src/hooks/useTheme';
 
 type IconName =
   | 'cart-outline'
@@ -12,7 +12,7 @@ type IconName =
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  const { colors, isDark } = useThemeContext();
+  const { colors, isDark } = useTheme();
 
   const renderTabBarIcon = (
     name: IconName,

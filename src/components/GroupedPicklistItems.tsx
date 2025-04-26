@@ -13,7 +13,7 @@ import { PicklistItem } from '../stores/usePicklistStore';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFrequentProductStore } from '../stores/useFrequentProductStore';
-import { useThemeContext } from '../components/ThemeProvider';
+import { useTheme } from '../hooks/useTheme';
 
 interface GroupedPicklistItemsProps {
   listId: string;
@@ -31,7 +31,7 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
   onItemPress,
   onItemDelete,
 }) => {
-  const { colors } = useThemeContext();
+  const { colors } = useTheme();
   const { picklists } = usePicklistStore();
   const { categories } = useCategoryStore();
   const { products } = useFrequentProductStore();

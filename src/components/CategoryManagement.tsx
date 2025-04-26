@@ -10,10 +10,10 @@ import {
 } from 'react-native-paper';
 import { useCategoryStore } from '../stores/useCategoryStore';
 import { Category } from '../stores/useCategoryStore';
-import { useThemeContext } from './ThemeProvider';
+import { useTheme } from '../hooks/useTheme';
 
 export const CategoryManagement: React.FC = () => {
-  const { colors, isDark } = useThemeContext();
+  const { colors, isDark } = useTheme();
   const { categories, addCategory, updateCategory, removeCategory } =
     useCategoryStore();
   const [dialogVisible, setDialogVisible] = useState(false);
