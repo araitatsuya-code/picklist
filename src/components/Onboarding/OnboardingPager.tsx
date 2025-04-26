@@ -3,6 +3,7 @@ import { View, StyleSheet, Dimensions } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 import WelcomePage from './WelcomePage';
 import ShoppingListPage from './ShoppingListPage';
+import CategoryPage from './CategoryPage';
 
 const { width } = Dimensions.get('window');
 
@@ -20,7 +21,7 @@ const OnboardingPager: React.FC<OnboardingPagerProps> = ({ currentPage }) => {
       case 1:
         return <ShoppingListPage />;
       case 2:
-        return <View style={styles.page}>{/* よく買う商品機能の説明 */}</View>;
+        return <CategoryPage />;
       case 3:
         return <View style={styles.page}>{/* その他の便利機能の説明 */}</View>;
       default:
