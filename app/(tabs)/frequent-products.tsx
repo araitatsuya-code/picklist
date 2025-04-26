@@ -421,18 +421,8 @@ export default function FrequentProductsScreen() {
       productName: string,
       productId: string
     ) => {
-      if (!imageKey || errorProducts.has(imageKey)) {
-        return (
-          <View
-            style={[
-              styles.imagePlaceholder,
-              { backgroundColor: colors.background.tertiary },
-            ]}
-          />
-        );
-      }
-
-      if (!imageUris[imageKey]) {
+      // 画像キーがない、エラーがある、またはURIがない場合はプレースホルダーを表示
+      if (!imageKey || errorProducts.has(imageKey) || !imageUris[imageKey]) {
         return (
           <View
             style={[
