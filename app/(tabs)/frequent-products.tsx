@@ -392,7 +392,7 @@ export default function FrequentProductsScreen() {
 
       // 商品データと画像情報を自動的にクリア
       const product = products.find((p) => p.id === productId);
-      if (product && product.imageUrl) {
+      if (product?.imageUrl) {
         // AsyncStorageから該当の画像キーを削除
         AsyncStorage.removeItem(product.imageUrl).catch((err) =>
           console.error('Failed to remove invalid image key:', err)
