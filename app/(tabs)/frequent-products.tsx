@@ -432,12 +432,6 @@ export default function FrequentProductsScreen() {
         );
       }
 
-      useEffect(() => {
-        if (imageKey && !imageUris[imageKey]) {
-          loadImageUri(imageKey);
-        }
-      }, [imageKey, imageUris, loadImageUri]);
-
       if (!imageUris[imageKey]) {
         return (
           <View
@@ -461,8 +455,26 @@ export default function FrequentProductsScreen() {
         />
       );
     },
-    [colors, errorProducts, imageUris, loadImageUri, handleImageError]
+    [colors, errorProducts, imageUris, handleImageError]
   );
+
+  // 画像の読み込みを管理するuseEffect
+  useEffect(() => {
+    const loadImages = async () => {
+      const imageKeys = filteredProducts
+        .map((product) => product.imageUrl)
+        .filter(
+          (key): key is string =>
+            !!key && !imageUris[key] && !errorProducts.has(key)
+        );
+
+      for (const key of imageKeys) {
+        await loadImageUri(key);
+      }
+    };
+
+    loadImages();
+  }, [filteredProducts, imageUris, errorProducts, loadImageUri]);
 
   return (
     <>

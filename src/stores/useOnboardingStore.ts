@@ -5,6 +5,7 @@ interface OnboardingState {
   isFirstLaunch: boolean;
   currentPage: number;
   isCompleted: boolean;
+  lastShown?: string;
   setFirstLaunch: (value: boolean) => void;
   setCurrentPage: (page: number) => void;
   completeOnboarding: () => void;
@@ -17,6 +18,7 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
   isFirstLaunch: true,
   currentPage: 0,
   isCompleted: false,
+  lastShown: undefined,
 
   setFirstLaunch: (value: boolean) => set({ isFirstLaunch: value }),
 

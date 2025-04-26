@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 import categoryGif from '../../assets/onboarding/category.gif';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feature } from './Feature';
 
 const CategoryPage: React.FC = () => {
   const { colors } = useTheme();
@@ -34,7 +34,9 @@ const CategoryPage: React.FC = () => {
           />
         </View>
 
-        <View style={styles.divider} />
+        <View
+          style={[styles.divider, { backgroundColor: colors.border.primary }]}
+        />
 
         <Text style={[styles.title, { color: colors.text.primary }]}>
           ダークモード対応
@@ -60,19 +62,6 @@ const CategoryPage: React.FC = () => {
     </View>
   );
 };
-
-interface FeatureProps {
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  text: string;
-  color: string;
-}
-
-const Feature: React.FC<FeatureProps> = ({ icon, text, color }) => (
-  <View style={styles.featureItem}>
-    <MaterialCommunityIcons name={icon} size={20} color={color} />
-    <Text style={[styles.featureText, { color }]}>{text}</Text>
-  </View>
-);
 
 const styles = StyleSheet.create({
   container: {
@@ -106,19 +95,9 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: 12,
   },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  featureText: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
   divider: {
     width: '100%',
     height: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
     marginVertical: 16,
   },
 });
