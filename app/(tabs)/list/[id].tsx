@@ -19,10 +19,10 @@ import { IconButton, Menu } from 'react-native-paper';
 import { useCategoryStore } from '../../../src/stores/useCategoryStore';
 import { GroupedPicklistItems } from '../../../src/components/GroupedPicklistItems';
 import { useFrequentProductStore } from '../../../src/stores/useFrequentProductStore';
-import { useThemeContext } from '../../../src/components/ThemeProvider';
+import { useTheme } from '../../../src/hooks/useTheme';
 
 export default function ListDetailScreen() {
-  const { colors, isDark } = useThemeContext();
+  const { colors, isDark } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [editMode, setEditMode] = useState(false);
   const [listName, setListName] = useState('');
