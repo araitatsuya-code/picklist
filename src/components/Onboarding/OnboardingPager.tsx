@@ -4,6 +4,7 @@ import { useTheme } from '../../hooks/useTheme';
 import WelcomePage from './WelcomePage';
 import ShoppingListPage from './ShoppingListPage';
 import CategoryPage from './CategoryPage';
+import FrequentProductsPage from './FrequentProductsPage';
 
 const { width } = Dimensions.get('window');
 
@@ -23,7 +24,7 @@ const OnboardingPager: React.FC<OnboardingPagerProps> = ({ currentPage }) => {
       case 2:
         return <CategoryPage />;
       case 3:
-        return <View style={styles.page}>{/* その他の便利機能の説明 */}</View>;
+        return <FrequentProductsPage />;
       default:
         return null;
     }
