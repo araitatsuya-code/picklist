@@ -61,7 +61,11 @@ const OnboardingControls: React.FC<OnboardingControlsProps> = ({
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            style={[styles.button, styles.nextButton]}
+            style={[
+              styles.button,
+              styles.nextButton,
+              { backgroundColor: colors.accent.primary },
+            ]}
             onPress={onNext}
           >
             <Text style={[styles.buttonText, { color: colors.text.inverse }]}>
@@ -113,7 +117,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   nextButton: {
-    backgroundColor: '#007AFF',
+    // 背景色はコンポーネント内で動的に設定
   },
   buttonText: {
     fontSize: 16,
