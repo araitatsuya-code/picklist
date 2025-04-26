@@ -41,6 +41,7 @@ export const OnboardingScreen: React.FC = () => {
       <OnboardingPager currentPage={currentPage} />
       <OnboardingControls
         currentPage={currentPage}
+        totalPages={4}
         onNext={handleNext}
         onSkip={handleSkip}
         onBack={handleBack}

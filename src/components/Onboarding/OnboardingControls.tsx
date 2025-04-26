@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface OnboardingControlsProps {
   currentPage: number;
+  totalPages: number;
   onNext: () => void;
   onSkip: () => void;
   onBack: () => void;
@@ -12,6 +13,7 @@ interface OnboardingControlsProps {
 
 const OnboardingControls: React.FC<OnboardingControlsProps> = ({
   currentPage,
+  totalPages,
   onNext,
   onSkip,
   onBack,
@@ -21,7 +23,7 @@ const OnboardingControls: React.FC<OnboardingControlsProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.pagination}>
-        {[0, 1, 2, 3].map((page) => (
+        {Array.from({ length: totalPages }).map((_, page) => (
           <View
             key={page}
             style={[
@@ -63,7 +65,7 @@ const OnboardingControls: React.FC<OnboardingControlsProps> = ({
             onPress={onNext}
           >
             <Text style={[styles.buttonText, { color: colors.text.inverse }]}>
-              {currentPage === 3 ? '完了' : '次へ'}
+              {currentPage === totalPages - 1 ? '完了' : '次へ'}
             </Text>
           </TouchableOpacity>
         </View>
