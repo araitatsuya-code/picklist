@@ -27,11 +27,6 @@ const ShoppingListPage: React.FC = () => {
             color={colors.text.primary}
           />
           <Feature
-            icon="sort"
-            text="カテゴリー別に自動で整理"
-            color={colors.text.primary}
-          />
-          <Feature
             icon="gesture-tap"
             text="タップで完了・未完了を切り替え"
             color={colors.text.primary}
