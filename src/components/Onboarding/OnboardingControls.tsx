@@ -1,17 +1,20 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface OnboardingControlsProps {
   currentPage: number;
   onNext: () => void;
   onSkip: () => void;
+  onBack: () => void;
 }
 
 const OnboardingControls: React.FC<OnboardingControlsProps> = ({
   currentPage,
   onNext,
   onSkip,
+  onBack,
 }) => {
   const { colors } = useTheme();
 
@@ -42,14 +45,28 @@ const OnboardingControls: React.FC<OnboardingControlsProps> = ({
             スキップ
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.nextButton]}
-          onPress={onNext}
-        >
-          <Text style={[styles.buttonText, { color: colors.text.inverse }]}>
-            {currentPage === 3 ? '完了' : '次へ'}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.navigationButtons}>
+          {currentPage > 0 && (
+            <TouchableOpacity
+              style={[styles.button, styles.backButton]}
+              onPress={onBack}
+            >
+              <MaterialCommunityIcons
+                name="arrow-left"
+                size={24}
+                color={colors.text.primary}
+              />
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={[styles.button, styles.nextButton]}
+            onPress={onNext}
+          >
+            <Text style={[styles.buttonText, { color: colors.text.inverse }]}>
+              {currentPage === 3 ? '完了' : '次へ'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -74,6 +91,12 @@ const styles = StyleSheet.create({
   buttons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  navigationButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   button: {
     paddingVertical: 12,
@@ -82,6 +105,10 @@ const styles = StyleSheet.create({
   },
   skipButton: {
     backgroundColor: 'transparent',
+  },
+  backButton: {
+    backgroundColor: 'transparent',
+    paddingHorizontal: 12,
   },
   nextButton: {
     backgroundColor: '#007AFF',

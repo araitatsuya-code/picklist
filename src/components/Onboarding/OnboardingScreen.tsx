@@ -24,6 +24,12 @@ export const OnboardingScreen: React.FC = () => {
     }
   };
 
+  const handleBack = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   const handleSkip = () => {
     completeOnboarding();
   };
@@ -37,6 +43,7 @@ export const OnboardingScreen: React.FC = () => {
         currentPage={currentPage}
         onNext={handleNext}
         onSkip={handleSkip}
+        onBack={handleBack}
       />
     </View>
   );
