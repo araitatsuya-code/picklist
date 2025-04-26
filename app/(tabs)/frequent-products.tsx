@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -352,7 +352,9 @@ export default function FrequentProductsScreen() {
 
   const handleAddToList = useCallback(() => {
     if (selectedProducts.size === 0) return;
-    const selectedIds = Array.from(selectedProducts).join(',');
+    const selectedIds = encodeURIComponent(
+      Array.from(selectedProducts).join(',')
+    );
     router.push(`/(products)/add-to-list?selectedIds=${selectedIds}`);
   }, [selectedProducts]);
 
@@ -430,8 +432,13 @@ export default function FrequentProductsScreen() {
         );
       }
 
+      useEffect(() => {
+        if (imageKey && !imageUris[imageKey]) {
+          loadImageUri(imageKey);
+        }
+      }, [imageKey, imageUris, loadImageUri]);
+
       if (!imageUris[imageKey]) {
-        loadImageUri(imageKey);
         return (
           <View
             style={[

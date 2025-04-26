@@ -42,8 +42,14 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
     try {
       const storedState = await AsyncStorage.getItem(ONBOARDING_STORAGE_KEY);
       if (storedState) {
-        const { isFirstLaunch, isCompleted } = JSON.parse(storedState);
-        set({ isFirstLaunch, isCompleted });
+        const parsedState = JSON.parse(storedState);
+        if ('isFirstLaunch' in parsedState && 'isCompleted' in parsedState) {
+          set({
+            isFirstLaunch: !!parsedState.isFirstLaunch,
+            isCompleted: !!parsedState.isCompleted,
+            lastShown: parsedState.lastShown || undefined,
+          });
+        }
       }
     } catch (error) {
       console.error('Failed to load onboarding state:', error);
