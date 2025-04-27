@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Card, Button, TextInput } from 'react-native-paper';
+import { Card, Button, TextInput, Snackbar } from 'react-native-paper';
 import { useCategoryStore } from '../../stores/useCategoryStore';
 import { useTheme } from '../../hooks/useTheme';
 import { useCategoryManagement } from './hooks/useCategoryManagement';
@@ -16,21 +16,51 @@ export const CategoryManagement: React.FC = () => {
     useCategoryStore();
   const { newCategoryName, setNewCategoryName, handleNameChange } =
     useCategoryManagement();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // テキスト色の設定 - ダークモード時は白っぽく
   const textColor = isDark ? '#FFFFFF' : colors.text.primary;
   const secondaryTextColor = isDark ? '#E0E0E0' : colors.text.secondary;
 
+  // テーマ設定を外部で定義
+  const inputTheme = {
+    colors: {
+      primary: colors.accent.primary,
+      placeholder: secondaryTextColor,
+      background: colors.background.primary,
+    },
+  };
+
   // 新しいカテゴリを追加
   const handleAddCategory = () => {
-    if (newCategoryName.trim()) {
-      const newPriority = findNextAvailablePriority(categories);
+    const trimmedName = newCategoryName.trim();
+    if (!trimmedName) {
+      setErrorMessage('カテゴリ名を入力してください');
+      return;
+    }
+
+    // 名前の重複チェック
+    if (
+      categories.some(
+        (cat) => cat.name.toLowerCase() === trimmedName.toLowerCase()
+      )
+    ) {
+      setErrorMessage('このカテゴリ名は既に使用されています');
+      return;
+    }
+
+    const newPriority = findNextAvailablePriority(categories);
+    try {
       addCategory({
-        name: newCategoryName,
+        name: trimmedName,
         displayOrder: categories.length + 1,
         priority: newPriority,
       });
       setNewCategoryName('');
+      setShowSuccess(true);
+    } catch {
+      setErrorMessage('カテゴリの追加に失敗しました');
     }
   };
 
@@ -56,13 +86,13 @@ export const CategoryManagement: React.FC = () => {
             style={styles.input}
             mode="outlined"
             textColor={textColor}
-            theme={{
-              colors: {
-                primary: colors.accent.primary,
-                placeholder: secondaryTextColor,
-                background: colors.background.primary,
-              },
-            }}
+            theme={inputTheme}
+            // アクセシビリティプロパティ
+            accessibilityLabel="新しいカテゴリ名の入力"
+            accessibilityHint="ここに新しいカテゴリの名前を入力してください"
+            // 日本語入力のちらつき対策
+            blurOnSubmit={false}
+            autoCapitalize="none"
           />
           <Button
             mode="contained"
@@ -71,6 +101,8 @@ export const CategoryManagement: React.FC = () => {
             style={styles.addButton}
             buttonColor={colors.accent.primary}
             textColor={isDark ? '#FFFFFF' : colors.text.inverse}
+            accessibilityLabel="カテゴリを追加"
+            accessibilityHint="新しいカテゴリを追加します"
           >
             追加
           </Button>
@@ -90,6 +122,26 @@ export const CategoryManagement: React.FC = () => {
         textColor={textColor}
         secondaryTextColor={secondaryTextColor}
       />
+
+      {/* エラーメッセージ */}
+      <Snackbar
+        visible={!!errorMessage}
+        onDismiss={() => setErrorMessage(null)}
+        duration={3000}
+        style={{ backgroundColor: colors.state.error }}
+      >
+        {errorMessage}
+      </Snackbar>
+
+      {/* 成功メッセージ */}
+      <Snackbar
+        visible={showSuccess}
+        onDismiss={() => setShowSuccess(false)}
+        duration={2000}
+        style={{ backgroundColor: colors.state.success }}
+      >
+        カテゴリを追加しました
+      </Snackbar>
     </View>
   );
 };
