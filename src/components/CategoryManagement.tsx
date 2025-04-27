@@ -144,7 +144,14 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   const [name, setName] = useState(category.name);
 
   const handleUpdate = () => {
-    updateCategory(category.id, { name });
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      // 空の名前の場合は元の名前に戻す
+      setName(category.name);
+      setIsEditing(false);
+      return;
+    }
+    updateCategory(category.id, { name: trimmedName });
     setIsEditing(false);
   };
 
