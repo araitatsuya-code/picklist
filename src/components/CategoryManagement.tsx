@@ -25,12 +25,40 @@ export const CategoryManagement: React.FC = () => {
   // 新しいカテゴリを追加
   const handleAddCategory = () => {
     if (newCategoryName.trim()) {
+      // 使用可能な次の優先度を見つける
+      const usedPriorities = categories.map((c) => c.priority);
+      let newPriority = 1;
+      while (usedPriorities.includes(newPriority)) {
+        newPriority++;
+      }
+
       addCategory({
         name: newCategoryName,
         displayOrder: categories.length + 1,
-        priority: categories.length + 1,
+        priority: newPriority,
       });
       setNewCategoryName('');
+    }
+  };
+
+  // 優先度の上下を処理
+  const handleMoveCategory = (category: Category, direction: 'up' | 'down') => {
+    // 並び替えられたカテゴリリストを取得
+    const sorted = [...categories].sort((a, b) => a.priority - b.priority);
+
+    // 現在のカテゴリのインデックスを見つける
+    const currentIndex = sorted.findIndex((c) => c.id === category.id);
+
+    if (direction === 'up' && currentIndex > 0) {
+      // 上に移動：前のカテゴリと優先度を交換
+      const prevCategory = sorted[currentIndex - 1];
+      updateCategory(category.id, { priority: prevCategory.priority });
+      updateCategory(prevCategory.id, { priority: category.priority });
+    } else if (direction === 'down' && currentIndex < sorted.length - 1) {
+      // 下に移動：次のカテゴリと優先度を交換
+      const nextCategory = sorted[currentIndex + 1];
+      updateCategory(category.id, { priority: nextCategory.priority });
+      updateCategory(nextCategory.id, { priority: category.priority });
     }
   };
 
@@ -81,7 +109,7 @@ export const CategoryManagement: React.FC = () => {
       <FlatList
         data={sortedCategories}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <CategoryItem
             category={item}
             updateCategory={updateCategory}
@@ -91,7 +119,9 @@ export const CategoryManagement: React.FC = () => {
             isDark={isDark}
             textColor={textColor}
             secondaryTextColor={secondaryTextColor}
-            categoriesLength={sortedCategories.length}
+            isFirst={index === 0}
+            isLast={index === sortedCategories.length - 1}
+            onMove={(direction) => handleMoveCategory(item, direction)}
           />
         )}
         contentContainerStyle={styles.list}
@@ -126,7 +156,9 @@ interface CategoryItemProps {
   isDark: boolean;
   textColor: string;
   secondaryTextColor: string;
-  categoriesLength: number;
+  isFirst: boolean;
+  isLast: boolean;
+  onMove: (direction: 'up' | 'down') => void;
 }
 
 const CategoryItem: React.FC<CategoryItemProps> = ({
@@ -138,7 +170,9 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   isDark,
   textColor,
   secondaryTextColor,
-  categoriesLength,
+  isFirst,
+  isLast,
+  onMove,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(category.name);
@@ -153,18 +187,6 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
     }
     updateCategory(category.id, { name: trimmedName });
     setIsEditing(false);
-  };
-
-  const moveUp = () => {
-    updateCategory(category.id, {
-      priority: Math.max(1, category.priority - 1),
-    });
-  };
-
-  const moveDown = () => {
-    updateCategory(category.id, {
-      priority: Math.min(category.priority + 1, categoriesLength),
-    });
   };
 
   return (
@@ -201,14 +223,16 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
           <IconButton
             icon="arrow-up"
             size={20}
-            onPress={moveUp}
+            onPress={() => onMove('up')}
             iconColor={isDark ? '#FFFFFF' : colors.text.primary}
+            disabled={isFirst}
           />
           <IconButton
             icon="arrow-down"
             size={20}
-            onPress={moveDown}
+            onPress={() => onMove('down')}
             iconColor={isDark ? '#FFFFFF' : colors.text.primary}
+            disabled={isLast}
           />
         </View>
       )}
