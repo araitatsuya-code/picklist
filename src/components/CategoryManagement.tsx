@@ -91,6 +91,7 @@ export const CategoryManagement: React.FC = () => {
             isDark={isDark}
             textColor={textColor}
             secondaryTextColor={secondaryTextColor}
+            categoriesLength={sortedCategories.length}
           />
         )}
         contentContainerStyle={styles.list}
@@ -125,6 +126,7 @@ interface CategoryItemProps {
   isDark: boolean;
   textColor: string;
   secondaryTextColor: string;
+  categoriesLength: number;
 }
 
 const CategoryItem: React.FC<CategoryItemProps> = ({
@@ -136,6 +138,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   isDark,
   textColor,
   secondaryTextColor,
+  categoriesLength,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(category.name);
@@ -152,7 +155,9 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   };
 
   const moveDown = () => {
-    updateCategory(category.id, { priority: category.priority + 1 });
+    updateCategory(category.id, {
+      priority: Math.min(category.priority + 1, categoriesLength),
+    });
   };
 
   return (
