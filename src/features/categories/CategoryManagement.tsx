@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import {
+  StyleSheet,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { Card, Button, TextInput, Snackbar } from 'react-native-paper';
 import { useCategoryStore } from '../../stores/useCategoryStore';
 import { useTheme } from '../../hooks/useTheme';
@@ -9,6 +14,7 @@ import {
   handleCategoryMove,
 } from './utils/categoryUtils';
 import { CategoryList } from './components/CategoryList';
+import { useKeyboard } from '../../hooks/useKeyboard';
 
 export const CategoryManagement: React.FC = () => {
   const { colors, isDark } = useTheme();
@@ -18,6 +24,7 @@ export const CategoryManagement: React.FC = () => {
     useCategoryManagement();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const { keyboardVisible } = useKeyboard();
 
   // テキスト色の設定 - ダークモード時は白っぽく
   const textColor = isDark ? '#FFFFFF' : colors.text.primary;
@@ -59,6 +66,7 @@ export const CategoryManagement: React.FC = () => {
       });
       setNewCategoryName('');
       setShowSuccess(true);
+      Keyboard.dismiss();
     } catch {
       setErrorMessage('カテゴリの追加に失敗しました');
     }
@@ -70,7 +78,8 @@ export const CategoryManagement: React.FC = () => {
   );
 
   return (
-    <View
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={[
         styles.container,
         { backgroundColor: colors.background.secondary },
@@ -129,6 +138,12 @@ export const CategoryManagement: React.FC = () => {
         onDismiss={() => setErrorMessage(null)}
         duration={3000}
         style={{ backgroundColor: colors.state.error }}
+        // キーボードが表示されている場合は上部に表示
+        wrapperStyle={
+          keyboardVisible
+            ? { position: 'absolute', top: 20, left: 16, right: 16 }
+            : undefined
+        }
       >
         {errorMessage}
       </Snackbar>
@@ -139,10 +154,16 @@ export const CategoryManagement: React.FC = () => {
         onDismiss={() => setShowSuccess(false)}
         duration={2000}
         style={{ backgroundColor: colors.state.success }}
+        // キーボードが表示されている場合は上部に表示
+        wrapperStyle={
+          keyboardVisible
+            ? { position: 'absolute', top: 20, left: 16, right: 16 }
+            : undefined
+        }
       >
         カテゴリを追加しました
       </Snackbar>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
