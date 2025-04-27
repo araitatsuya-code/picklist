@@ -36,6 +36,11 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
             style={styles.editInput}
             onBlur={() => handleEditSave(category, updateCategory)}
             autoFocus
+            returnKeyType="done"
+            onSubmitEditing={() => handleEditSave(category, updateCategory)}
+            autoCapitalize="none"
+            autoComplete="off"
+            autoCorrect={false}
             textColor={textColor}
             theme={{
               colors: {
