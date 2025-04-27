@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, FlatList } from 'react-native';
 import {
-  List,
-  IconButton,
+  Text,
+  Card,
   Button,
+  IconButton,
   TextInput,
-  Portal,
-  Dialog,
+  List,
 } from 'react-native-paper';
 import { useCategoryStore } from '../stores/useCategoryStore';
 import { Category } from '../stores/useCategoryStore';
@@ -16,44 +16,25 @@ export const CategoryManagement: React.FC = () => {
   const { colors, isDark } = useTheme();
   const { categories, addCategory, updateCategory, removeCategory } =
     useCategoryStore();
-  const [dialogVisible, setDialogVisible] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [name, setName] = useState('');
-  const [priority, setPriority] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState('');
 
-  const handleSave = () => {
-    if (editingCategory) {
-      updateCategory(editingCategory.id, {
-        name,
-        priority: Number(priority),
-      });
-    } else {
+  // テキスト色の設定 - ダークモード時は白っぽく
+  const textColor = isDark ? '#FFFFFF' : colors.text.primary;
+  const secondaryTextColor = isDark ? '#E0E0E0' : colors.text.secondary;
+
+  // 新しいカテゴリを追加
+  const handleAddCategory = () => {
+    if (newCategoryName.trim()) {
       addCategory({
-        name,
+        name: newCategoryName,
         displayOrder: categories.length + 1,
-        priority: Number(priority) || categories.length + 1,
+        priority: categories.length + 1,
       });
+      setNewCategoryName('');
     }
-    setDialogVisible(false);
-    setEditingCategory(null);
-    setName('');
-    setPriority('');
   };
 
-  const handleEdit = (category: Category) => {
-    setEditingCategory(category);
-    setName(category.name);
-    setPriority(category.priority.toString());
-    setDialogVisible(true);
-  };
-
-  const handleAdd = () => {
-    setEditingCategory(null);
-    setName('');
-    setPriority('');
-    setDialogVisible(true);
-  };
-
+  // 並べ替えられたカテゴリリスト
   const sortedCategories = [...categories].sort(
     (a, b) => a.priority - b.priority
   );
@@ -65,138 +46,230 @@ export const CategoryManagement: React.FC = () => {
         { backgroundColor: colors.background.secondary },
       ]}
     >
-      <ScrollView>
-        {sortedCategories.map((category) => (
-          <List.Item
-            key={category.id}
-            title={category.name}
-            titleStyle={{ color: colors.text.primary }}
-            description={`優先度: ${category.priority}`}
-            descriptionStyle={{ color: colors.text.secondary }}
-            style={[
-              styles.listItem,
-              {
-                backgroundColor: colors.background.primary,
-                borderBottomColor: colors.border.secondary,
+      {/* シンプルな入力フォーム */}
+      <Card style={styles.inputCard}>
+        <Card.Content style={styles.inputContainer}>
+          <TextInput
+            label="新しいカテゴリ名"
+            value={newCategoryName}
+            onChangeText={setNewCategoryName}
+            style={styles.input}
+            mode="outlined"
+            textColor={textColor}
+            theme={{
+              colors: {
+                primary: colors.accent.primary,
+                placeholder: secondaryTextColor,
+                background: colors.background.primary,
               },
-            ]}
-            right={(props) => (
-              <View style={styles.actions}>
-                <IconButton
-                  {...props}
-                  icon="pencil"
-                  onPress={() => handleEdit(category)}
-                  iconColor={colors.text.secondary}
-                />
-                {category.id !== 'other' && (
-                  <IconButton
-                    {...props}
-                    icon="delete"
-                    iconColor={colors.state.error}
-                    onPress={() => removeCategory(category.id)}
-                  />
-                )}
-              </View>
-            )}
+            }}
           />
-        ))}
-      </ScrollView>
-
-      <Button
-        mode="contained"
-        onPress={handleAdd}
-        style={styles.addButton}
-        buttonColor={colors.accent.primary}
-        textColor={colors.text.inverse}
-      >
-        カテゴリを追加
-      </Button>
-
-      <Portal>
-        <Dialog
-          visible={dialogVisible}
-          onDismiss={() => setDialogVisible(false)}
-          style={{
-            backgroundColor: isDark ? '#f5f5f5' : colors.background.primary,
-          }}
-        >
-          <Dialog.Title
-            style={{ color: isDark ? '#000000' : colors.text.primary }}
+          <Button
+            mode="contained"
+            onPress={handleAddCategory}
+            disabled={!newCategoryName.trim()}
+            style={styles.addButton}
+            buttonColor={colors.accent.primary}
+            textColor={isDark ? '#FFFFFF' : colors.text.inverse}
           >
-            {editingCategory ? 'カテゴリを編集' : 'カテゴリを追加'}
-          </Dialog.Title>
-          <Dialog.Content>
-            <TextInput
-              label="カテゴリ名"
-              value={name}
-              onChangeText={setName}
-              style={styles.input}
-              textColor={isDark ? '#000000' : colors.text.primary}
-              theme={{
-                colors: {
-                  primary: colors.accent.primary,
-                  background: isDark ? '#f5f5f5' : colors.background.primary,
-                  placeholder: isDark ? '#666666' : colors.text.secondary,
-                  text: isDark ? '#000000' : colors.text.primary,
-                },
-              }}
-              underlineColor={isDark ? '#cccccc' : colors.border.primary}
-              activeUnderlineColor={colors.accent.primary}
-            />
-            <TextInput
-              label="優先度（小さい数字ほど上に表示）"
-              value={priority}
-              onChangeText={setPriority}
-              keyboardType="numeric"
-              style={styles.input}
-              textColor={isDark ? '#000000' : colors.text.primary}
-              theme={{
-                colors: {
-                  primary: colors.accent.primary,
-                  background: isDark ? '#f5f5f5' : colors.background.primary,
-                  placeholder: isDark ? '#666666' : colors.text.secondary,
-                  text: isDark ? '#000000' : colors.text.primary,
-                },
-              }}
-              underlineColor={isDark ? '#cccccc' : colors.border.primary}
-              activeUnderlineColor={colors.accent.primary}
-            />
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button
-              onPress={() => setDialogVisible(false)}
-              textColor={isDark ? '#666666' : colors.text.secondary}
-            >
-              キャンセル
-            </Button>
-            <Button
-              onPress={handleSave}
-              disabled={!name || !priority}
-              textColor={colors.accent.primary}
-            >
-              保存
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+            追加
+          </Button>
+        </Card.Content>
+      </Card>
+
+      {/* カテゴリリスト - シンプルなリスト表示 */}
+      <FlatList
+        data={sortedCategories}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <CategoryItem
+            category={item}
+            updateCategory={updateCategory}
+            removeCategory={removeCategory}
+            isRemovable={item.id !== 'other'}
+            colors={colors}
+            isDark={isDark}
+            textColor={textColor}
+            secondaryTextColor={secondaryTextColor}
+          />
+        )}
+        contentContainerStyle={styles.list}
+      />
     </View>
+  );
+};
+
+interface CategoryItemProps {
+  category: Category;
+  updateCategory: (id: string, data: Partial<Category>) => void;
+  removeCategory: (id: string) => void;
+  isRemovable: boolean;
+  colors: {
+    accent: {
+      primary: string;
+    };
+    text: {
+      primary: string;
+      secondary: string;
+    };
+    background: {
+      primary: string;
+    };
+    border: {
+      primary: string;
+    };
+    state: {
+      error: string;
+    };
+  };
+  isDark: boolean;
+  textColor: string;
+  secondaryTextColor: string;
+}
+
+const CategoryItem: React.FC<CategoryItemProps> = ({
+  category,
+  updateCategory,
+  removeCategory,
+  isRemovable,
+  colors,
+  isDark,
+  textColor,
+  secondaryTextColor,
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [name, setName] = useState(category.name);
+
+  const handleUpdate = () => {
+    updateCategory(category.id, { name });
+    setIsEditing(false);
+  };
+
+  const moveUp = () => {
+    updateCategory(category.id, {
+      priority: Math.max(1, category.priority - 1),
+    });
+  };
+
+  const moveDown = () => {
+    updateCategory(category.id, { priority: category.priority + 1 });
+  };
+
+  return (
+    <List.Item
+      title={
+        isEditing ? (
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            mode="flat"
+            style={styles.editInput}
+            onBlur={handleUpdate}
+            autoFocus
+            textColor={textColor}
+            theme={{
+              colors: {
+                primary: colors.accent.primary,
+                placeholder: secondaryTextColor,
+                background: 'transparent',
+              },
+            }}
+          />
+        ) : (
+          <Text style={{ color: textColor }}>{category.name}</Text>
+        )
+      }
+      description={() => (
+        <Text style={{ color: secondaryTextColor }}>
+          優先度: {category.priority}
+        </Text>
+      )}
+      left={() => (
+        <View style={styles.priorityButtons}>
+          <IconButton
+            icon="arrow-up"
+            size={20}
+            onPress={moveUp}
+            iconColor={isDark ? '#FFFFFF' : colors.text.primary}
+          />
+          <IconButton
+            icon="arrow-down"
+            size={20}
+            onPress={moveDown}
+            iconColor={isDark ? '#FFFFFF' : colors.text.primary}
+          />
+        </View>
+      )}
+      right={() => (
+        <View style={styles.actionButtons}>
+          <IconButton
+            icon={isEditing ? 'check' : 'pencil'}
+            size={20}
+            onPress={() => (isEditing ? handleUpdate() : setIsEditing(true))}
+            iconColor={isDark ? '#FFFFFF' : colors.text.secondary}
+          />
+          {isRemovable && (
+            <IconButton
+              icon="delete"
+              size={20}
+              onPress={() => removeCategory(category.id)}
+              iconColor={isDark ? '#FF5252' : colors.state.error}
+            />
+          )}
+        </View>
+      )}
+      style={[
+        styles.categoryItem,
+        {
+          backgroundColor: isDark ? '#2C2C2C' : colors.background.primary,
+          borderColor: isDark ? '#444444' : colors.border.primary,
+          borderWidth: 1,
+        },
+      ]}
+      titleStyle={{ color: textColor }}
+      descriptionStyle={{ color: secondaryTextColor }}
+    />
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
   },
-  listItem: {
-    borderBottomWidth: 1,
+  inputCard: {
+    marginBottom: 16,
+    elevation: 2,
   },
-  actions: {
+  inputContainer: {
     flexDirection: 'row',
-  },
-  addButton: {
-    margin: 16,
+    alignItems: 'center',
   },
   input: {
-    marginTop: 8,
+    flex: 1,
+    marginRight: 8,
+  },
+  addButton: {
+    justifyContent: 'center',
+  },
+  list: {
+    paddingBottom: 16,
+  },
+  categoryItem: {
+    marginBottom: 8,
+    borderRadius: 4,
+    elevation: 1,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  priorityButtons: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+  editInput: {
+    height: 40,
+    backgroundColor: 'transparent',
   },
 });
