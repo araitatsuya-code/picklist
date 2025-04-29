@@ -56,6 +56,7 @@ export default function ListDetailScreen() {
     if (!list) {
       router.replace('/(tabs)');
     }
+    setShowDeleteConfirm(false);
   }, [list]);
 
   if (!list) {
