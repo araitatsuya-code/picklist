@@ -1,6 +1,6 @@
 import React from 'react';
 import { Stack } from 'expo-router';
-import { CategoryManagement } from '../../../src/components/CategoryManagement';
+import { CategoryManagement } from '../../../src/features/categories/CategoryManagement';
 import { useThemeContext } from '../../../src/components/ThemeProvider';
 
 export default function CategoriesScreen() {
