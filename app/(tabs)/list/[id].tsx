@@ -21,6 +21,15 @@ import { GroupedPicklistItems } from '../../../src/components/GroupedPicklistIte
 import { useFrequentProductStore } from '../../../src/stores/useFrequentProductStore';
 import { useTheme } from '../../../src/hooks/useTheme';
 
+/**
+ * Displays and manages the detailed view of a shopping list, allowing users to edit the list name, add and edit items, sort items, and delete the list with confirmation.
+ *
+ * Provides interactive UI for quick item addition, item completion toggling, sorting options, and modal dialogs for editing items and confirming list deletion.
+ *
+ * @returns The rendered shopping list detail screen, or null if the list is not found.
+ *
+ * @remark Redirects to the main tab if the specified list does not exist.
+ */
 export default function ListDetailScreen() {
   const { colors, isDark } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
