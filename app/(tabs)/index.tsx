@@ -63,23 +63,35 @@ export default function PicklistScreen() {
               >
                 <Link href={`/list/${list.id}`} asChild>
                   <Pressable style={styles.cardContent}>
-                    <View style={styles.cardHeader}>
-                      <View style={styles.cardTitleContainer}>
-                        <Ionicons
-                          name="list"
-                          size={24}
-                          color={colors.accent.primary}
-                          style={styles.cardIcon}
-                        />
-                        <Text
-                          style={[
-                            styles.cardTitle,
-                            { color: colors.text.primary },
-                          ]}
-                        >
-                          {list.name}
-                        </Text>
+                    <View style={styles.cardTextContainer}>
+                      <View style={styles.cardHeader}>
+                        <View style={styles.cardTitleContainer}>
+                          <Ionicons
+                            name="list"
+                            size={24}
+                            color={colors.accent.primary}
+                            style={styles.cardIcon}
+                          />
+                          <Text
+                            style={[
+                              styles.cardTitle,
+                              { color: colors.text.primary },
+                            ]}
+                          >
+                            {list.name}
+                          </Text>
+                        </View>
                       </View>
+
+                      <Text
+                        style={[
+                          styles.itemCount,
+                          { color: colors.text.secondary },
+                        ]}
+                      >
+                        {list.items.length}個のアイテム
+                      </Text>
+
                       <Pressable
                         style={styles.deleteButton}
                         onPress={(e) => {
@@ -112,14 +124,6 @@ export default function PicklistScreen() {
                         </View>
                       </Pressable>
                     </View>
-                    <Text
-                      style={[
-                        styles.itemCount,
-                        { color: colors.text.secondary },
-                      ]}
-                    >
-                      {list.items.length}個のアイテム
-                    </Text>
                   </Pressable>
                 </Link>
               </View>
@@ -208,6 +212,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
+  cardTextContainer: {
+    position: 'relative',
+    paddingRight: 48,
+  },
   cardIcon: {
     marginRight: 8,
   },
@@ -220,8 +228,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   deleteButton: {
-    padding: 4,
-    marginLeft: 8,
+    position: 'absolute',
+    top: '50%',
+    right: 0,
+    transform: [{ translateY: -16 }],
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   deleteIconContainer: {
     width: 32,
