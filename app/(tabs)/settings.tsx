@@ -125,6 +125,7 @@ export default function SettingsScreen() {
               },
             ]}
           >
+            {/*
             <Pressable
               style={[
                 styles.menuItem,
@@ -137,7 +138,7 @@ export default function SettingsScreen() {
                   size={24}
                   color={colors.text.secondary}
                 />
-                <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                <Text style={[styles.menuText, { color: colors.text.primary }]}> 
                   データのエクスポート
                 </Text>
               </View>
@@ -160,7 +161,7 @@ export default function SettingsScreen() {
                   size={24}
                   color={colors.text.secondary}
                 />
-                <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                <Text style={[styles.menuText, { color: colors.text.primary }]}> 
                   データのインポート
                 </Text>
               </View>
@@ -170,6 +171,7 @@ export default function SettingsScreen() {
                 color={colors.text.secondary}
               />
             </Pressable>
+            */}
 
             <Pressable
               style={[styles.menuItem, styles.dangerItem]}
