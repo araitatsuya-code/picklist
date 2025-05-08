@@ -16,7 +16,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.araitatsuyacode.picklist",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "商品画像の選択のためにフォトライブラリへアクセスします。"
       }
     },
     "android": {
