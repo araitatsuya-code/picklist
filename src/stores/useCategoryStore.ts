@@ -13,11 +13,9 @@ export interface Category {
 export const DEFAULT_CATEGORIES: Category[] = [
   { id: 'vegetables', name: '野菜', displayOrder: 1, priority: 1 },
   { id: 'meat-fish', name: '魚・肉', displayOrder: 2, priority: 2 },
-  { id: 'dairy', name: '日配品', displayOrder: 3, priority: 3 },
-  { id: 'deli', name: '惣菜', displayOrder: 4, priority: 4 },
-  { id: 'grocery', name: '食品', displayOrder: 5, priority: 5 },
-  { id: 'daily', name: '日用品', displayOrder: 6, priority: 6 },
-  { id: 'other', name: 'その他', displayOrder: 7, priority: 7 },
+  { id: 'daily', name: '日用品', displayOrder: 3, priority: 3 },
+  { id: 'drink', name: '飲料', displayOrder: 4, priority: 4 },
+  { id: 'other', name: 'その他', displayOrder: 5, priority: 5 },
 ];
 
 type CategoryState = {
