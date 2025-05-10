@@ -49,7 +49,8 @@ export const readAsStringAsync = async (fileUri: string) => {
   throw new Error(`File not found: ${fileUri}`);
 };
 
-export const deleteAsync = async (fileUri: string, _options = {}) => {
+export const deleteAsync = async (fileUri: string, options = {}) => {
+  console.log(`Mock deleteAsync called with options: ${JSON.stringify(options)}`);
   if (!fileUri) {
     throw new Error('File URI is required');
   }
@@ -90,7 +91,8 @@ export const copyAsync = async ({ from, to }: { from: string; to: string }) => {
   return;
 };
 
-export const makeDirectoryAsync = async (_dirUri: string) => {
+export const makeDirectoryAsync = async (dirUri: string) => {
+  console.log(`Mock makeDirectoryAsync called with dirUri: ${dirUri}`);
   return;
 };
 
