@@ -8,18 +8,21 @@ describe('imageUtils', () => {
   
   beforeAll(() => {
     if (!FileSystem.documentDirectory) {
-      (FileSystem as any).documentDirectory = '/mock/documents/';
+      (FileSystem as unknown as Record<string, string>).documentDirectory = '/mock/documents/';
     }
   });
   
   afterAll(() => {
-    (FileSystem as any).documentDirectory = originalDocumentDirectory;
+    if (originalDocumentDirectory) {
+      (FileSystem as unknown as Record<string, string>).documentDirectory = originalDocumentDirectory;
+    }
   });
   
   beforeEach(() => {
     jest.clearAllMocks();
-    if (typeof (FileSystem as any)._clearFiles === 'function') {
-      (FileSystem as any)._clearFiles();
+    const fileSystemWithClear = FileSystem as unknown as { _clearFiles?: () => void };
+    if (typeof fileSystemWithClear._clearFiles === 'function') {
+      fileSystemWithClear._clearFiles();
     }
   });
 

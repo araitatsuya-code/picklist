@@ -4,7 +4,7 @@ export const SaveFormat = {
 };
 
 export const manipulateAsync = jest.fn().mockImplementation(
-  (uri, actions, options) => {
+  (_uri, _actions, _options) => {
     return Promise.resolve({
       uri: 'file:///mock/manipulated/image.jpg',
       width: 300,

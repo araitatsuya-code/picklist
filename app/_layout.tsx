@@ -13,7 +13,7 @@ export default function Layout() {
 
   // 画像の同期処理
   useEffect(() => {
-    const imageKeys = products
+    const _imageKeys = products
       .map((product) => product.imageUrl)
       .filter((key): key is string => !!key);
     
