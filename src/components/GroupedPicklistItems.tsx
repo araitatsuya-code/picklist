@@ -11,7 +11,7 @@ import {
 } from '../utils/sortUtils';
 import { PicklistItem } from '../stores/usePicklistStore';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as imageUtils from '../utils/imageUtils';
 import { useFrequentProductStore } from '../stores/useFrequentProductStore';
 import { useTheme } from '../hooks/useTheme';
 
@@ -71,10 +71,9 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
 
   const loadImageUri = useCallback(async (imageKey: string) => {
     try {
-      const uri = await AsyncStorage.getItem(imageKey);
+      const uri = await imageUtils.loadImage(imageKey);
       if (uri) {
-        const finalUri = uri.startsWith('file://') ? uri : `file://${uri}`;
-        setImageUris((prev) => ({ ...prev, [imageKey]: finalUri }));
+        setImageUris((prev) => ({ ...prev, [imageKey]: uri }));
       }
     } catch (error) {
       console.error('Failed to load image:', error);

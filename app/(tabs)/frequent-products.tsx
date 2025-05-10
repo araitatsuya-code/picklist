@@ -20,7 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Menu } from 'react-native-paper';
 import { FrequentProduct } from '../../src/types/frequentProduct';
 import noImage from '../../assets/no-image.png';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as imageUtils from '../../src/utils/imageUtils';
 import { useTheme } from '../../src/hooks/useTheme';
 
 // Types
@@ -365,10 +365,9 @@ export default function FrequentProductsScreen() {
         // すでにエラーが発生した画像キーはスキップ
         if (errorProducts.has(imageKey)) return;
 
-        const uri = await AsyncStorage.getItem(imageKey);
+        const uri = await imageUtils.loadImage(imageKey);
         if (uri) {
-          const finalUri = uri.startsWith('file://') ? uri : `file://${uri}`;
-          setImageUris((prev) => ({ ...prev, [imageKey]: finalUri }));
+          setImageUris((prev) => ({ ...prev, [imageKey]: uri }));
         }
       } catch (error) {
         console.error('Failed to load image:', error);
@@ -393,9 +392,8 @@ export default function FrequentProductsScreen() {
       // 商品データと画像情報を自動的にクリア
       const product = products.find((p) => p.id === productId);
       if (product?.imageUrl) {
-        // AsyncStorageから該当の画像キーを削除
-        AsyncStorage.removeItem(product.imageUrl).catch((err) =>
-          console.error('Failed to remove invalid image key:', err)
+        imageUtils.deleteImage(product.imageUrl).catch((err) =>
+          console.error('Failed to remove invalid image:', err)
         );
 
         // 商品データを更新
