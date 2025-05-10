@@ -7,7 +7,6 @@ import { ThemeProvider } from '../src/components/ThemeProvider';
 import { OnboardingProvider } from '../src/components/Onboarding/OnboardingProvider';
 import OnboardingScreen from '../src/components/Onboarding/OnboardingScreen';
 import { useFrequentProductStore } from '../src/stores/useFrequentProductStore';
-import * as imageUtils from '../src/utils/imageUtils';
 
 export default function Layout() {
   const products = useFrequentProductStore((state) => state.products);
@@ -17,9 +16,7 @@ export default function Layout() {
     const imageKeys = products
       .map((product) => product.imageUrl)
       .filter((key): key is string => !!key);
-
-    imageUtils.saveImageKeys(imageKeys);
-    imageUtils.cleanupUnusedImages();
+    
   }, [products]);
 
   return (

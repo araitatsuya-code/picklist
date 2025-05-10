@@ -14,4 +14,8 @@ module.exports = {
     '**/*.spec.[jt]s?(x)',
   ],
   testPathIgnorePatterns: ['/node_modules/', '/dist/', '/build/'],
+  moduleNameMapper: {
+    '^expo-file-system$': '<rootDir>/src/utils/__mocks__/expo-file-system.ts',
+    '^expo-image-manipulator$': '<rootDir>/src/utils/__mocks__/expo-image-manipulator.ts',
+  },
 };
