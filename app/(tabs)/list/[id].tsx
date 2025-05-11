@@ -16,7 +16,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Crypto from 'expo-crypto';
 import { IconButton, Menu } from 'react-native-paper';
-import { useCategoryStore } from '../../../src/stores/useCategoryStore';
 import { GroupedPicklistItems } from '../../../src/components/GroupedPicklistItems';
 import { useFrequentProductStore } from '../../../src/stores/useFrequentProductStore';
 import { useTheme } from '../../../src/hooks/useTheme';
