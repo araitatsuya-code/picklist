@@ -44,7 +44,6 @@ export default function ListDetailScreen() {
     updateItem,
     updateListSortSettings,
   } = usePicklistStore();
-  const { categories } = useCategoryStore();
   const { products } = useFrequentProductStore();
 
   const list = useMemo(
