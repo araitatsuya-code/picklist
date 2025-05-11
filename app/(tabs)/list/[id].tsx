@@ -16,7 +16,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Crypto from 'expo-crypto';
 import { IconButton, Menu } from 'react-native-paper';
-import { useCategoryStore } from '../../../src/stores/useCategoryStore';
 import { GroupedPicklistItems } from '../../../src/components/GroupedPicklistItems';
 import { useFrequentProductStore } from '../../../src/stores/useFrequentProductStore';
 import { useTheme } from '../../../src/hooks/useTheme';
@@ -44,7 +43,6 @@ export default function ListDetailScreen() {
     updateItem,
     updateListSortSettings,
   } = usePicklistStore();
-  const { categories } = useCategoryStore();
   const { products } = useFrequentProductStore();
 
   const list = useMemo(
@@ -82,11 +80,20 @@ export default function ListDetailScreen() {
   const handleSaveItem = () => {
     if (!editingItem) return;
 
-    updateItem(id, editingItem.id, {
+    const currentItem = list.items.find(item => item.id === editingItem.id);
+    if (!currentItem) return;
+
+    const updates: Partial<PicklistItem> = {
       quantity: Number(editingItem.quantity) || 1,
       maxPrice: editingItem.maxPrice ? Number(editingItem.maxPrice) : undefined,
       note: editingItem.note || undefined,
-    });
+    };
+
+    if (currentItem.category === 'none') {
+      updates.priority = 1;
+    }
+
+    updateItem(id, editingItem.id, updates);
     setEditingItem(null);
   };
 
@@ -98,9 +105,10 @@ export default function ListDetailScreen() {
         (product) => product.name.toLowerCase() === name.toLowerCase()
       );
 
-      // 商品が見つかった場合はそのカテゴリを使用、見つからない場合はデフォルトカテゴリを使用
-      const category =
-        frequentProduct?.category || categories[0]?.id || 'other';
+      // 商品が見つかった場合はそのカテゴリを使用、見つからない場合はデフォルトカテゴリとして 'none' を使用
+      const category = frequentProduct?.category || 'none';
+      
+      const priority = category === 'none' ? 1 : 2;
 
       updatePicklist(id, {
         items: [
@@ -110,7 +118,7 @@ export default function ListDetailScreen() {
             productId: frequentProduct?.id || Crypto.randomUUID(),
             name,
             quantity: 1,
-            priority: 2,
+            priority,
             category,
             completed: false,
           },
