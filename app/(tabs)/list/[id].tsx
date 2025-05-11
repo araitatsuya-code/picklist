@@ -105,7 +105,7 @@ export default function ListDetailScreen() {
         (product) => product.name.toLowerCase() === name.toLowerCase()
       );
 
-      // 商品が見つかった場合はそのカテゴリを使用、見つからない場合はカテゴリなし
+      // 商品が見つかった場合はそのカテゴリを使用、見つからない場合はデフォルトカテゴリとして 'none' を使用
       const category = frequentProduct?.category || 'none';
       
       const priority = category === 'none' ? 1 : 2;
