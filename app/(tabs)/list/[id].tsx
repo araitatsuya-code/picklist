@@ -82,11 +82,20 @@ export default function ListDetailScreen() {
   const handleSaveItem = () => {
     if (!editingItem) return;
 
-    updateItem(id, editingItem.id, {
+    const currentItem = list.items.find(item => item.id === editingItem.id);
+    if (!currentItem) return;
+
+    const updates: Partial<PicklistItem> = {
       quantity: Number(editingItem.quantity) || 1,
       maxPrice: editingItem.maxPrice ? Number(editingItem.maxPrice) : undefined,
       note: editingItem.note || undefined,
-    });
+    };
+
+    if (currentItem.category === 'none') {
+      updates.priority = 1;
+    }
+
+    updateItem(id, editingItem.id, updates);
     setEditingItem(null);
   };
 
@@ -98,9 +107,10 @@ export default function ListDetailScreen() {
         (product) => product.name.toLowerCase() === name.toLowerCase()
       );
 
-      // 商品が見つかった場合はそのカテゴリを使用、見つからない場合はデフォルトカテゴリを使用
-      const category =
-        frequentProduct?.category || categories[0]?.id || 'other';
+      // 商品が見つかった場合はそのカテゴリを使用、見つからない場合はカテゴリなし
+      const category = frequentProduct?.category || 'none';
+      
+      const priority = category === 'none' ? 1 : 2;
 
       updatePicklist(id, {
         items: [
@@ -110,7 +120,7 @@ export default function ListDetailScreen() {
             productId: frequentProduct?.id || Crypto.randomUUID(),
             name,
             quantity: 1,
-            priority: 2,
+            priority,
             category,
             completed: false,
           },
