@@ -21,10 +21,7 @@ export default function PicklistScreen() {
 
   return (
     <SafeAreaView
-      style={[
-        styles.container,
-        { backgroundColor: colors.background.secondary },
-      ]}
+      style={[styles.container, { backgroundColor: colors.background.primary }]}
     >
       <View style={styles.content}>
         <View style={styles.listContainer}>
