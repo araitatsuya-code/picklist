@@ -80,10 +80,7 @@ export const CategoryManagement: React.FC = () => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={[
-        styles.container,
-        { backgroundColor: colors.background.secondary },
-      ]}
+      style={[styles.container, { backgroundColor: colors.background.primary }]}
     >
       {/* シンプルな入力フォーム */}
       <Card style={styles.inputCard}>
