@@ -17,7 +17,8 @@
       "bundleIdentifier": "com.araitatsuyacode.picklist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSPhotoLibraryUsageDescription": "商品画像の選択のためにフォトライブラリへアクセスします。"
+        "NSPhotoLibraryUsageDescription": "商品画像の選択のためにフォトライブラリへアクセスします。",
+        "NSCameraUsageDescription": "商品の写真撮影のためにカメラを使用します。 (To take product photos)"
       }
     },
     "android": {
