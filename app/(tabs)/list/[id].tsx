@@ -80,7 +80,7 @@ export default function ListDetailScreen() {
   const handleSaveItem = () => {
     if (!editingItem) return;
 
-    const currentItem = list.items.find(item => item.id === editingItem.id);
+    const currentItem = list.items.find((item) => item.id === editingItem.id);
     if (!currentItem) return;
 
     const updates: Partial<PicklistItem> = {
@@ -107,7 +107,7 @@ export default function ListDetailScreen() {
 
       // 商品が見つかった場合はそのカテゴリを使用、見つからない場合はデフォルトカテゴリとして 'none' を使用
       const category = frequentProduct?.category || 'none';
-      
+
       const priority = category === 'none' ? 1 : 2;
 
       updatePicklist(id, {
@@ -481,13 +481,23 @@ export default function ListDetailScreen() {
           </View>
         )}
 
-        {/* 一旦ボタンを非表示にする */}
-        {/* <Pressable
-          style={styles.fab}
-          onPress={() => router.push('/(products)/add-to-list?selectedIds=')}
+        <Pressable
+          style={[
+            styles.addFromFrequentButton,
+            {
+              backgroundColor: colors.accent.primary,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+            },
+          ]}
+          onPress={() => router.push(`/frequent-products?selectForList=${id}`)}
         >
-          <Ionicons name="add" size={24} color="#fff" />
-        </Pressable> */}
+          <Ionicons name="add-circle-outline" size={24} color="#fff" />
+          <Text style={{ color: '#fff', marginLeft: 8, fontWeight: '600' }}>
+            よく買う商品から追加
+          </Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -662,24 +672,21 @@ const styles = StyleSheet.create({
   modalSaveButtonText: {
     fontWeight: '600',
   },
-  fab: {
+  addFromFrequentButton: {
     position: 'absolute',
+    left: 16,
     right: 16,
     bottom: 16,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#007AFF',
-    justifyContent: 'center',
+    height: 48,
+    borderRadius: 12,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   quickAdd: {
     padding: 12,

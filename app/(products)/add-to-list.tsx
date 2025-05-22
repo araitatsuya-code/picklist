@@ -12,13 +12,16 @@ import {
 import { useLocalSearchParams, router } from 'expo-router';
 import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
 import { usePicklistStore } from '../../src/stores/usePicklistStore';
-import { Menu, Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeContext } from '../../src/components/ThemeProvider';
+import { Picker } from '@react-native-picker/picker';
 
 export default function AddToListScreen() {
   const { colors } = useThemeContext();
-  const { selectedIds } = useLocalSearchParams<{ selectedIds: string }>();
+  const { selectedIds, listId } = useLocalSearchParams<{
+    selectedIds: string;
+    listId?: string;
+  }>();
   const selectedIdArray = useMemo(() => {
     if (!selectedIds) return [];
     return selectedIds.split(',');
@@ -38,18 +41,13 @@ export default function AddToListScreen() {
   const picklists = usePicklistStore((state) => state.picklists);
   const addItemsToList = usePicklistStore((state) => state.addItemsToList);
 
-  const [selectedList, setSelectedList] = useState<string | null>(null);
-  const [menuVisible, setMenuVisible] = useState(false);
-  const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
+  const [selectedList, setSelectedList] = useState<string | null>(
+    listId ?? null
+  );
+  const [pickerVisible, setPickerVisible] = useState(false);
   const [quantities, setQuantities] = useState<Record<string, string>>({});
   const [maxPrices, setMaxPrices] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState<Record<string, string>>({});
-
-  const handleListSelectorPress = (event: GestureResponderEvent) => {
-    const { pageY, pageX } = event.nativeEvent;
-    setMenuAnchor({ x: pageX, y: pageY });
-    setMenuVisible(true);
-  };
 
   const handleSubmit = () => {
     if (!selectedList) return;
@@ -118,36 +116,87 @@ export default function AddToListScreen() {
           <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
             買い物リストを選択
           </Text>
-          <Button
-            mode="outlined"
-            onPress={handleListSelectorPress}
-            style={styles.listSelector}
-            textColor={colors.text.primary}
-            buttonColor={colors.background.primary}
-            theme={{ colors: { outline: colors.border.primary } }}
+          <Pressable
+            style={[
+              styles.listSelectorBox,
+              {
+                borderColor: selectedList
+                  ? colors.accent.primary
+                  : colors.border.primary,
+                backgroundColor: colors.background.primary,
+              },
+            ]}
+            onPress={() => setPickerVisible(true)}
           >
-            {selectedList
-              ? picklists.find((l) => l.id === selectedList)?.name
-              : '買い物リストを選択'}
-          </Button>
-          <Menu
-            visible={menuVisible}
-            onDismiss={() => setMenuVisible(false)}
-            anchor={menuAnchor}
-            contentStyle={{ backgroundColor: colors.background.primary }}
-          >
-            {picklists.map((list) => (
-              <Menu.Item
-                key={list.id}
-                onPress={() => {
-                  setSelectedList(list.id);
-                  setMenuVisible(false);
-                }}
-                title={list.name}
-                titleStyle={{ color: colors.text.primary }}
-              />
-            ))}
-          </Menu>
+            <Text
+              style={[
+                styles.listSelectorText,
+                {
+                  color: selectedList
+                    ? colors.text.primary
+                    : colors.text.tertiary,
+                },
+              ]}
+            >
+              {selectedList
+                ? picklists.find((l) => l.id === selectedList)?.name
+                : '買い物リストを選択'}
+            </Text>
+            <Ionicons
+              name="chevron-down"
+              size={20}
+              color={colors.text.secondary}
+              style={{ marginLeft: 8 }}
+            />
+          </Pressable>
+          {pickerVisible && (
+            <View style={styles.pickerModalOverlay}>
+              <View
+                style={[
+                  styles.pickerModal,
+                  { backgroundColor: colors.background.primary },
+                ]}
+              >
+                <Picker
+                  selectedValue={selectedList ?? ''}
+                  onValueChange={(itemValue) => {
+                    if (itemValue) {
+                      setSelectedList(itemValue);
+                      setPickerVisible(false);
+                    }
+                  }}
+                  style={{ color: colors.text.primary }}
+                >
+                  <Picker.Item
+                    label="買い物リストを選択"
+                    value=""
+                    color={colors.text.tertiary}
+                  />
+                  {picklists.map((list) => (
+                    <Picker.Item
+                      label={list.name}
+                      value={list.id}
+                      key={list.id}
+                      color={colors.text.primary}
+                    />
+                  ))}
+                </Picker>
+                <Pressable
+                  style={[
+                    styles.pickerCloseButton,
+                    { backgroundColor: colors.accent.primary },
+                  ]}
+                  onPress={() => setPickerVisible(false)}
+                >
+                  <Text
+                    style={{ color: colors.text.inverse, fontWeight: '600' }}
+                  >
+                    閉じる
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
         </View>
 
         <View
@@ -314,9 +363,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 16,
   },
-  listSelector: {
-    width: '100%',
+  listSelectorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    height: 44,
     marginVertical: 8,
+    justifyContent: 'space-between',
+  },
+  listSelectorText: {
+    flex: 1,
+    fontSize: 16,
   },
   productItem: {
     marginBottom: 24,
@@ -364,5 +423,28 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  pickerModalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+  },
+  pickerModal: {
+    width: '80%',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'stretch',
+  },
+  pickerCloseButton: {
+    marginTop: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
   },
 });
