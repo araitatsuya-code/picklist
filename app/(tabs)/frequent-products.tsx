@@ -10,12 +10,10 @@ import {
   ScrollView,
   SafeAreaView,
   Alert,
-  useColorScheme,
 } from 'react-native';
 import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
 import { useCategoryStore } from '../../src/stores/useCategoryStore';
-import { useThemeStore } from '../../src/stores/useThemeStore';
-import { Link, router } from 'expo-router';
+import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Menu } from 'react-native-paper';
 import { FrequentProduct } from '../../src/types/frequentProduct';
@@ -77,11 +75,6 @@ interface ProductItemProps {
 interface AddToListButtonProps {
   selectedProducts: Set<string>;
   handleAddToList: () => void;
-  colors: Colors;
-}
-
-interface FabButtonProps {
-  isDark: boolean;
   colors: Colors;
 }
 
@@ -211,7 +204,9 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
     <Pressable
       style={[
         styles.addToListButton,
-        { backgroundColor: colors.accent.primary },
+        {
+          backgroundColor: colors.accent.primary,
+        },
       ]}
       onPress={handleAddToList}
     >
@@ -224,54 +219,13 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
   );
 };
 
-const FabButton: React.FC<FabButtonProps> = ({ isDark, colors }) => {
-  return (
-    <View style={styles.fabWrapper}>
-      <Link href="/(products)/add" asChild>
-        <Pressable
-          style={[
-            styles.fabButton,
-            {
-              backgroundColor: isDark
-                ? colors.background.tertiary
-                : colors.accent.primary,
-              borderWidth: 1,
-              borderColor: isDark
-                ? 'rgba(255, 255, 255, 0.2)'
-                : 'rgba(0, 0, 0, 0.1)',
-            },
-          ]}
-        >
-          <View
-            style={[
-              styles.fabIconWrapper,
-              {
-                backgroundColor: isDark
-                  ? 'rgba(255, 255, 255, 0.1)'
-                  : 'rgba(0, 0, 0, 0.05)',
-              },
-            ]}
-          >
-            <Ionicons
-              name="add"
-              size={36}
-              color={isDark ? '#FFFFFF' : '#000000'}
-            />
-          </View>
-        </Pressable>
-      </Link>
-    </View>
-  );
-};
-
 /**
  * よく買う商品リストを表示する画面
  */
 export default function FrequentProductsScreen() {
   const { colors } = useTheme();
-  const systemColorScheme = useColorScheme();
-  const { theme, followSystem } = useThemeStore();
-  const isDark = followSystem ? systemColorScheme === 'dark' : theme === 'dark';
+  // const systemColorScheme = useColorScheme(); // ←未使用なので削除
+  // const { theme, followSystem } = useThemeStore(); // ←未使用なので削除
 
   // State
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -279,7 +233,6 @@ export default function FrequentProductsScreen() {
     new Set()
   );
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
-  const [isSelectionMode, setIsSelectionMode] = useState<boolean>(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set()
   );
@@ -289,6 +242,10 @@ export default function FrequentProductsScreen() {
   // Store hooks
   const { products, searchProducts, updateProduct } = useFrequentProductStore();
   const { categories } = useCategoryStore();
+
+  // Local search params
+  const params = useLocalSearchParams();
+  const selectForList = params.selectForList as string | undefined;
 
   // カテゴリーを優先順位でソート
   const sortedCategories = useMemo(() => {
@@ -322,11 +279,6 @@ export default function FrequentProductsScreen() {
     });
   }, []);
 
-  const toggleSelectionMode = useCallback(() => {
-    setIsSelectionMode((prev) => !prev);
-    setSelectedProducts(new Set());
-  }, []);
-
   const toggleProductSelection = useCallback((productId: string) => {
     setSelectedProducts((prev) => {
       const next = new Set(prev);
@@ -341,13 +293,9 @@ export default function FrequentProductsScreen() {
 
   const handleProductPress = useCallback(
     (product: FrequentProduct) => {
-      if (isSelectionMode) {
-        toggleProductSelection(product.id);
-      } else {
-        router.push(`/(products)/edit?id=${product.id}`);
-      }
+      toggleProductSelection(product.id);
     },
-    [isSelectionMode, toggleProductSelection]
+    [toggleProductSelection]
   );
 
   const handleAddToList = useCallback(() => {
@@ -355,8 +303,12 @@ export default function FrequentProductsScreen() {
     const selectedIds = encodeURIComponent(
       Array.from(selectedProducts).join(',')
     );
-    router.push(`/(products)/add-to-list?selectedIds=${selectedIds}`);
-  }, [selectedProducts]);
+    let url = `/(products)/add-to-list?selectedIds=${selectedIds}`;
+    if (selectForList) {
+      url += `&listId=${selectForList}`;
+    }
+    router.push(url);
+  }, [selectedProducts, selectForList]);
 
   // Image handling
   const loadImageUri = useCallback(
@@ -392,9 +344,11 @@ export default function FrequentProductsScreen() {
       // 商品データと画像情報を自動的にクリア
       const product = products.find((p) => p.id === productId);
       if (product?.imageUrl) {
-        imageUtils.deleteImage(product.imageUrl).catch((err) =>
-          console.error('Failed to remove invalid image:', err)
-        );
+        imageUtils
+          .deleteImage(product.imageUrl)
+          .catch((err) =>
+            console.error('Failed to remove invalid image:', err)
+          );
 
         // 商品データを更新
         updateProduct(productId, {
@@ -464,6 +418,16 @@ export default function FrequentProductsScreen() {
     loadImages();
   }, [filteredProducts, imageUris, errorProducts, loadImageUri]);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      if (selectForList) {
+        setSelectedProducts(new Set());
+      }
+    }, [selectForList])
+  );
+
+  const isSelectionMode = true;
+
   return (
     <>
       <SafeAreaView
@@ -489,40 +453,6 @@ export default function FrequentProductsScreen() {
               placeholder="商品を検索"
               placeholderTextColor={colors.text.tertiary}
             />
-
-            <Pressable
-              style={[
-                styles.selectionButton,
-                {
-                  borderColor: colors.accent.primary,
-                  backgroundColor: isSelectionMode
-                    ? colors.accent.primary
-                    : 'transparent',
-                },
-              ]}
-              onPress={toggleSelectionMode}
-            >
-              <Ionicons
-                name={isSelectionMode ? 'checkmark-circle' : 'cart-outline'}
-                size={20}
-                color={
-                  isSelectionMode ? colors.text.inverse : colors.accent.primary
-                }
-                style={styles.selectionButtonIcon}
-              />
-              <Text
-                style={[
-                  styles.selectionButtonText,
-                  {
-                    color: isSelectionMode
-                      ? colors.text.inverse
-                      : colors.accent.primary,
-                  },
-                ]}
-              >
-                {isSelectionMode ? '選択中' : 'リストへ一括追加'}
-              </Text>
-            </Pressable>
 
             {/* Category filter menu */}
             {categories.length > 0 && (
@@ -616,10 +546,35 @@ export default function FrequentProductsScreen() {
             />
           )}
         </View>
+        {/* フッター */}
+        <View
+          style={[
+            styles.footerBar,
+            {
+              borderColor: colors.border.secondary,
+              backgroundColor: colors.background.primary,
+            },
+          ]}
+        >
+          <Pressable
+            style={[
+              styles.footerAddButton,
+              {
+                backgroundColor: colors.background.secondary,
+                borderColor: colors.border.primary,
+              },
+            ]}
+            onPress={() => router.push('/(products)/add')}
+          >
+            <Ionicons name="add" size={22} color={colors.accent.primary} />
+          </Pressable>
+          <Text
+            style={[styles.footerDescription, { color: colors.text.tertiary }]}
+          >
+            よく買う商品を追加する
+          </Text>
+        </View>
       </SafeAreaView>
-
-      {/* Floating Action Button */}
-      {!isSelectionMode && <FabButton isDark={isDark} colors={colors} />}
     </>
   );
 }
@@ -795,5 +750,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 36,
+  },
+  footerBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderTopWidth: 1,
+  },
+  footerAddButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  footerDescription: {
+    fontSize: 15,
+    color: '#aaa',
   },
 });
