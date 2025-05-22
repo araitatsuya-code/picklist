@@ -10,17 +10,10 @@ import {
   ScrollView,
   SafeAreaView,
   Alert,
-  useColorScheme,
 } from 'react-native';
 import { useFrequentProductStore } from '../../src/stores/useFrequentProductStore';
 import { useCategoryStore } from '../../src/stores/useCategoryStore';
-import { useThemeStore } from '../../src/stores/useThemeStore';
-import {
-  Link,
-  router,
-  useLocalSearchParams,
-  useFocusEffect,
-} from 'expo-router';
+import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Menu } from 'react-native-paper';
 import { FrequentProduct } from '../../src/types/frequentProduct';
@@ -82,11 +75,6 @@ interface ProductItemProps {
 interface AddToListButtonProps {
   selectedProducts: Set<string>;
   handleAddToList: () => void;
-  colors: Colors;
-}
-
-interface FabButtonProps {
-  isDark: boolean;
   colors: Colors;
 }
 
@@ -216,7 +204,9 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
     <Pressable
       style={[
         styles.addToListButton,
-        { backgroundColor: colors.accent.primary },
+        {
+          backgroundColor: colors.accent.primary,
+        },
       ]}
       onPress={handleAddToList}
     >
@@ -229,54 +219,13 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
   );
 };
 
-const FabButton: React.FC<FabButtonProps> = ({ isDark, colors }) => {
-  return (
-    <View style={styles.fabWrapper}>
-      <Link href="/(products)/add" asChild>
-        <Pressable
-          style={[
-            styles.fabButton,
-            {
-              backgroundColor: isDark
-                ? colors.background.tertiary
-                : colors.accent.primary,
-              borderWidth: 1,
-              borderColor: isDark
-                ? 'rgba(255, 255, 255, 0.2)'
-                : 'rgba(0, 0, 0, 0.1)',
-            },
-          ]}
-        >
-          <View
-            style={[
-              styles.fabIconWrapper,
-              {
-                backgroundColor: isDark
-                  ? 'rgba(255, 255, 255, 0.1)'
-                  : 'rgba(0, 0, 0, 0.05)',
-              },
-            ]}
-          >
-            <Ionicons
-              name="add"
-              size={36}
-              color={isDark ? '#FFFFFF' : '#000000'}
-            />
-          </View>
-        </Pressable>
-      </Link>
-    </View>
-  );
-};
-
 /**
  * よく買う商品リストを表示する画面
  */
 export default function FrequentProductsScreen() {
   const { colors } = useTheme();
-  const systemColorScheme = useColorScheme();
-  const { theme, followSystem } = useThemeStore();
-  const isDark = followSystem ? systemColorScheme === 'dark' : theme === 'dark';
+  // const systemColorScheme = useColorScheme(); // ←未使用なので削除
+  // const { theme, followSystem } = useThemeStore(); // ←未使用なので削除
 
   // State
   const [searchQuery, setSearchQuery] = useState<string>('');

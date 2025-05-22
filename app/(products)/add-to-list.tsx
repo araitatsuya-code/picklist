@@ -6,7 +6,6 @@ import {
   ScrollView,
   TextInput,
   Pressable,
-  GestureResponderEvent,
   SafeAreaView,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
