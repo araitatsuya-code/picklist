@@ -19,6 +19,7 @@ interface GroupedPicklistItemsProps {
   listId: string;
   onItemPress?: (item: PicklistItem) => void;
   onItemDelete?: (item: PicklistItem) => void;
+  onNotePress?: (item: PicklistItem) => void;
 }
 
 type ItemGroup = {
@@ -30,6 +31,7 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
   listId,
   onItemPress,
   onItemDelete,
+  onNotePress,
 }) => {
   const { colors } = useTheme();
   const { picklists } = usePicklistStore();
@@ -161,6 +163,23 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
             </Pressable>
           )}
         </View>
+
+        {item.note && onNotePress && (
+          <Pressable
+            style={styles.noteButton}
+            onPress={(e) => {
+              e.stopPropagation();
+              onNotePress(item);
+            }}
+            accessibilityLabel="メモを見る"
+          >
+            <Ionicons
+              name="document-text-outline"
+              size={20}
+              color={colors.accent.primary}
+            />
+          </Pressable>
+        )}
 
         {onItemDelete && (
           <Pressable
@@ -294,5 +313,9 @@ const styles = StyleSheet.create({
   fullImage: {
     width: '100%',
     height: '100%',
+  },
+  noteButton: {
+    padding: 8,
+    marginRight: 0,
   },
 });

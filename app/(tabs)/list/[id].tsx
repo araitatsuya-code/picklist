@@ -34,6 +34,7 @@ export default function ListDetailScreen() {
   } | null>(null);
   const quickAddInputRef = React.useRef<TextInput>(null);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [noteModalItem, setNoteModalItem] = useState<PicklistItem | null>(null);
 
   const {
     picklists,
@@ -301,6 +302,7 @@ export default function ListDetailScreen() {
             listId={id}
             onItemPress={(item) => handleToggleComplete(item.id)}
             onItemDelete={handleRemoveItem}
+            onNotePress={(item) => setNoteModalItem(item)}
           />
         </ScrollView>
 
@@ -477,6 +479,41 @@ export default function ListDetailScreen() {
                   <Text style={styles.modalDeleteButtonText}>削除</Text>
                 </Pressable>
               </View>
+            </View>
+          </View>
+        )}
+
+        {noteModalItem && (
+          <View style={styles.modalOverlay}>
+            <View
+              style={[
+                styles.modalContent,
+                { backgroundColor: colors.background.primary },
+              ]}
+            >
+              <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
+                メモ
+              </Text>
+              <Text style={{ color: colors.text.primary, marginBottom: 24 }}>
+                {noteModalItem.note}
+              </Text>
+              <Pressable
+                style={[
+                  styles.modalButton,
+                  styles.modalCancelButton,
+                  { backgroundColor: isDark ? '#333' : '#f0f0f0' },
+                ]}
+                onPress={() => setNoteModalItem(null)}
+              >
+                <Text
+                  style={[
+                    styles.modalCancelButtonText,
+                    { color: colors.text.primary },
+                  ]}
+                >
+                  閉じる
+                </Text>
+              </Pressable>
             </View>
           </View>
         )}
