@@ -297,7 +297,10 @@ export default function ListDetailScreen() {
           />
         </View>
 
-        <ScrollView style={styles.listContent}>
+        <ScrollView
+          style={styles.listContent}
+          contentContainerStyle={{ paddingBottom: 96 }}
+        >
           <GroupedPicklistItems
             listId={id}
             onItemPress={(item) => handleToggleComplete(item.id)}
