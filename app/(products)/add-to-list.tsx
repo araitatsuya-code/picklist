@@ -149,12 +149,16 @@ export default function AddToListScreen() {
             />
           </Pressable>
           {pickerVisible && (
-            <View style={styles.pickerModalOverlay}>
-              <View
+            <Pressable
+              style={styles.pickerModalOverlay}
+              onPress={() => setPickerVisible(false)}
+            >
+              <Pressable
                 style={[
                   styles.pickerModal,
                   { backgroundColor: colors.background.primary },
                 ]}
+                onPress={(e) => e.stopPropagation()}
               >
                 <Picker
                   selectedValue={selectedList ?? ''}
@@ -193,8 +197,8 @@ export default function AddToListScreen() {
                     閉じる
                   </Text>
                 </Pressable>
-              </View>
-            </View>
+              </Pressable>
+            </Pressable>
           )}
         </View>
 
