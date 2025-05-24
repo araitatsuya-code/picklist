@@ -497,9 +497,11 @@ export default function ListDetailScreen() {
               <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
                 メモ
               </Text>
-              <Text style={{ color: colors.text.primary, marginBottom: 24 }}>
-                {noteModalItem.note}
-              </Text>
+              <ScrollView style={{ maxHeight: 200, marginBottom: 24 }}>
+                <Text style={{ color: colors.text.primary }}>
+                  {noteModalItem.note || 'メモがありません'}
+                </Text>
+              </ScrollView>
               <Pressable
                 style={[
                   styles.modalButton,

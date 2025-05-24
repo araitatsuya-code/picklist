@@ -125,8 +125,10 @@ export const GroupedPicklistItems: React.FC<GroupedPicklistItemsProps> = ({
               style={[styles.itemQuantity, { color: colors.text.secondary }]}
             >
               {item.quantity} {item.unit || '個'}
-              {typeof item.maxPrice === 'number' && !isNaN(item.maxPrice)
-                ? ` / 価格上限: ${item.maxPrice}円`
+              {typeof item.maxPrice === 'number' &&
+              !isNaN(item.maxPrice) &&
+              item.maxPrice > 0
+                ? ` / 価格上限: ${item.maxPrice.toLocaleString()}円`
                 : ''}
             </Text>
           </View>
