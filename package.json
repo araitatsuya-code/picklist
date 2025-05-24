@@ -1,6 +1,6 @@
 {
   "name": "picklist",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "main": "expo-router/entry",
   "scripts": {
     "start": "npx expo start -c",
@@ -10,7 +10,8 @@
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\"",
     "typescript": "tsc --noEmit",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "build:ios": "eas build --platform ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.4",
