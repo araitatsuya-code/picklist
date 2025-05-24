@@ -161,7 +161,7 @@ export default function ListDetailScreen() {
         >
           <View style={styles.headerContent}>
             <Pressable
-              style={{ padding: 8, marginRight: 8 }}
+              style={styles.backButton}
               onPress={() => router.push('/')}
               accessibilityLabel="買い物リスト一覧に戻る"
             >
@@ -753,5 +753,9 @@ const styles = StyleSheet.create({
   },
   listContent: {
     flex: 1,
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 8,
   },
 });
