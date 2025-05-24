@@ -128,13 +128,6 @@ export const useFrequentProductStore = create<FrequentProductState>()(
             store.initializeDefaultProducts();
           }, 0);
         }
-        if (__DEV__) {
-          console.log(
-            'State hydrated:',
-            state?.products.length ?? 0,
-            'products'
-          );
-        }
       },
       partialize: (state) => {
         // エラーを防ぐために永続化する前に状態を検証
