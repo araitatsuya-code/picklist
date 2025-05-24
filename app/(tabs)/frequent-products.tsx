@@ -191,6 +191,20 @@ const ProductItem: React.FC<ProductItemProps> = ({
           </Text>
         </View>
       </View>
+      <Pressable
+        style={[
+          styles.editButton,
+          { backgroundColor: colors.background.tertiary, borderRadius: 16 },
+        ]}
+        onPress={() => router.push(`/(products)/edit?id=${item.id}`)}
+        accessibilityLabel="編集"
+      >
+        <Ionicons
+          name="create-outline"
+          size={22}
+          color={colors.accent.primary}
+        />
+      </Pressable>
     </Pressable>
   );
 };
@@ -768,5 +782,11 @@ const styles = StyleSheet.create({
   footerDescription: {
     fontSize: 15,
     color: '#aaa',
+  },
+  editButton: {
+    padding: 8,
+    marginLeft: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
