@@ -716,7 +716,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 16,
     right: 16,
-    bottom: 16,
+    bottom: 8,
     height: 48,
     borderRadius: 12,
     flexDirection: 'row',
