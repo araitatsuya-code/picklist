@@ -160,6 +160,17 @@ export default function ListDetailScreen() {
           ]}
         >
           <View style={styles.headerContent}>
+            <Pressable
+              style={{ padding: 8, marginRight: 8 }}
+              onPress={() => router.push('/')}
+              accessibilityLabel="買い物リスト一覧に戻る"
+            >
+              <Ionicons
+                name="chevron-back"
+                size={24}
+                color={colors.accent.primary}
+              />
+            </Pressable>
             {editMode ? (
               <View style={styles.editNameContainer}>
                 <TextInput
