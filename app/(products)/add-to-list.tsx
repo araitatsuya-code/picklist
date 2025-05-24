@@ -77,7 +77,7 @@ export default function AddToListScreen() {
         priority: 2, // デフォルトで中優先度を設定
       }))
     );
-    router.push(`/(tabs)/list/${selectedList}`);
+    router.replace(`/(tabs)/list/${selectedList}`);
   };
 
   return (
