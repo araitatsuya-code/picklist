@@ -185,6 +185,7 @@ export const useShoppingHistoryStore = create<ShoppingHistoryState & ShoppingHis
       
       removeHistory: (id: string) => {
         set(state => ({
+          ...state,
           histories: state.histories.filter(history => history.id !== id),
         }));
       },
