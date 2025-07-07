@@ -173,7 +173,12 @@ export default function HistoryScreen() {
               </Text>
             </View>
           ) : (
-            selectedDateHistories.map((history) => (
+            selectedDateHistories.map((history) => {
+              console.log('=== Rendering history ===');
+              console.log('History ID:', history.id);
+              console.log('History items:', history.items);
+              console.log('Items length:', history.items.length);
+              return (
               <View
                 key={history.id}
                 style={[
@@ -336,7 +341,7 @@ export default function HistoryScreen() {
                   </View>
                 )}
               </View>
-            ))
+            )})
           )}
         </ScrollView>
       </View>
