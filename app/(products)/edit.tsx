@@ -16,6 +16,7 @@ import { CustomImagePicker } from '../../src/components/ImagePicker';
 import { Ionicons } from '@expo/vector-icons';
 import { Menu } from 'react-native-paper';
 import { useThemeContext } from '../../src/components/ThemeProvider';
+import { ErrorDisplay } from '../../src/components/ErrorDisplay';
 
 export default function EditProductScreen() {
   const { colors } = useThemeContext();
@@ -32,6 +33,7 @@ export default function EditProductScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [isNewCategory, setIsNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   // カテゴリーを優先順位でソート
   const sortedCategories = useMemo(() => {
@@ -67,9 +69,12 @@ export default function EditProductScreen() {
 
   const handleSubmit = () => {
     if (!productData.name.trim()) {
-      // TODO: エラー表示の実装
+      setErrorMessage('商品名を入力してください');
       return;
     }
+
+    // エラーメッセージをクリア
+    setErrorMessage('');
 
     // 新しいカテゴリーを作成
     let categoryId = productData.category;
@@ -184,18 +189,20 @@ export default function EditProductScreen() {
               style={[
                 styles.input,
                 {
-                  borderColor: colors.border.primary,
+                  borderColor: errorMessage ? colors.state.error : colors.border.primary,
                   backgroundColor: colors.background.primary,
                   color: colors.text.primary,
                 },
               ]}
               value={productData.name}
-              onChangeText={(text) =>
-                setProductData({ ...productData, name: text })
-              }
+              onChangeText={(text) => {
+                setProductData({ ...productData, name: text });
+                if (errorMessage) setErrorMessage('');
+              }}
               placeholder="商品名を入力"
               placeholderTextColor={colors.text.tertiary}
             />
+            <ErrorDisplay message={errorMessage} visible={!!errorMessage} />
           </View>
 
           <View style={styles.inputGroup}>
