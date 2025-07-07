@@ -37,12 +37,12 @@ export default function HistoryScreen() {
   // 選択した日付の履歴を取得
   const selectedDateHistories = useMemo(() => {
     return getHistoryByDate(selectedDate);
-  }, [selectedDate, getHistoryByDate]);
+  }, [selectedDate, getHistoryByDate, histories]); // historiesを依存配列に追加
 
   // 全体統計を取得
   const totalStats = useMemo(() => {
     return getTotalStats();
-  }, [getTotalStats]);
+  }, [getTotalStats, histories]); // historiesを依存配列に追加
 
   // 日付選択ハンドラ
   const handleDateSelect = (date: string) => {
@@ -62,11 +62,7 @@ export default function HistoryScreen() {
         {
           text: '削除',
           style: 'destructive',
-          onPress: () => {
-            removeHistory(historyId);
-            // 削除後、選択した日付の履歴を再取得して強制的に再レンダリング
-            setSelectedDate(prev => prev);
-          },
+          onPress: () => removeHistory(historyId),
         },
       ]
     );
