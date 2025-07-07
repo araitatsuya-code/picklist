@@ -573,55 +573,52 @@ export default function ListDetailScreen() {
         )}
 
         <View style={styles.bottomButtons}>
-          {list.items.length > 0 ? (
-            <>
-              <Pressable
-                style={[
-                  styles.addFromFrequentButton,
-                  {
-                    backgroundColor: colors.accent.primary,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  },
-                ]}
-                onPress={() => router.push(`/frequent-products?selectForList=${id}`)}
-              >
-                <Ionicons name="add-circle-outline" size={20} color="#fff" />
-                <Text style={{ color: '#fff', marginLeft: 6, fontWeight: '600', fontSize: 14 }}>
-                  商品追加
-                </Text>
-              </Pressable>
-              
-              <Pressable
-                style={[
-                  styles.completeBottomButton,
-                  { backgroundColor: '#34C759' }
-                ]}
-                onPress={handleCompleteList}
-              >
-                <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
-                <Text style={[styles.completeBottomButtonText, { color: '#fff' }]}>
-                  完了
-                </Text>
-              </Pressable>
-            </>
-          ) : (
+          <Pressable
+            style={[
+              list.items.length === 0 ? styles.addFromFrequentButtonFull : styles.addFromFrequentButton,
+              {
+                backgroundColor: colors.accent.primary,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+            ]}
+            onPress={() => router.push(`/frequent-products?selectForList=${id}`)}
+          >
+            <Ionicons 
+              name="add-circle-outline" 
+              size={list.items.length === 0 ? 24 : 20} 
+              color="#fff" 
+            />
+            <Text 
+              style={{ 
+                color: '#fff', 
+                marginLeft: list.items.length === 0 ? 8 : 6, 
+                fontWeight: '600', 
+                fontSize: list.items.length === 0 ? 16 : 14 
+              }}
+            >
+              {list.items.length === 0 ? 'よく買う商品から追加' : '商品追加'}
+            </Text>
+          </Pressable>
+          
+          {list.items.length > 0 && (
             <Pressable
               style={[
-                styles.addFromFrequentButtonFull,
-                {
-                  backgroundColor: colors.accent.primary,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                },
+                styles.completeBottomButton,
+                { 
+                  backgroundColor: list.items.some(item => item.completed) ? '#34C759' : '#8E8E93'
+                }
               ]}
-              onPress={() => router.push(`/frequent-products?selectForList=${id}`)}
+              onPress={handleCompleteList}
             >
-              <Ionicons name="add-circle-outline" size={24} color="#fff" />
-              <Text style={{ color: '#fff', marginLeft: 8, fontWeight: '600' }}>
-                よく買う商品から追加
+              <Ionicons 
+                name="checkmark-circle-outline" 
+                size={20} 
+                color="#fff" 
+              />
+              <Text style={[styles.completeBottomButtonText, { color: '#fff' }]}>
+                完了
               </Text>
             </Pressable>
           )}
@@ -832,7 +829,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   addFromFrequentButton: {
-    flex: 1,
+    flex: 2,
     height: 48,
     borderRadius: 12,
     shadowColor: '#000',
