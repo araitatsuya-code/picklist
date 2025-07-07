@@ -468,8 +468,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   itemsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 6,
   },
   itemChip: {
@@ -480,8 +478,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     gap: 4,
-    minWidth: 80,
-    maxWidth: '48%',
+    width: '100%',
   },
   itemChipText: {
     fontSize: 12,
@@ -493,6 +490,7 @@ const styles = StyleSheet.create({
   },
   moreItemsChip: {
     justifyContent: 'center',
+    width: '100%',
   },
   moreItemsText: {
     fontSize: 12,
