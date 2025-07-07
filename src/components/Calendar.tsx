@@ -79,16 +79,15 @@ export const Calendar: React.FC<CalendarProps> = ({
       if (minDate && current < minDate) isDisabled = true;
       if (maxDate && current > maxDate) isDisabled = true;
 
-      if (!isDisabled) {
-        days.push({
-          date: dateStr,
-          day: current.getDate(),
-          isCurrentMonth,
-          isToday,
-          isSelected,
-          hasHistory,
-        });
-      }
+      // 常に日付情報を追加（空のセルも含む）
+      days.push({
+        date: dateStr,
+        day: current.getDate(),
+        isCurrentMonth,
+        isToday,
+        isSelected,
+        hasHistory,
+      });
 
       current.setDate(current.getDate() + 1);
     }
@@ -190,39 +189,40 @@ export const Calendar: React.FC<CalendarProps> = ({
               onPress={() => handleDatePress(dayInfo)}
               disabled={!dayInfo.isCurrentMonth}
             >
-              <Text
-                style={[
-                  styles.dayText,
-                  { color: colors.text.primary },
-                  !dayInfo.isCurrentMonth && {
-                    color: colors.text.tertiary,
-                  },
-                  dayInfo.isSelected && {
-                    color: colors.text.inverse,
-                    fontWeight: '600',
-                  },
-                  dayInfo.isToday && !dayInfo.isSelected && {
-                    color: colors.accent.primary,
-                    fontWeight: '600',
-                  },
-                ]}
-              >
-                {dayInfo.day}
-              </Text>
+              {dayInfo.isCurrentMonth ? (
+                <>
+                  <Text
+                    style={[
+                      styles.dayText,
+                      { color: colors.text.primary },
+                      dayInfo.isSelected && {
+                        color: colors.text.inverse,
+                        fontWeight: '600',
+                      },
+                      dayInfo.isToday && !dayInfo.isSelected && {
+                        color: colors.accent.primary,
+                        fontWeight: '600',
+                      },
+                    ]}
+                  >
+                    {dayInfo.day}
+                  </Text>
               
-              {/* 履歴がある日付のマーク */}
-              {dayInfo.hasHistory && (
-                <View
-                  style={[
-                    styles.historyDot,
-                    {
-                      backgroundColor: dayInfo.isSelected
-                        ? colors.text.inverse
-                        : colors.accent.primary,
-                    },
-                  ]}
-                />
-              )}
+                  {/* 履歴がある日付のマーク */}
+                  {dayInfo.hasHistory && (
+                    <View
+                      style={[
+                        styles.historyDot,
+                        {
+                          backgroundColor: dayInfo.isSelected
+                            ? colors.text.inverse
+                            : colors.accent.primary,
+                        },
+                      ]}
+                    />
+                  )}
+                </>
+              ) : null}
             </Pressable>
           ))}
         </View>
@@ -312,6 +312,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginVertical: 2,
     position: 'relative',
+    minHeight: 40,
   },
   dayText: {
     fontSize: 16,
