@@ -375,9 +375,9 @@ const styles = StyleSheet.create({
   },
   calendarContainer: {
     height: 280,
-    marginBottom: 24,
+    marginBottom: 32,
     borderBottomWidth: 1,
-    paddingBottom: 16,
+    paddingBottom: 24,
   },
   historyContainer: {
     paddingBottom: 20,
