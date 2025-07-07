@@ -178,65 +178,63 @@ export const Calendar: React.FC<CalendarProps> = ({
       </View>
 
       {/* カレンダーグリッド */}
-      <ScrollView style={styles.calendarScroll}>
-        <View style={styles.calendarGrid}>
-          {calendarDays.map((dayInfo) => (
-            <Pressable
-              key={dayInfo.date}
-              style={[
-                styles.dayContainer,
-                dayInfo.isSelected && {
-                  backgroundColor: colors.accent.primary,
-                },
-                dayInfo.isToday && !dayInfo.isSelected && {
-                  borderColor: colors.accent.primary,
-                  borderWidth: 2,
-                },
-              ]}
-              onPress={() => handleDatePress(dayInfo)}
-              disabled={!dayInfo.isCurrentMonth || dayInfo.isDisabled}
-            >
-              {dayInfo.isCurrentMonth ? (
-                <>
-                  <Text
+      <View style={styles.calendarGrid}>
+        {calendarDays.map((dayInfo) => (
+          <Pressable
+            key={dayInfo.date}
+            style={[
+              styles.dayContainer,
+              dayInfo.isSelected && {
+                backgroundColor: colors.accent.primary,
+              },
+              dayInfo.isToday && !dayInfo.isSelected && {
+                borderColor: colors.accent.primary,
+                borderWidth: 2,
+              },
+            ]}
+            onPress={() => handleDatePress(dayInfo)}
+            disabled={!dayInfo.isCurrentMonth || dayInfo.isDisabled}
+          >
+            {dayInfo.isCurrentMonth ? (
+              <>
+                <Text
+                  style={[
+                    styles.dayText,
+                    { color: colors.text.primary },
+                    dayInfo.isDisabled && {
+                      color: colors.text.tertiary,
+                    },
+                    dayInfo.isSelected && {
+                      color: colors.text.inverse,
+                      fontWeight: '600',
+                    },
+                    dayInfo.isToday && !dayInfo.isSelected && {
+                      color: colors.accent.primary,
+                      fontWeight: '600',
+                    },
+                  ]}
+                >
+                  {dayInfo.day}
+                </Text>
+            
+                {/* 履歴がある日付のマーク */}
+                {dayInfo.hasHistory && (
+                  <View
                     style={[
-                      styles.dayText,
-                      { color: colors.text.primary },
-                      dayInfo.isDisabled && {
-                        color: colors.text.tertiary,
-                      },
-                      dayInfo.isSelected && {
-                        color: colors.text.inverse,
-                        fontWeight: '600',
-                      },
-                      dayInfo.isToday && !dayInfo.isSelected && {
-                        color: colors.accent.primary,
-                        fontWeight: '600',
+                      styles.historyDot,
+                      {
+                        backgroundColor: dayInfo.isSelected
+                          ? colors.text.inverse
+                          : colors.accent.primary,
                       },
                     ]}
-                  >
-                    {dayInfo.day}
-                  </Text>
-              
-                  {/* 履歴がある日付のマーク */}
-                  {dayInfo.hasHistory && (
-                    <View
-                      style={[
-                        styles.historyDot,
-                        {
-                          backgroundColor: dayInfo.isSelected
-                            ? colors.text.inverse
-                            : colors.accent.primary,
-                        },
-                      ]}
-                    />
-                  )}
-                </>
-              ) : null}
-            </Pressable>
-          ))}
-        </View>
-      </ScrollView>
+                  />
+                )}
+              </>
+            ) : null}
+          </Pressable>
+        ))}
+      </View>
 
     </View>
   );
@@ -277,9 +275,6 @@ const styles = StyleSheet.create({
   dayHeader: {
     fontSize: 14,
     fontWeight: '500',
-  },
-  calendarScroll: {
-    height: 200,
   },
   calendarGrid: {
     flexDirection: 'row',

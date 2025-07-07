@@ -92,88 +92,89 @@ export default function HistoryScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background.primary }]}
     >
-      {/* 統計サマリー */}
-      <View
-        style={[
-          styles.statsContainer,
-          { 
-            backgroundColor: colors.background.secondary,
-            borderBottomColor: colors.border.secondary,
-          }
-        ]}
-      >
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: colors.text.primary }]}>
-              {totalStats.totalHistories}
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.text.secondary }]}>
-              総履歴数
-            </Text>
-          </View>
-          
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: colors.text.primary }]}>
-              {totalStats.averageCompletionRate}%
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.text.secondary }]}>
-              平均完了率
-            </Text>
-          </View>
-          
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: colors.text.primary }]}>
-              {markedDates.length}
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.text.secondary }]}>
-              活動日数
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      {/* カレンダー */}
-      <View style={styles.calendarContainer}>
-        <Calendar
-          onDateSelect={handleDateSelect}
-          selectedDate={selectedDate}
-          markedDates={markedDates}
-          maxDate={new Date()} // 今日まで
-        />
-      </View>
-
-      {/* 選択した日付の履歴 */}
-      <View style={styles.historyContainer}>
+      <ScrollView style={styles.mainScroll}>
+        {/* 統計サマリー */}
         <View
           style={[
-            styles.historyHeader,
-            { borderBottomColor: colors.border.secondary }
+            styles.statsContainer,
+            { 
+              backgroundColor: colors.background.secondary,
+              borderBottomColor: colors.border.secondary,
+            }
           ]}
         >
-          <Text style={[styles.historyTitle, { color: colors.text.primary }]}>
-            {formatSelectedDate(selectedDate)}
-          </Text>
-          {selectedDateHistories.length > 0 && (
-            <Text style={[styles.historyCount, { color: colors.text.secondary }]}>
-              {selectedDateHistories.length}件の履歴
-            </Text>
-          )}
-        </View>
-
-        <ScrollView style={styles.historyList}>
-          {selectedDateHistories.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons
-                name="calendar-outline"
-                size={48}
-                color={colors.text.tertiary}
-              />
-              <Text style={[styles.emptyText, { color: colors.text.tertiary }]}>
-                この日の履歴はありません
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.text.primary }]}>
+                {totalStats.totalHistories}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.text.secondary }]}>
+                総履歴数
               </Text>
             </View>
-          ) : (
-            selectedDateHistories.map((history) => (
+            
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.text.primary }]}>
+                {totalStats.averageCompletionRate}%
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.text.secondary }]}>
+                平均完了率
+              </Text>
+            </View>
+            
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.text.primary }]}>
+                {markedDates.length}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.text.secondary }]}>
+                活動日数
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* カレンダー */}
+        <View style={styles.calendarContainer}>
+          <Calendar
+            onDateSelect={handleDateSelect}
+            selectedDate={selectedDate}
+            markedDates={markedDates}
+            maxDate={new Date()} // 今日まで
+          />
+        </View>
+
+        {/* 選択した日付の履歴 */}
+        <View style={styles.historyContainer}>
+          <View
+            style={[
+              styles.historyHeader,
+              { borderBottomColor: colors.border.secondary }
+            ]}
+          >
+            <Text style={[styles.historyTitle, { color: colors.text.primary }]}>
+              {formatSelectedDate(selectedDate)}
+            </Text>
+            {selectedDateHistories.length > 0 && (
+              <Text style={[styles.historyCount, { color: colors.text.secondary }]}>
+                {selectedDateHistories.length}件の履歴
+              </Text>
+            )}
+          </View>
+
+          <View style={styles.historyList}>
+            {selectedDateHistories.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons
+                  name="calendar-outline"
+                  size={48}
+                  color={colors.text.tertiary}
+                />
+                <Text style={[styles.emptyText, { color: colors.text.tertiary }]}>
+                  この日の履歴はありません
+                </Text>
+              </View>
+            ) : (
+              selectedDateHistories.map((history) => (
               <View
                 key={history.id}
                 style={[
@@ -336,16 +337,20 @@ export default function HistoryScreen() {
                   </View>
                 )}
               </View>
-            ))
-          )}
-        </ScrollView>
-      </View>
+              ))
+            )}
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  mainScroll: {
     flex: 1,
   },
   statsContainer: {
@@ -372,8 +377,7 @@ const styles = StyleSheet.create({
     height: 280,
   },
   historyContainer: {
-    flex: 1,
-    minHeight: 200,
+    paddingBottom: 20,
   },
   historyHeader: {
     paddingHorizontal: 16,
@@ -389,7 +393,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   historyList: {
-    flex: 1,
+    paddingBottom: 20,
   },
   emptyState: {
     flex: 1,
