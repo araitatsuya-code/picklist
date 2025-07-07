@@ -269,6 +269,7 @@ export const Calendar: React.FC<CalendarProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'yellow', // デバッグ用
   },
   header: {
     flexDirection: 'row',
@@ -311,6 +312,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     paddingHorizontal: 4,
     minHeight: 240,
+    backgroundColor: 'pink', // デバッグ用
   },
   dayContainer: {
     width: '14.28%', // 7日で100%
