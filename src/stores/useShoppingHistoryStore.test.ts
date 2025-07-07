@@ -1,4 +1,4 @@
-import { useShoppingHistoryStore, ShoppingHistoryEntry } from './useShoppingHistoryStore';
+import { useShoppingHistoryStore } from './useShoppingHistoryStore';
 import { Picklist, PicklistItem } from './usePicklistStore';
 
 // AsyncStorageのモック
