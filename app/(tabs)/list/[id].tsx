@@ -261,19 +261,6 @@ export default function ListDetailScreen() {
                   />
                 </Pressable>
                 <View style={styles.headerActions}>
-                  <Pressable
-                    style={[
-                      styles.completeButton,
-                      { backgroundColor: '#34C759' }
-                    ]}
-                    onPress={handleCompleteList}
-                  >
-                    <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
-                    <Text style={[styles.completeButtonText, { color: '#fff' }]}>
-                      完了
-                    </Text>
-                  </Pressable>
-                  
                   <Menu
                     visible={menuVisible}
                     onDismiss={() => setMenuVisible(false)}
@@ -585,23 +572,38 @@ export default function ListDetailScreen() {
           </View>
         )}
 
-        <Pressable
-          style={[
-            styles.addFromFrequentButton,
-            {
-              backgroundColor: colors.accent.primary,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-            },
-          ]}
-          onPress={() => router.push(`/frequent-products?selectForList=${id}`)}
-        >
-          <Ionicons name="add-circle-outline" size={24} color="#fff" />
-          <Text style={{ color: '#fff', marginLeft: 8, fontWeight: '600' }}>
-            よく買う商品から追加
-          </Text>
-        </Pressable>
+        <View style={styles.bottomButtons}>
+          <Pressable
+            style={[
+              styles.completeBottomButton,
+              { backgroundColor: '#34C759' }
+            ]}
+            onPress={handleCompleteList}
+          >
+            <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
+            <Text style={[styles.completeBottomButtonText, { color: '#fff' }]}>
+              完了
+            </Text>
+          </Pressable>
+          
+          <Pressable
+            style={[
+              styles.addFromFrequentButton,
+              {
+                backgroundColor: colors.accent.primary,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+            ]}
+            onPress={() => router.push(`/frequent-products?selectForList=${id}`)}
+          >
+            <Ionicons name="add-circle-outline" size={20} color="#fff" />
+            <Text style={{ color: '#fff', marginLeft: 6, fontWeight: '600', fontSize: 14 }}>
+              商品追加
+            </Text>
+          </Pressable>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -634,7 +636,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginRight: 12,
   },
   title: {
     fontSize: 20,
@@ -698,19 +699,6 @@ const styles = StyleSheet.create({
   },
   deleteListButton: {
     padding: 8,
-  },
-  completeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 12,
-    gap: 4,
-  },
-  completeButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
   },
   modalOverlay: {
     position: 'absolute',
@@ -795,16 +783,36 @@ const styles = StyleSheet.create({
   modalSaveButtonText: {
     fontWeight: '600',
   },
-  addFromFrequentButton: {
+  bottomButtons: {
     position: 'absolute',
     left: 16,
     right: 16,
     bottom: 8,
+    flexDirection: 'row',
+    gap: 12,
+  },
+  completeBottomButton: {
+    flex: 1,
     height: 48,
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+    gap: 6,
+  },
+  completeBottomButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  addFromFrequentButton: {
+    flex: 1,
+    height: 48,
+    borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
