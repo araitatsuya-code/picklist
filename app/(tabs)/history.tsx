@@ -310,14 +310,12 @@ export default function HistoryScreen() {
                               styles.itemChipText,
                               { 
                                 color: item.completed ? colors.text.primary : colors.text.secondary,
-                                backgroundColor: 'yellow', // デバッグ用
-                                padding: 2,
                               },
                               item.completed && styles.itemChipTextCompleted,
                             ]}
                             numberOfLines={1}
                           >
-                            {item.name || 'No name'}
+                            {item.name}
                           </Text>
                         </View>
                       ))}
@@ -482,6 +480,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     gap: 4,
+    minWidth: 80,
     maxWidth: '48%',
   },
   itemChipText: {
