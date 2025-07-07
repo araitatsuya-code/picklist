@@ -59,6 +59,15 @@ export const Calendar: React.FC<CalendarProps> = ({
     const lastDay = new Date(currentYear, currentMonth + 1, 0);
     const startDate = new Date(firstDay);
     const endDate = new Date(lastDay);
+    
+    console.log('Calendar generation:', {
+      currentYear,
+      currentMonth,
+      firstDay,
+      lastDay,
+      startDate,
+      endDate
+    });
 
     // 週の最初を日曜日に合わせる
     startDate.setDate(startDate.getDate() - startDate.getDay());
@@ -79,11 +88,11 @@ export const Calendar: React.FC<CalendarProps> = ({
       if (minDate && current < minDate) isDisabled = true;
       if (maxDate && current > maxDate) isDisabled = true;
 
-      // 常に日付情報を追加（空のセルも含む）
+      // 日付情報を追加（無効な日付も含む）
       days.push({
         date: dateStr,
         day: current.getDate(),
-        isCurrentMonth,
+        isCurrentMonth: isCurrentMonth && !isDisabled,
         isToday,
         isSelected,
         hasHistory,
@@ -92,6 +101,7 @@ export const Calendar: React.FC<CalendarProps> = ({
       current.setDate(current.getDate() + 1);
     }
 
+    console.log('Generated days:', days.length, days);
     return days;
   }, [currentYear, currentMonth, selectedDate, markedDates, todayStr, minDate, maxDate]);
 
