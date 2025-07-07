@@ -15,12 +15,10 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function HistoryScreen() {
   const { colors } = useThemeContext();
-  const {
-    histories,
-    getHistoryByDate,
-    getTotalStats,
-    removeHistory,
-  } = useShoppingHistoryStore();
+  const histories = useShoppingHistoryStore((state) => state.histories);
+  const getHistoryByDate = useShoppingHistoryStore((state) => state.getHistoryByDate);
+  const getTotalStats = useShoppingHistoryStore((state) => state.getTotalStats);
+  const removeHistory = useShoppingHistoryStore((state) => state.removeHistory);
 
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     // 初期選択日を今日に設定
@@ -64,7 +62,11 @@ export default function HistoryScreen() {
         {
           text: '削除',
           style: 'destructive',
-          onPress: () => removeHistory(historyId),
+          onPress: () => {
+            removeHistory(historyId);
+            // 削除後、選択した日付の履歴を再取得して強制的に再レンダリング
+            setSelectedDate(prev => prev);
+          },
         },
       ]
     );
