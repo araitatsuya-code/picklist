@@ -134,7 +134,7 @@ export default function HistoryScreen() {
         </View>
 
         {/* カレンダー */}
-        <View style={styles.calendarContainer}>
+        <View style={[styles.calendarContainer, { borderBottomColor: colors.border.secondary }]}>
           <Calendar
             onDateSelect={handleDateSelect}
             selectedDate={selectedDate}
@@ -375,7 +375,9 @@ const styles = StyleSheet.create({
   },
   calendarContainer: {
     height: 280,
-    marginBottom: 16,
+    marginBottom: 24,
+    borderBottomWidth: 1,
+    paddingBottom: 16,
   },
   historyContainer: {
     paddingBottom: 20,
