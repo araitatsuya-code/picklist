@@ -575,7 +575,7 @@ export default function ListDetailScreen() {
         <View style={styles.bottomButtons}>
           <Pressable
             style={[
-              list.items.length === 0 ? styles.addFromFrequentButtonFull : styles.addFromFrequentButton,
+              styles.addFromFrequentButton,
               {
                 backgroundColor: colors.accent.primary,
                 flexDirection: 'row',
@@ -587,41 +587,42 @@ export default function ListDetailScreen() {
           >
             <Ionicons 
               name="add-circle-outline" 
-              size={list.items.length === 0 ? 24 : 20} 
+              size={20} 
               color="#fff" 
             />
             <Text 
               style={{ 
                 color: '#fff', 
-                marginLeft: list.items.length === 0 ? 8 : 6, 
+                marginLeft: 6, 
                 fontWeight: '600', 
-                fontSize: list.items.length === 0 ? 16 : 14 
+                fontSize: 14 
               }}
             >
-              {list.items.length === 0 ? 'よく買う商品から追加' : '商品追加'}
+              よく買う商品から追加
             </Text>
           </Pressable>
           
-          {list.items.length > 0 && (
-            <Pressable
-              style={[
-                styles.completeBottomButton,
-                { 
-                  backgroundColor: list.items.some(item => item.completed) ? '#34C759' : '#8E8E93'
-                }
-              ]}
-              onPress={handleCompleteList}
-            >
-              <Ionicons 
-                name="checkmark-circle-outline" 
-                size={20} 
-                color="#fff" 
-              />
-              <Text style={[styles.completeBottomButtonText, { color: '#fff' }]}>
-                完了
-              </Text>
-            </Pressable>
-          )}
+          <Pressable
+            style={[
+              styles.completeBottomButton,
+              { 
+                backgroundColor: list.items.some(item => item.completed) 
+                  ? '#34C759' 
+                  : colors.control.inactive
+              }
+            ]}
+            onPress={list.items.length > 0 ? handleCompleteList : undefined}
+            disabled={list.items.length === 0}
+          >
+            <Ionicons 
+              name="checkmark-circle-outline" 
+              size={20} 
+              color="#fff" 
+            />
+            <Text style={[styles.completeBottomButtonText, { color: '#fff' }]}>
+              完了
+            </Text>
+          </Pressable>
         </View>
       </View>
     </SafeAreaView>
