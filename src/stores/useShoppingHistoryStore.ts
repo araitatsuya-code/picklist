@@ -154,10 +154,6 @@ export const useShoppingHistoryStore = create<ShoppingHistoryState & ShoppingHis
       
       // Actions
       addHistory: (list: Picklist) => {
-        console.log('=== addHistory called ===');
-        console.log('Input list:', list);
-        console.log('List items:', list.items);
-        
         const completedAt = Date.now();
         const completedDate = formatDate(completedAt);
         const totalItems = list.items.length;
@@ -165,23 +161,18 @@ export const useShoppingHistoryStore = create<ShoppingHistoryState & ShoppingHis
         const completionRate = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
         
         // HistoryItemに変換
-        const historyItems: HistoryItem[] = list.items.map(item => {
-          console.log('Converting item:', item);
-          return {
-            id: item.id,
-            productId: item.productId,
-            name: item.name,
-            quantity: item.quantity,
-            unit: item.unit,
-            maxPrice: item.maxPrice,
-            note: item.note,
-            completed: item.completed,
-            category: item.category,
-            priority: item.priority,
-          };
-        });
-        
-        console.log('Converted history items:', historyItems);
+        const historyItems: HistoryItem[] = list.items.map(item => ({
+          id: item.id,
+          productId: item.productId,
+          name: item.name,
+          quantity: item.quantity,
+          unit: item.unit,
+          maxPrice: item.maxPrice,
+          note: item.note,
+          completed: item.completed,
+          category: item.category,
+          priority: item.priority,
+        }));
         
         const newEntry: ShoppingHistoryEntry = {
           id: `history_${completedAt}_${list.id}`,
@@ -195,8 +186,6 @@ export const useShoppingHistoryStore = create<ShoppingHistoryState & ShoppingHis
           completionRate,
           categoryBreakdown: calculateCategoryBreakdown(historyItems),
         };
-        
-        console.log('New history entry:', newEntry);
         
         set(state => ({
           ...state,

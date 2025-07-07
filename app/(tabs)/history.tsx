@@ -173,12 +173,7 @@ export default function HistoryScreen() {
               </Text>
             </View>
           ) : (
-            selectedDateHistories.map((history) => {
-              console.log('=== Rendering history ===');
-              console.log('History ID:', history.id);
-              console.log('History items:', history.items);
-              console.log('Items length:', history.items.length);
-              return (
+            selectedDateHistories.map((history) => (
               <View
                 key={history.id}
                 style={[
@@ -284,7 +279,7 @@ export default function HistoryScreen() {
                 )}
 
                 {/* 商品リスト */}
-                {history.items.length > 0 && (
+                {history.items && history.items.length > 0 && (
                   <View style={styles.itemsList}>
                     <Text style={[styles.itemsTitle, { color: colors.text.primary }]}>
                       商品一覧 ({history.items.length}個)
@@ -341,7 +336,7 @@ export default function HistoryScreen() {
                   </View>
                 )}
               </View>
-            )})
+            ))
           )}
         </ScrollView>
       </View>
