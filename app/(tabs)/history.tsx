@@ -18,7 +18,6 @@ export default function HistoryScreen() {
   const {
     histories,
     getHistoryByDate,
-    hasHistoryForDate,
     getTotalStats,
     removeHistory,
   } = useShoppingHistoryStore();
