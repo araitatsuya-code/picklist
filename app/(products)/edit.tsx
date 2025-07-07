@@ -14,7 +14,7 @@ import { useCategoryStore } from '../../src/stores/useCategoryStore';
 import { router, useLocalSearchParams } from 'expo-router';
 import { CustomImagePicker } from '../../src/components/ImagePicker';
 import { Ionicons } from '@expo/vector-icons';
-import { Menu } from 'react-native-paper';
+import { Modal } from 'react-native-paper';
 import { useThemeContext } from '../../src/components/ThemeProvider';
 
 export default function EditProductScreen() {
@@ -29,7 +29,7 @@ export default function EditProductScreen() {
     defaultQuantity: '',
     unit: '',
   });
-  const [menuVisible, setMenuVisible] = useState(false);
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [isNewCategory, setIsNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
 
@@ -134,12 +134,12 @@ export default function EditProductScreen() {
       category: categoryId,
     }));
     setIsNewCategory(false);
-    setMenuVisible(false);
+    setCategoryModalVisible(false);
   };
 
   const handleNewCategoryPress = () => {
     setIsNewCategory(true);
-    setMenuVisible(false);
+    setCategoryModalVisible(false);
   };
 
   return (
@@ -202,60 +202,35 @@ export default function EditProductScreen() {
             <Text style={[styles.label, { color: colors.text.secondary }]}>
               カテゴリー
             </Text>
-            <Menu
-              visible={menuVisible}
-              onDismiss={() => setMenuVisible(false)}
-              contentStyle={{ backgroundColor: colors.background.primary }}
-              anchor={
-                <Pressable
-                  style={[
-                    styles.categoryButton,
-                    {
-                      borderColor: colors.border.primary,
-                      backgroundColor: colors.background.primary,
-                    },
-                  ]}
-                  onPress={() => setMenuVisible(true)}
-                >
-                  <Text
-                    style={[
-                      styles.categoryButtonText,
-                      { color: colors.text.primary },
-                      !productData.category &&
-                        !isNewCategory && { color: colors.text.tertiary },
-                    ]}
-                  >
-                    {isNewCategory
-                      ? newCategoryName || 'カテゴリー名を入力'
-                      : categories.find((c) => c.id === productData.category)
-                          ?.name || 'カテゴリーを選択'}
-                  </Text>
-                  <Ionicons
-                    name="chevron-down"
-                    size={20}
-                    color={colors.text.secondary}
-                  />
-                </Pressable>
-              }
+            <Pressable
+              style={[
+                styles.categoryButton,
+                {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.background.primary,
+                },
+              ]}
+              onPress={() => setCategoryModalVisible(true)}
             >
-              {sortedCategories.map((category) => (
-                <Menu.Item
-                  key={category.id}
-                  onPress={() => handleCategorySelect(category.id)}
-                  title={category.name}
-                  titleStyle={{ color: colors.text.primary }}
-                  leadingIcon={
-                    productData.category === category.id ? 'check' : undefined
-                  }
-                />
-              ))}
-              <Menu.Item
-                onPress={handleNewCategoryPress}
-                title="新しいカテゴリーを作成"
-                titleStyle={{ color: colors.text.primary }}
-                leadingIcon="plus"
+              <Text
+                style={[
+                  styles.categoryButtonText,
+                  { color: colors.text.primary },
+                  !productData.category &&
+                    !isNewCategory && { color: colors.text.tertiary },
+                ]}
+              >
+                {isNewCategory
+                  ? newCategoryName || 'カテゴリー名を入力'
+                  : categories.find((c) => c.id === productData.category)
+                      ?.name || 'カテゴリーを選択'}
+              </Text>
+              <Ionicons
+                name="chevron-down"
+                size={20}
+                color={colors.text.secondary}
               />
-            </Menu>
+            </Pressable>
             {isNewCategory && (
               <TextInput
                 style={[
@@ -352,6 +327,81 @@ export default function EditProductScreen() {
           </Pressable>
         </View>
       </ScrollView>
+
+      {/* カテゴリー選択モーダル */}
+      <Modal
+        visible={categoryModalVisible}
+        onDismiss={() => setCategoryModalVisible(false)}
+        contentContainerStyle={[
+          styles.modalContainer,
+          { backgroundColor: colors.background.primary }
+        ]}
+      >
+        <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
+          カテゴリーを選択
+        </Text>
+        
+        <ScrollView style={styles.categoryList}>
+          {sortedCategories.map((category) => (
+            <Pressable
+              key={category.id}
+              style={[
+                styles.categoryItem,
+                {
+                  borderBottomColor: colors.border.secondary,
+                  backgroundColor: productData.category === category.id 
+                    ? colors.accent.primary + '20' 
+                    : 'transparent'
+                }
+              ]}
+              onPress={() => handleCategorySelect(category.id)}
+            >
+              <Text style={[styles.categoryItemText, { color: colors.text.primary }]}>
+                {category.name}
+              </Text>
+              {productData.category === category.id && (
+                <Ionicons
+                  name="checkmark"
+                  size={20}
+                  color={colors.accent.primary}
+                />
+              )}
+            </Pressable>
+          ))}
+          
+          <Pressable
+            style={[
+              styles.categoryItem,
+              {
+                borderBottomColor: colors.border.secondary,
+                backgroundColor: 'transparent'
+              }
+            ]}
+            onPress={handleNewCategoryPress}
+          >
+            <Text style={[styles.categoryItemText, { color: colors.accent.primary }]}>
+              新しいカテゴリーを作成
+            </Text>
+            <Ionicons
+              name="add"
+              size={20}
+              color={colors.accent.primary}
+            />
+          </Pressable>
+        </ScrollView>
+        
+        <Pressable
+          style={[
+            styles.modalCloseButton,
+            { backgroundColor: colors.border.secondary }
+          ]}
+          onPress={() => setCategoryModalVisible(false)}
+        >
+          <Text style={[styles.modalCloseButtonText, { color: colors.text.primary }]}>
+            キャンセル
+          </Text>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -430,6 +480,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   deleteButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalContainer: {
+    margin: 20,
+    borderRadius: 12,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  categoryList: {
+    maxHeight: 300,
+  },
+  categoryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+  },
+  categoryItemText: {
+    fontSize: 16,
+  },
+  modalCloseButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalCloseButtonText: {
     fontSize: 16,
     fontWeight: '600',
   },
