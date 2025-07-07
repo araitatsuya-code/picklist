@@ -7,6 +7,7 @@ import { useTheme } from '../../src/hooks/useTheme';
 type IconName =
   | 'cart-outline'
   | 'list-outline'
+  | 'calendar-outline'
   | 'settings-outline'
   | 'grid-outline';
 
@@ -113,6 +114,14 @@ export default function TabLayout() {
           title: 'よく買う商品',
           tabBarIcon: ({ color, focused }) =>
             renderTabBarIcon('list-outline', color, focused),
+        }}
+      />
+      <Tabs.Screen
+        name="history"
+        options={{
+          title: '履歴',
+          tabBarIcon: ({ color, focused }) =>
+            renderTabBarIcon('calendar-outline', color, focused),
         }}
       />
       <Tabs.Screen
