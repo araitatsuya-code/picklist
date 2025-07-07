@@ -575,19 +575,6 @@ export default function ListDetailScreen() {
         <View style={styles.bottomButtons}>
           <Pressable
             style={[
-              styles.completeBottomButton,
-              { backgroundColor: '#34C759' }
-            ]}
-            onPress={handleCompleteList}
-          >
-            <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
-            <Text style={[styles.completeBottomButtonText, { color: '#fff' }]}>
-              完了
-            </Text>
-          </Pressable>
-          
-          <Pressable
-            style={[
               styles.addFromFrequentButton,
               {
                 backgroundColor: colors.accent.primary,
@@ -598,9 +585,42 @@ export default function ListDetailScreen() {
             ]}
             onPress={() => router.push(`/frequent-products?selectForList=${id}`)}
           >
-            <Ionicons name="add-circle-outline" size={20} color="#fff" />
-            <Text style={{ color: '#fff', marginLeft: 6, fontWeight: '600', fontSize: 14 }}>
-              商品追加
+            <Ionicons 
+              name="add-circle-outline" 
+              size={20} 
+              color="#fff" 
+            />
+            <Text 
+              style={{ 
+                color: '#fff', 
+                marginLeft: 6, 
+                fontWeight: '600', 
+                fontSize: 14 
+              }}
+            >
+              よく買う商品から追加
+            </Text>
+          </Pressable>
+          
+          <Pressable
+            style={[
+              styles.completeBottomButton,
+              { 
+                backgroundColor: list.items.some(item => item.completed) 
+                  ? '#34C759' 
+                  : colors.control.inactive
+              }
+            ]}
+            onPress={list.items.length > 0 ? handleCompleteList : undefined}
+            disabled={list.items.length === 0}
+          >
+            <Ionicons 
+              name="checkmark-circle-outline" 
+              size={20} 
+              color="#fff" 
+            />
+            <Text style={[styles.completeBottomButtonText, { color: '#fff' }]}>
+              完了
             </Text>
           </Pressable>
         </View>
@@ -810,7 +830,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   addFromFrequentButton: {
-    flex: 1,
+    flex: 2,
+    height: 48,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  addFromFrequentButtonFull: {
     height: 48,
     borderRadius: 12,
     shadowColor: '#000',
