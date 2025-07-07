@@ -143,7 +143,7 @@ export default function HistoryScreen() {
       </View>
 
       {/* 選択した日付の履歴 */}
-      <View style={[styles.historyContainer, { flex: 0, maxHeight: 300 }]}>
+      <View style={styles.historyContainer}>
         <View
           style={[
             styles.historyHeader,
@@ -369,8 +369,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   calendarContainer: {
-    height: 350,
-    backgroundColor: 'lightblue', // デバッグ用
+    height: 280,
   },
   historyContainer: {
     flex: 1,
