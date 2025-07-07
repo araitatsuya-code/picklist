@@ -24,6 +24,7 @@ interface DayInfo {
   isToday: boolean;
   isSelected: boolean;
   hasHistory: boolean;
+  isDisabled?: boolean;
 }
 
 export const Calendar: React.FC<CalendarProps> = ({
@@ -60,14 +61,6 @@ export const Calendar: React.FC<CalendarProps> = ({
     const startDate = new Date(firstDay);
     const endDate = new Date(lastDay);
     
-    console.log('Calendar generation:', {
-      currentYear,
-      currentMonth,
-      firstDay,
-      lastDay,
-      startDate,
-      endDate
-    });
 
     // 週の最初を日曜日に合わせる
     startDate.setDate(startDate.getDate() - startDate.getDay());
@@ -92,16 +85,16 @@ export const Calendar: React.FC<CalendarProps> = ({
       days.push({
         date: dateStr,
         day: current.getDate(),
-        isCurrentMonth: isCurrentMonth && !isDisabled,
+        isCurrentMonth,
         isToday,
         isSelected,
         hasHistory,
+        isDisabled,
       });
 
       current.setDate(current.getDate() + 1);
     }
 
-    console.log('Generated days:', days.length, days);
     return days;
   }, [currentYear, currentMonth, selectedDate, markedDates, todayStr, minDate, maxDate]);
 
@@ -197,7 +190,7 @@ export const Calendar: React.FC<CalendarProps> = ({
                 },
               ]}
               onPress={() => handleDatePress(dayInfo)}
-              disabled={!dayInfo.isCurrentMonth}
+              disabled={!dayInfo.isCurrentMonth || dayInfo.isDisabled}
             >
               {dayInfo.isCurrentMonth ? (
                 <>
@@ -205,6 +198,9 @@ export const Calendar: React.FC<CalendarProps> = ({
                     style={[
                       styles.dayText,
                       { color: colors.text.primary },
+                      dayInfo.isDisabled && {
+                        color: colors.text.tertiary,
+                      },
                       dayInfo.isSelected && {
                         color: colors.text.inverse,
                         fontWeight: '600',
