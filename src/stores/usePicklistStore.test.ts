@@ -25,6 +25,11 @@ const createTestStore = () =>
         picklists: state.picklists.filter((list) => list.id !== id),
       }));
     },
+    completePicklist: (id: string) => {
+      set((state) => ({
+        picklists: state.picklists.filter((list) => list.id !== id),
+      }));
+    },
     updatePicklist: (id: string, updates: Partial<Picklist>) => {
       set((state) => ({
         picklists: state.picklists.map((list) =>

@@ -40,6 +40,7 @@ type PicklistActions = {
   addPicklist: (name: string) => void;
   removePicklist: (id: string) => void;
   updatePicklist: (id: string, updates: Partial<Picklist>) => void;
+  completePicklist: (id: string) => void; // 新規追加：リスト完了機能
   addItemsToList: (listId: string, items: Omit<PicklistItem, 'id'>[]) => void;
   updateItem: (
     listId: string,
@@ -101,6 +102,25 @@ export const usePicklistStore = create<PicklistState & PicklistActions>()(
         set((state) => ({
           picklists: state.picklists.filter((list) => list.id !== id),
         }));
+      },
+
+      // 指定されたIDの買い物リストを完了する（履歴に保存して削除）
+      completePicklist: (id) => {
+        set((state) => {
+          const listToComplete = state.picklists.find((list) => list.id === id);
+          
+          if (listToComplete) {
+            // 履歴ストアへの保存は外部で行う（循環依存を避けるため）
+            // この機能は後でカスタムフックとして実装する
+            
+            // リストを削除
+            return {
+              picklists: state.picklists.filter((list) => list.id !== id),
+            };
+          }
+          
+          return state;
+        });
       },
 
       updatePicklist: (id, updates) => {
