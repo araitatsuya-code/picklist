@@ -279,6 +279,64 @@ export default function HistoryScreen() {
                     ))}
                   </View>
                 )}
+
+                {/* 商品リスト */}
+                {history.items.length > 0 && (
+                  <View style={styles.itemsList}>
+                    <Text style={[styles.itemsTitle, { color: colors.text.primary }]}>
+                      商品一覧 ({history.items.length}個)
+                    </Text>
+                    <View style={styles.itemsGrid}>
+                      {history.items.slice(0, 6).map((item) => (
+                        <View
+                          key={item.id}
+                          style={[
+                            styles.itemChip,
+                            {
+                              backgroundColor: item.completed 
+                                ? colors.accent.primary + '15' 
+                                : colors.background.secondary,
+                              borderColor: item.completed 
+                                ? colors.accent.primary 
+                                : colors.border.secondary,
+                            }
+                          ]}
+                        >
+                          <Ionicons
+                            name={item.completed ? 'checkmark-circle' : 'ellipse-outline'}
+                            size={14}
+                            color={item.completed ? colors.accent.primary : colors.text.tertiary}
+                          />
+                          <Text
+                            style={[
+                              styles.itemChipText,
+                              { 
+                                color: item.completed ? colors.text.primary : colors.text.secondary,
+                              },
+                              item.completed && styles.itemChipTextCompleted,
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {item.name}
+                          </Text>
+                        </View>
+                      ))}
+                      {history.items.length > 6 && (
+                        <View
+                          style={[
+                            styles.itemChip,
+                            styles.moreItemsChip,
+                            { backgroundColor: colors.background.secondary, borderColor: colors.border.secondary }
+                          ]}
+                        >
+                          <Text style={[styles.moreItemsText, { color: colors.text.secondary }]}>
+                            +{history.items.length - 6}個
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                )}
               </View>
             ))
           )}
@@ -402,5 +460,43 @@ const styles = StyleSheet.create({
   },
   categoryStats: {
     fontSize: 12,
+  },
+  itemsList: {
+    marginTop: 12,
+  },
+  itemsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  itemsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  itemChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 4,
+    maxWidth: '48%',
+  },
+  itemChipText: {
+    fontSize: 12,
+    fontWeight: '500',
+    flex: 1,
+  },
+  itemChipTextCompleted: {
+    textDecorationLine: 'line-through',
+  },
+  moreItemsChip: {
+    justifyContent: 'center',
+  },
+  moreItemsText: {
+    fontSize: 12,
+    fontWeight: '500',
   },
 });
