@@ -7,6 +7,7 @@ import {
   TextInput,
   SafeAreaView,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import {
@@ -19,6 +20,7 @@ import { IconButton, Menu } from 'react-native-paper';
 import { GroupedPicklistItems } from '../../../src/components/GroupedPicklistItems';
 import { useFrequentProductStore } from '../../../src/stores/useFrequentProductStore';
 import { useTheme } from '../../../src/hooks/useTheme';
+import { usePicklistCompletion } from '../../../src/hooks/usePicklistCompletion';
 
 export default function ListDetailScreen() {
   const { colors, isDark } = useTheme();
@@ -45,6 +47,7 @@ export default function ListDetailScreen() {
     updateListSortSettings,
   } = usePicklistStore();
   const { products } = useFrequentProductStore();
+  const { completeList, getListStats } = usePicklistCompletion();
 
   const list = useMemo(
     () => picklists.find((l) => l.id === id),
@@ -76,6 +79,40 @@ export default function ListDetailScreen() {
   const handleDeleteList = () => {
     removePicklist(id);
     router.replace('/(tabs)');
+  };
+
+  const handleCompleteList = () => {
+    if (!list) return;
+    
+    const stats = getListStats(id);
+    if (!stats) return;
+
+    const message = stats.completionRate === 100 
+      ? `「${list.name}」を完了します。\n履歴に保存され、リストが削除されます。`
+      : `「${list.name}」を完了します。\n未完了のアイテム（${stats.remainingItems}個）がありますが、現在の状態で履歴に保存されます。`;
+
+    Alert.alert(
+      'リストを完了',
+      message,
+      [
+        {
+          text: 'キャンセル',
+          style: 'cancel',
+        },
+        {
+          text: '完了',
+          style: 'default',
+          onPress: () => {
+            const success = completeList(id);
+            if (success) {
+              router.replace('/(tabs)');
+            } else {
+              Alert.alert('エラー', 'リストの完了に失敗しました。');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleSaveItem = () => {
@@ -224,6 +261,19 @@ export default function ListDetailScreen() {
                   />
                 </Pressable>
                 <View style={styles.headerActions}>
+                  <Pressable
+                    style={[
+                      styles.completeButton,
+                      { backgroundColor: '#34C759' }
+                    ]}
+                    onPress={handleCompleteList}
+                  >
+                    <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
+                    <Text style={[styles.completeButtonText, { color: '#fff' }]}>
+                      完了
+                    </Text>
+                  </Pressable>
+                  
                   <Menu
                     visible={menuVisible}
                     onDismiss={() => setMenuVisible(false)}
@@ -270,6 +320,7 @@ export default function ListDetailScreen() {
                       titleStyle={{ color: colors.text.primary }}
                     />
                   </Menu>
+                  
                   <Pressable
                     style={styles.deleteListButton}
                     onPress={() => setShowDeleteConfirm(true)}
@@ -641,6 +692,19 @@ const styles = StyleSheet.create({
   },
   deleteListButton: {
     padding: 8,
+  },
+  completeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
+    gap: 4,
+  },
+  completeButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   modalOverlay: {
     position: 'absolute',
