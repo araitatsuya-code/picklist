@@ -640,9 +640,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   editNameContainer: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    marginRight: 8,
   },
   nameInput: {
     flex: 1,
@@ -652,11 +654,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   saveButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
+    minWidth: 50,
+    alignItems: 'center',
   },
   saveButtonText: {
+    fontSize: 14,
     fontWeight: '600',
   },
   itemContainer: {
