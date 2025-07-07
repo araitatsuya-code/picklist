@@ -209,7 +209,7 @@ export default function HistoryScreen() {
                     <Ionicons
                       name="trash-outline"
                       size={20}
-                      color={colors.state.error}
+                      color="#FF3B30"
                     />
                   </Pressable>
                 </View>
