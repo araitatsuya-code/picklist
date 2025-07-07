@@ -9,8 +9,11 @@ import {
   Alert,
 } from 'react-native';
 import { Calendar } from '../../src/components/Calendar';
-import { useShoppingHistoryStore } from '../../src/stores/useShoppingHistoryStore';
+import { useShoppingHistoryStore, ShoppingHistoryEntry } from '../../src/stores/useShoppingHistoryStore';
 import { useThemeContext } from '../../src/components/ThemeProvider';
+import { HistoryDetailModal } from '../../src/components/HistoryDetailModal';
+import { HistorySearchFilter } from '../../src/components/HistorySearchFilter';
+import { HistoryStatsCard } from '../../src/components/HistoryStatsCard';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function HistoryScreen() {
@@ -18,7 +21,6 @@ export default function HistoryScreen() {
   const {
     histories,
     getHistoryByDate,
-    hasHistoryForDate,
     getTotalStats,
     removeHistory,
   } = useShoppingHistoryStore();
@@ -27,6 +29,15 @@ export default function HistoryScreen() {
     // 初期選択日を今日に設定
     return new Date().toISOString().split('T')[0];
   });
+  
+  const [selectedHistory, setSelectedHistory] = useState<ShoppingHistoryEntry | null>(null);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  
+  // 検索とソートの状態
+  const [searchText, setSearchText] = useState('');
+  const [sortBy, setSortBy] = useState<'date' | 'name' | 'completion'>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [showAllHistories, setShowAllHistories] = useState(false);
 
   // 履歴がある日付のリストを取得
   const markedDates = useMemo(() => {
@@ -41,11 +52,53 @@ export default function HistoryScreen() {
   const selectedDateHistories = useMemo(() => {
     return getHistoryByDate(selectedDate);
   }, [selectedDate, getHistoryByDate]);
+  
+  // 全履歴のフィルタリングとソート
+  const filteredAndSortedHistories = useMemo(() => {
+    let result = [...histories];
+    
+    // 検索フィルタ
+    if (searchText.trim()) {
+      result = result.filter(history => 
+        history.listName.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+    
+    // ソート
+    result.sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'date':
+          comparison = a.completedAt - b.completedAt;
+          break;
+        case 'name':
+          comparison = a.listName.localeCompare(b.listName, 'ja-JP');
+          break;
+        case 'completion':
+          comparison = a.completionRate - b.completionRate;
+          break;
+      }
+      
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+    
+    return result;
+  }, [histories, searchText, sortBy, sortDirection]);
 
   // 全体統計を取得
   const totalStats = useMemo(() => {
     return getTotalStats();
   }, [getTotalStats]);
+  
+  // 今月の履歴数を計算
+  const thisMonthHistories = useMemo(() => {
+    const now = new Date();
+    const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    return histories.filter(history => 
+      history.completedDate.startsWith(thisMonth)
+    ).length;
+  }, [histories]);
 
   // 日付選択ハンドラ
   const handleDateSelect = (date: string) => {
@@ -69,6 +122,18 @@ export default function HistoryScreen() {
         },
       ]
     );
+  };
+  
+  // 履歴項目タップハンドラ
+  const handleHistoryItemPress = (history: ShoppingHistoryEntry) => {
+    setSelectedHistory(history);
+    setIsDetailModalVisible(true);
+  };
+  
+  // モーダルを閉じる
+  const closeDetailModal = () => {
+    setIsDetailModalVisible(false);
+    setSelectedHistory(null);
   };
 
   // 時刻をフォーマット
@@ -96,44 +161,12 @@ export default function HistoryScreen() {
       style={[styles.container, { backgroundColor: colors.background.primary }]}
     >
       {/* 統計サマリー */}
-      <View
-        style={[
-          styles.statsContainer,
-          { 
-            backgroundColor: colors.background.secondary,
-            borderBottomColor: colors.border.secondary,
-          }
-        ]}
-      >
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: colors.text.primary }]}>
-              {totalStats.totalHistories}
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.text.secondary }]}>
-              総履歴数
-            </Text>
-          </View>
-          
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: colors.text.primary }]}>
-              {totalStats.averageCompletionRate}%
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.text.secondary }]}>
-              平均完了率
-            </Text>
-          </View>
-          
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: colors.text.primary }]}>
-              {markedDates.length}
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.text.secondary }]}>
-              活動日数
-            </Text>
-          </View>
-        </View>
-      </View>
+      <HistoryStatsCard
+        totalHistories={totalStats.totalHistories}
+        averageCompletionRate={totalStats.averageCompletionRate}
+        activeDays={markedDates.length}
+        thisMonthHistories={thisMonthHistories}
+      />
 
       {/* カレンダー */}
       <View style={styles.calendarContainer}>
@@ -153,31 +186,67 @@ export default function HistoryScreen() {
             { borderBottomColor: colors.border.secondary }
           ]}
         >
-          <Text style={[styles.historyTitle, { color: colors.text.primary }]}>
-            {formatSelectedDate(selectedDate)}
-          </Text>
-          {selectedDateHistories.length > 0 && (
-            <Text style={[styles.historyCount, { color: colors.text.secondary }]}>
-              {selectedDateHistories.length}件の履歴
+          <View style={styles.historyHeaderContent}>
+            <Text style={[styles.historyTitle, { color: colors.text.primary }]}>
+              {showAllHistories ? '全履歴' : formatSelectedDate(selectedDate)}
             </Text>
-          )}
+            {(showAllHistories ? filteredAndSortedHistories.length : selectedDateHistories.length) > 0 && (
+              <Text style={[styles.historyCount, { color: colors.text.secondary }]}>
+                {showAllHistories ? filteredAndSortedHistories.length : selectedDateHistories.length}件の履歴
+              </Text>
+            )}
+          </View>
+          
+          <Pressable
+            style={[
+              styles.toggleButton,
+              { 
+                backgroundColor: showAllHistories ? colors.accent.primary : colors.background.secondary,
+                borderColor: colors.border.primary,
+              }
+            ]}
+            onPress={() => setShowAllHistories(!showAllHistories)}
+          >
+            <Text
+              style={[
+                styles.toggleButtonText,
+                { color: showAllHistories ? colors.text.inverse : colors.text.primary }
+              ]}
+            >
+              {showAllHistories ? 'カレンダー' : '全履歴'}
+            </Text>
+          </Pressable>
         </View>
+        
+        {/* 検索フィルタ（全履歴表示時のみ） */}
+        {showAllHistories && (
+          <HistorySearchFilter
+            searchText={searchText}
+            onSearchChange={setSearchText}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            sortDirection={sortDirection}
+            onSortDirectionChange={setSortDirection}
+          />
+        )}
 
         <ScrollView style={styles.historyList}>
-          {selectedDateHistories.length === 0 ? (
+          {(showAllHistories ? filteredAndSortedHistories : selectedDateHistories).length === 0 ? (
             <View style={styles.emptyState}>
               <Ionicons
-                name="calendar-outline"
+                name={showAllHistories ? "search-outline" : "calendar-outline"}
                 size={48}
                 color={colors.text.tertiary}
               />
               <Text style={[styles.emptyText, { color: colors.text.tertiary }]}>
-                この日の履歴はありません
+                {showAllHistories 
+                  ? '検索結果がありません' 
+                  : 'この日の履歴はありません'}
               </Text>
             </View>
           ) : (
-            selectedDateHistories.map((history) => (
-              <View
+            (showAllHistories ? filteredAndSortedHistories : selectedDateHistories).map((history) => (
+              <Pressable
                 key={history.id}
                 style={[
                   styles.historyItem,
@@ -186,6 +255,7 @@ export default function HistoryScreen() {
                     borderColor: colors.border.primary,
                   }
                 ]}
+                onPress={() => handleHistoryItemPress(history)}
               >
                 <View style={styles.historyItemHeader}>
                   <View style={styles.historyItemInfo}>
@@ -203,9 +273,10 @@ export default function HistoryScreen() {
                   
                   <Pressable
                     style={styles.deleteButton}
-                    onPress={() =>
-                      handleDeleteHistory(history.id, history.listName)
-                    }
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      handleDeleteHistory(history.id, history.listName);
+                    }}
                   >
                     <Ionicons
                       name="trash-outline"
@@ -280,11 +351,30 @@ export default function HistoryScreen() {
                     ))}
                   </View>
                 )}
-              </View>
+                
+                {/* 展開インジケーター */}
+                <View style={styles.expandIndicator}>
+                  <Text style={[styles.expandText, { color: colors.text.tertiary }]}>
+                    タップして詳細を表示
+                  </Text>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={16}
+                    color={colors.text.tertiary}
+                  />
+                </View>
+              </Pressable>
             ))
           )}
         </ScrollView>
       </View>
+      
+      {/* 履歴詳細モーダル */}
+      <HistoryDetailModal
+        visible={isDetailModalVisible}
+        onClose={closeDetailModal}
+        history={selectedHistory}
+      />
     </SafeAreaView>
   );
 }
@@ -292,26 +382,6 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  statsContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: '700',
-  },
-  statLabel: {
-    fontSize: 12,
-    marginTop: 4,
   },
   calendarContainer: {
     flex: 1,
@@ -325,6 +395,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  historyHeaderContent: {
+    flex: 1,
   },
   historyTitle: {
     fontSize: 18,
@@ -403,5 +479,26 @@ const styles = StyleSheet.create({
   },
   categoryStats: {
     fontSize: 12,
+  },
+  expandIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    paddingTop: 8,
+    gap: 4,
+  },
+  expandText: {
+    fontSize: 12,
+  },
+  toggleButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  toggleButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

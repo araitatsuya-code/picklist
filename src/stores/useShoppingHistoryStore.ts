@@ -1,7 +1,20 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { PicklistItem, Picklist } from './usePicklistStore';
+import { Picklist } from './usePicklistStore';
+
+export interface PicklistItem {
+  id: string;
+  productId: string;
+  name: string;
+  quantity: number;
+  unit?: string;
+  maxPrice?: number;
+  note?: string;
+  completed: boolean;
+  category?: string;
+  priority: number;
+}
 
 /**
  * 買い物履歴エントリを表すインターフェース

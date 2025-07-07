@@ -255,6 +255,11 @@ export const Calendar: React.FC<CalendarProps> = ({
             </Text>
           </View>
         </View>
+        
+        {/* カレンダー操作説明 */}
+        <Text style={[styles.footerHint, { color: colors.text.tertiary }]}>
+          日付をタップして履歴を表示 • 月名をタップして今月に戻る
+        </Text>
       </View>
     </View>
   );
@@ -352,5 +357,10 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 12,
+  },
+  footerHint: {
+    fontSize: 11,
+    textAlign: 'center',
+    marginTop: 8,
   },
 });
