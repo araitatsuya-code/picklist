@@ -304,11 +304,13 @@ const styles = StyleSheet.create({
   },
   calendarScroll: {
     flex: 1,
+    minHeight: 250,
   },
   calendarGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 4,
+    minHeight: 240,
   },
   dayContainer: {
     width: '14.28%', // 7日で100%

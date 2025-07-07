@@ -369,8 +369,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   calendarContainer: {
-    flex: 1,
-    maxHeight: 400,
+    height: 400,
   },
   historyContainer: {
     flex: 1,
