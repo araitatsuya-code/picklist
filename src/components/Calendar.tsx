@@ -172,7 +172,7 @@ export const Calendar: React.FC<CalendarProps> = ({
       </View>
 
       {/* カレンダーグリッド */}
-      <ScrollView style={styles.calendarScroll}>
+      <View style={styles.calendarScroll}>
         <View style={styles.calendarGrid}>
           {calendarDays.map((dayInfo) => (
             <Pressable
@@ -226,7 +226,7 @@ export const Calendar: React.FC<CalendarProps> = ({
             </Pressable>
           ))}
         </View>
-      </ScrollView>
+      </View>
 
       {/* フッター情報 */}
       <View style={[styles.footer, { borderTopColor: colors.border.secondary }]}>
@@ -302,8 +302,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   calendarScroll: {
-    flex: 1,
-    maxHeight: 240,
+    height: 240,
   },
   calendarGrid: {
     flexDirection: 'row',

@@ -160,26 +160,27 @@ export default function HistoryScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background.primary }]}
     >
-      {/* 統計サマリー */}
-      <HistoryStatsCard
-        totalHistories={totalStats.totalHistories}
-        averageCompletionRate={totalStats.averageCompletionRate}
-        activeDays={markedDates.length}
-        thisMonthHistories={thisMonthHistories}
-      />
-
-      {/* カレンダー */}
-      <View style={styles.calendarContainer}>
-        <Calendar
-          onDateSelect={handleDateSelect}
-          selectedDate={selectedDate}
-          markedDates={markedDates}
-          maxDate={new Date()} // 今日まで
+      <ScrollView style={styles.mainScroll} showsVerticalScrollIndicator={false}>
+        {/* 統計サマリー */}
+        <HistoryStatsCard
+          totalHistories={totalStats.totalHistories}
+          averageCompletionRate={totalStats.averageCompletionRate}
+          activeDays={markedDates.length}
+          thisMonthHistories={thisMonthHistories}
         />
-      </View>
 
-      {/* 選択した日付の履歴 */}
-      <View style={styles.historyContainer}>
+        {/* カレンダー */}
+        <View style={styles.calendarContainer}>
+          <Calendar
+            onDateSelect={handleDateSelect}
+            selectedDate={selectedDate}
+            markedDates={markedDates}
+            maxDate={new Date()} // 今日まで
+          />
+        </View>
+
+        {/* 選択した日付の履歴 */}
+        <View style={styles.historyContainer}>
         <View
           style={[
             styles.historyHeader,
@@ -230,7 +231,7 @@ export default function HistoryScreen() {
           />
         )}
 
-        <ScrollView style={styles.historyList}>
+        <View style={styles.historyList}>
           {(showAllHistories ? filteredAndSortedHistories : selectedDateHistories).length === 0 ? (
             <View style={styles.emptyState}>
               <Ionicons
@@ -366,8 +367,9 @@ export default function HistoryScreen() {
               </Pressable>
             ))
           )}
-        </ScrollView>
-      </View>
+        </View>
+        </View>
+      </ScrollView>
       
       {/* 履歴詳細モーダル */}
       <HistoryDetailModal
@@ -383,12 +385,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  mainScroll: {
+    flex: 1,
+  },
   calendarContainer: {
     height: 380,
   },
   historyContainer: {
-    flex: 1,
-    minHeight: 200,
+    paddingBottom: 20,
   },
   historyHeader: {
     paddingHorizontal: 16,
@@ -410,7 +414,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   historyList: {
-    flex: 1,
+    paddingBottom: 20,
   },
   emptyState: {
     flex: 1,
