@@ -69,9 +69,9 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.tabBar.active,
         tabBarInactiveTintColor: colors.tabBar.inactive,
         tabBarStyle: {
-          height: 80 + insets.bottom,
+          height: 85 + insets.bottom,
           paddingBottom: insets.bottom,
-          paddingTop: 8,
+          paddingTop: 6,
           backgroundColor: colors.tabBar.background,
           borderTopWidth: 0,
           ...Platform.select({
@@ -87,9 +87,9 @@ export default function TabLayout() {
           }),
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 10,
           fontWeight: '500',
-          marginTop: 8,
+          marginTop: 4,
           color: colors.text.primary,
         },
         tabBarIconStyle: {

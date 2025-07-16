@@ -37,12 +37,12 @@ export default function HistoryScreen() {
   // 選択した日付の履歴を取得
   const selectedDateHistories = useMemo(() => {
     return getHistoryByDate(selectedDate);
-  }, [selectedDate, getHistoryByDate]);
+  }, [selectedDate, getHistoryByDate, histories]);
 
   // 全体統計を取得
   const totalStats = useMemo(() => {
     return getTotalStats();
-  }, [getTotalStats]);
+  }, [getTotalStats, histories]);
 
   // 日付選択ハンドラ
   const handleDateSelect = (date: string) => {
