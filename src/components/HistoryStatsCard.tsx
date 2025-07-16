@@ -43,26 +43,24 @@ export const HistoryStatsCard: React.FC<HistoryStatsCardProps> = ({
         }
       ]}
     >
-      <Text style={[styles.title, { color: colors.text.primary }]}>
-        統計サマリー
-      </Text>
-      
-      <View style={styles.statsGrid}>
+      <View style={styles.statsRow}>
         {stats.map((stat, index) => (
           <View key={index} style={styles.statItem}>
             <View style={[styles.statIcon, { backgroundColor: stat.color + '20' }]}>
               <Ionicons
                 name={stat.icon as 'list-outline' | 'trending-up-outline'}
-                size={24}
+                size={20}
                 color={stat.color}
               />
             </View>
-            <Text style={[styles.statValue, { color: colors.text.primary }]}>
-              {stat.value}
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.text.secondary }]}>
-              {stat.label}
-            </Text>
+            <View style={styles.statContent}>
+              <Text style={[styles.statValue, { color: colors.text.primary }]}>
+                {stat.value}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.text.secondary }]}>
+                {stat.label}
+              </Text>
+            </View>
           </View>
         ))}
       </View>
@@ -74,39 +72,38 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: 16,
     marginVertical: 8,
-    padding: 12,
+    padding: 16,
     borderRadius: 12,
     borderWidth: 1,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  statsGrid: {
+  statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
   statItem: {
+    flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    justifyContent: 'center',
   },
   statIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginRight: 8,
+  },
+  statContent: {
+    alignItems: 'flex-start',
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '700',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   statLabel: {
-    fontSize: 12,
-    textAlign: 'center',
+    fontSize: 11,
+    textAlign: 'left',
   },
 });
