@@ -11,6 +11,22 @@ import { Ionicons } from '@expo/vector-icons';
 import { useThemeContext } from './ThemeProvider';
 import { ShoppingHistoryEntry } from '../stores/useShoppingHistoryStore';
 
+// カテゴリIDから日本語名へのマッピング
+const categoryNameMap: Record<string, string> = {
+  'vegetables': '野菜',
+  'meat-fish': '魚・肉',
+  'daily': '日用品',
+  'drink': '飲料',
+  'other': 'その他',
+  'uncategorized': 'その他',
+  'none': 'その他',
+};
+
+// カテゴリー名を日本語に変換する関数
+const getCategoryDisplayName = (categoryName: string): string => {
+  return categoryNameMap[categoryName] || categoryName;
+};
+
 interface HistoryDetailModalProps {
   visible: boolean;
   onClose: () => void;
@@ -120,7 +136,7 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
               {history.categoryBreakdown.map((category) => (
                 <View key={category.categoryId} style={styles.categoryRow}>
                   <Text style={[styles.categoryName, { color: colors.text.primary }]}>
-                    {category.categoryName}
+                    {getCategoryDisplayName(category.categoryName)}
                   </Text>
                   <View style={styles.categoryStats}>
                     <Text style={[styles.categoryProgress, { color: colors.text.secondary }]}>

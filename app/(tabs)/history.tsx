@@ -16,6 +16,22 @@ import { HistorySearchFilter } from '../../src/components/HistorySearchFilter';
 import { HistoryStatsCard } from '../../src/components/HistoryStatsCard';
 import { Ionicons } from '@expo/vector-icons';
 
+// カテゴリIDから日本語名へのマッピング
+const categoryNameMap: Record<string, string> = {
+  'vegetables': '野菜',
+  'meat-fish': '魚・肉',
+  'daily': '日用品',
+  'drink': '飲料',
+  'other': 'その他',
+  'uncategorized': 'その他',
+  'none': 'その他',
+};
+
+// カテゴリー名を日本語に変換する関数
+const getCategoryDisplayName = (categoryName: string): string => {
+  return categoryNameMap[categoryName] || categoryName;
+};
+
 export default function HistoryScreen() {
   const { colors } = useThemeContext();
   const {
@@ -340,7 +356,7 @@ export default function HistoryScreen() {
                             { color: colors.text.secondary }
                           ]}
                         >
-                          {category.categoryName}
+                          {getCategoryDisplayName(category.categoryName)}
                         </Text>
                         <Text
                           style={[
