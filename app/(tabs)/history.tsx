@@ -7,6 +7,7 @@ import {
   ScrollView,
   Pressable,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { Calendar } from '../../src/components/Calendar';
 import { useShoppingHistoryStore, ShoppingHistoryEntry } from '../../src/stores/useShoppingHistoryStore';
@@ -40,6 +41,10 @@ export default function HistoryScreen() {
     getTotalStats,
     removeHistory,
   } = useShoppingHistoryStore();
+
+  // 画面サイズを取得
+  const { width, height } = Dimensions.get('window');
+  const isTablet = width >= 768; // iPad等のタブレット判定
 
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     // 初期選択日を今日に設定（ローカルタイムゾーン）
@@ -181,24 +186,29 @@ export default function HistoryScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background.primary }]}
     >
-      <ScrollView style={styles.mainScroll} showsVerticalScrollIndicator={false}>
-        {/* 統計サマリー */}
-        <HistoryStatsCard
-          totalHistories={totalStats.totalHistories}
-          thisMonthHistories={thisMonthHistories}
-        />
+      {isTablet ? (
+        // タブレット向けの横並びレイアウト
+        <View style={styles.tabletLayout}>
+          <View style={styles.tabletLeft}>
+            {/* 統計サマリー */}
+            <HistoryStatsCard
+              totalHistories={totalStats.totalHistories}
+              thisMonthHistories={thisMonthHistories}
+            />
 
-        {/* カレンダー */}
-        <View style={styles.calendarContainer}>
-          <Calendar
-            onDateSelect={handleDateSelect}
-            selectedDate={selectedDate}
-            markedDates={markedDates}
-          />
-        </View>
+            {/* カレンダー */}
+            <View style={styles.tabletCalendarContainer}>
+              <Calendar
+                onDateSelect={handleDateSelect}
+                selectedDate={selectedDate}
+                markedDates={markedDates}
+              />
+            </View>
+          </View>
 
-        {/* 選択した日付の履歴 */}
-        <View style={styles.historyContainer}>
+          <View style={styles.tabletRight}>
+            {/* 選択した日付の履歴 */}
+            <View style={styles.historyContainer}>
         <View
           style={[
             styles.historyHeader,
@@ -394,8 +404,227 @@ export default function HistoryScreen() {
             ))
           )}
         </View>
+            </View>
+          </View>
         </View>
-      </ScrollView>
+      ) : (
+        // スマートフォン向けの縦並びレイアウト
+        <ScrollView style={styles.mainScroll} showsVerticalScrollIndicator={false}>
+          {/* 統計サマリー */}
+          <HistoryStatsCard
+            totalHistories={totalStats.totalHistories}
+            thisMonthHistories={thisMonthHistories}
+          />
+
+          {/* カレンダー */}
+          <View style={styles.calendarContainer}>
+            <Calendar
+              onDateSelect={handleDateSelect}
+              selectedDate={selectedDate}
+              markedDates={markedDates}
+            />
+          </View>
+
+          {/* 選択した日付の履歴 */}
+          <View style={styles.historyContainer}>
+            <View
+              style={[
+                styles.historyHeader,
+                { borderBottomColor: colors.border.secondary }
+              ]}
+            >
+              <View style={styles.historyHeaderContent}>
+                <Text style={[styles.historyTitle, { color: colors.text.primary }]}>
+                  {showAllHistories ? '全履歴' : formatSelectedDate(selectedDate)}
+                </Text>
+                {(showAllHistories ? filteredAndSortedHistories.length : selectedDateHistories.length) > 0 && (
+                  <Text style={[styles.historyCount, { color: colors.text.secondary }]}>
+                    {showAllHistories ? filteredAndSortedHistories.length : selectedDateHistories.length}件の履歴
+                  </Text>
+                )}
+              </View>
+              
+              <Pressable
+                style={[
+                  styles.toggleButton,
+                  { 
+                    backgroundColor: showAllHistories ? colors.accent.primary : colors.background.secondary,
+                    borderColor: colors.border.primary,
+                  }
+                ]}
+                onPress={() => setShowAllHistories(!showAllHistories)}
+              >
+                <Text
+                  style={[
+                    styles.toggleButtonText,
+                    { color: showAllHistories ? colors.text.inverse : colors.text.primary }
+                  ]}
+                >
+                  {showAllHistories ? 'カレンダー' : '全履歴'}
+                </Text>
+              </Pressable>
+            </View>
+            
+            {/* 検索フィルタ（全履歴表示時のみ） */}
+            {showAllHistories && (
+              <HistorySearchFilter
+                searchText={searchText}
+                onSearchChange={setSearchText}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+                sortDirection={sortDirection}
+                onSortDirectionChange={setSortDirection}
+              />
+            )}
+
+            <View style={styles.historyList}>
+              {(showAllHistories ? filteredAndSortedHistories : selectedDateHistories).length === 0 ? (
+                <View style={styles.emptyState}>
+                  <Ionicons
+                    name={showAllHistories ? "search-outline" : "calendar-outline"}
+                    size={48}
+                    color={colors.text.tertiary}
+                  />
+                  <Text style={[styles.emptyText, { color: colors.text.tertiary }]}>
+                    {showAllHistories 
+                      ? '検索結果がありません' 
+                      : 'この日の履歴はありません'}
+                  </Text>
+                </View>
+              ) : (
+                (showAllHistories ? filteredAndSortedHistories : selectedDateHistories).map((history) => (
+                  <Pressable
+                    key={history.id}
+                    style={[
+                      styles.historyItem,
+                      {
+                        backgroundColor: colors.background.secondary,
+                        borderColor: colors.border.primary,
+                      }
+                    ]}
+                    onPress={() => handleHistoryItemPress(history)}
+                  >
+                    <View style={styles.historyItemHeader}>
+                      <View style={styles.historyItemInfo}>
+                        <Text
+                          style={[styles.historyListName, { color: colors.text.primary }]}
+                        >
+                          {history.listName}
+                        </Text>
+                        <Text
+                          style={[styles.historyTime, { color: colors.text.secondary }]}
+                        >
+                          {formatTime(history.completedAt)}
+                        </Text>
+                      </View>
+                      
+                      <Pressable
+                        style={styles.deleteButton}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          handleDeleteHistory(history.id, history.listName);
+                        }}
+                      >
+                        <Ionicons
+                          name="trash-outline"
+                          size={20}
+                          color={colors.state.error}
+                        />
+                      </Pressable>
+                    </View>
+
+                    <View style={styles.historyStats}>
+                      <View style={[styles.statChip, { backgroundColor: colors.background.secondary }]}>
+                        <Text
+                          style={[styles.statChipText, { color: colors.text.secondary }]}
+                        >
+                          {history.completedItems}/{history.totalItems} 完了
+                        </Text>
+                      </View>
+                      
+                      <View
+                        style={[
+                          styles.statChip,
+                          {
+                            backgroundColor:
+                              history.completionRate >= 80
+                                ? '#34C759' + '20'
+                                : history.completionRate >= 50
+                                ? '#FF9500' + '20'
+                                : '#FF3B30' + '20',
+                            borderWidth: 1,
+                            borderColor:
+                              history.completionRate >= 80
+                                ? '#34C759'
+                                : history.completionRate >= 50
+                                ? '#FF9500'
+                                : '#FF3B30',
+                          }
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.statChipText,
+                            {
+                              color:
+                                history.completionRate >= 80
+                                  ? '#34C759'
+                                  : history.completionRate >= 50
+                                  ? '#FF9500'
+                                  : '#FF3B30',
+                              fontWeight: '600',
+                            }
+                          ]}
+                        >
+                          {history.completionRate}%
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* カテゴリー別サマリー */}
+                    {history.categoryBreakdown.length > 0 && (
+                      <View style={styles.categoryBreakdown}>
+                        {history.categoryBreakdown.map((category) => (
+                          <View key={category.categoryId} style={styles.categoryItem}>
+                            <Text
+                              style={[
+                                styles.categoryName,
+                                { color: colors.text.secondary }
+                              ]}
+                            >
+                              {getCategoryDisplayName(category.categoryName)}
+                            </Text>
+                            <Text
+                              style={[
+                                styles.categoryStats,
+                                { color: colors.text.tertiary }
+                              ]}
+                            >
+                              {category.completedItems}/{category.totalItems}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                    
+                    {/* 展開インジケーター */}
+                    <View style={styles.expandIndicator}>
+                      <Text style={[styles.expandText, { color: colors.text.tertiary }]}>
+                        タップして詳細を表示
+                      </Text>
+                      <Ionicons
+                        name="chevron-forward"
+                        size={16}
+                        color={colors.text.tertiary}
+                      />
+                    </View>
+                  </Pressable>
+                ))
+              )}
+            </View>
+          </View>
+        </ScrollView>
+      )}
       
       {/* 履歴詳細モーダル */}
       <HistoryDetailModal
@@ -414,10 +643,32 @@ const styles = StyleSheet.create({
   mainScroll: {
     flex: 1,
   },
+  // タブレット向けレイアウト
+  tabletLayout: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  tabletLeft: {
+    flex: 0.4,
+    minWidth: 350,
+    maxWidth: 450,
+    borderRightWidth: 1,
+    borderRightColor: '#E0E0E0',
+  },
+  tabletRight: {
+    flex: 0.6,
+    minWidth: 400,
+  },
+  tabletCalendarContainer: {
+    height: 380,
+    flex: 1,
+  },
+  // スマートフォン向けレイアウト
   calendarContainer: {
     height: 380,
   },
   historyContainer: {
+    flex: 1,
     paddingBottom: 20,
   },
   historyHeader: {
