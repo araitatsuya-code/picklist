@@ -306,7 +306,7 @@ export default function HistoryScreen() {
                 </View>
 
                 <View style={styles.historyStats}>
-                  <View style={styles.statChip}>
+                  <View style={[styles.statChip, { backgroundColor: colors.background.secondary }]}>
                     <Text
                       style={[styles.statChipText, { color: colors.text.secondary }]}
                     >
@@ -324,6 +324,13 @@ export default function HistoryScreen() {
                             : history.completionRate >= 50
                             ? '#FF9500' + '20'
                             : '#FF3B30' + '20',
+                        borderWidth: 1,
+                        borderColor:
+                          history.completionRate >= 80
+                            ? '#34C759'
+                            : history.completionRate >= 50
+                            ? '#FF9500'
+                            : '#FF3B30',
                       }
                     ]}
                   >
@@ -337,6 +344,7 @@ export default function HistoryScreen() {
                               : history.completionRate >= 50
                               ? '#FF9500'
                               : '#FF3B30',
+                          fontWeight: '600',
                         }
                       ]}
                     >
@@ -480,7 +488,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
-    backgroundColor: '#F2F2F7',
   },
   statChipText: {
     fontSize: 12,
