@@ -12,6 +12,7 @@ import { List } from 'react-native-paper';
 import { router } from 'expo-router';
 import { useTheme } from '../../src/hooks/useTheme';
 import { useState, Fragment } from 'react';
+import packageJson from '../../package.json';
 
 export default function SettingsScreen() {
   const { colors, isDark, setTheme, followSystem, setFollowSystem } =
@@ -242,7 +243,7 @@ export default function SettingsScreen() {
                 <Text
                   style={[styles.menuValue, { color: colors.text.secondary }]}
                 >
-                  v1.0.0
+                  v{packageJson.version}
                 </Text>
                 <Ionicons
                   name="chevron-forward"
