@@ -9,15 +9,11 @@ import { useThemeContext } from './ThemeProvider';
 
 interface HistoryStatsCardProps {
   totalHistories: number;
-  averageCompletionRate: number;
-  activeDays: number;
   thisMonthHistories: number;
 }
 
 export const HistoryStatsCard: React.FC<HistoryStatsCardProps> = ({
   totalHistories,
-  averageCompletionRate,
-  activeDays,
   thisMonthHistories,
 }) => {
   const { colors } = useThemeContext();
@@ -28,18 +24,6 @@ export const HistoryStatsCard: React.FC<HistoryStatsCardProps> = ({
       label: '総履歴数',
       value: totalHistories.toString(),
       color: colors.accent.primary,
-    },
-    {
-      icon: 'checkmark-circle-outline',
-      label: '平均完了率',
-      value: `${averageCompletionRate}%`,
-      color: averageCompletionRate >= 80 ? '#34C759' : averageCompletionRate >= 50 ? '#FF9500' : '#FF3B30',
-    },
-    {
-      icon: 'calendar-outline',
-      label: '活動日数',
-      value: activeDays.toString(),
-      color: '#007AFF',
     },
     {
       icon: 'trending-up-outline',
@@ -68,7 +52,7 @@ export const HistoryStatsCard: React.FC<HistoryStatsCardProps> = ({
           <View key={index} style={styles.statItem}>
             <View style={[styles.statIcon, { backgroundColor: stat.color + '20' }]}>
               <Ionicons
-                name={stat.icon as 'list-outline' | 'checkmark-circle-outline' | 'calendar-outline' | 'trending-up-outline'}
+                name={stat.icon as 'list-outline' | 'trending-up-outline'}
                 size={24}
                 color={stat.color}
               />
@@ -90,14 +74,14 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: 16,
     marginVertical: 8,
-    padding: 16,
+    padding: 12,
     borderRadius: 12,
     borderWidth: 1,
   },
   title: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 16,
+    marginBottom: 12,
     textAlign: 'center',
   },
   statsGrid: {
@@ -109,15 +93,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
   statValue: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '700',
     marginBottom: 4,
   },

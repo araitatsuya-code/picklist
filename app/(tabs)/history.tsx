@@ -164,8 +164,6 @@ export default function HistoryScreen() {
         {/* 統計サマリー */}
         <HistoryStatsCard
           totalHistories={totalStats.totalHistories}
-          averageCompletionRate={totalStats.averageCompletionRate}
-          activeDays={markedDates.length}
           thisMonthHistories={thisMonthHistories}
         />
 
