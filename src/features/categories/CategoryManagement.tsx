@@ -36,6 +36,12 @@ export const CategoryManagement: React.FC = () => {
       primary: colors.accent.primary,
       placeholder: secondaryTextColor,
       background: colors.background.primary,
+      outline: colors.border.primary,
+      outlineVariant: colors.border.secondary,
+      surface: colors.background.secondary,
+      surfaceVariant: colors.background.secondary,
+      onSurface: textColor,
+      onSurfaceVariant: secondaryTextColor,
     },
   };
 
