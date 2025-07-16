@@ -36,10 +36,10 @@ export const CategoryManagement: React.FC = () => {
       primary: colors.accent.primary,
       placeholder: secondaryTextColor,
       background: colors.background.primary,
-      outline: colors.border.primary,
-      outlineVariant: colors.border.secondary,
-      surface: colors.background.secondary,
-      surfaceVariant: colors.background.secondary,
+      outline: isDark ? '#555555' : colors.border.primary,
+      outlineVariant: isDark ? '#444444' : colors.border.secondary,
+      surface: colors.background.primary,
+      surfaceVariant: colors.background.primary,
       onSurface: textColor,
       onSurfaceVariant: secondaryTextColor,
     },
@@ -89,7 +89,7 @@ export const CategoryManagement: React.FC = () => {
       style={[styles.container, { backgroundColor: colors.background.primary }]}
     >
       {/* シンプルな入力フォーム */}
-      <Card style={styles.inputCard}>
+      <Card style={[styles.inputCard, { backgroundColor: colors.background.secondary }]}>
         <Card.Content style={styles.inputContainer}>
           <TextInput
             label="新しいカテゴリ名"
