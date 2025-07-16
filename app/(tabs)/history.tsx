@@ -384,8 +384,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   calendarContainer: {
-    flex: 1,
-    maxHeight: 400,
+    height: 380,
   },
   historyContainer: {
     flex: 1,

@@ -303,6 +303,7 @@ const styles = StyleSheet.create({
   },
   calendarScroll: {
     flex: 1,
+    maxHeight: 240,
   },
   calendarGrid: {
     flexDirection: 'row',
