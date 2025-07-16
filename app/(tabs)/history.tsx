@@ -16,6 +16,22 @@ import { HistorySearchFilter } from '../../src/components/HistorySearchFilter';
 import { HistoryStatsCard } from '../../src/components/HistoryStatsCard';
 import { Ionicons } from '@expo/vector-icons';
 
+// カテゴリIDから日本語名へのマッピング
+const categoryNameMap: Record<string, string> = {
+  'vegetables': '野菜',
+  'meat-fish': '魚・肉',
+  'daily': '日用品',
+  'drink': '飲料',
+  'other': 'その他',
+  'uncategorized': 'その他',
+  'none': 'その他',
+};
+
+// カテゴリー名を日本語に変換する関数
+const getCategoryDisplayName = (categoryName: string): string => {
+  return categoryNameMap[categoryName] || categoryName;
+};
+
 export default function HistoryScreen() {
   const { colors } = useThemeContext();
   const {
@@ -26,8 +42,12 @@ export default function HistoryScreen() {
   } = useShoppingHistoryStore();
 
   const [selectedDate, setSelectedDate] = useState<string>(() => {
-    // 初期選択日を今日に設定
-    return new Date().toISOString().split('T')[0];
+    // 初期選択日を今日に設定（ローカルタイムゾーン）
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   });
   
   const [selectedHistory, setSelectedHistory] = useState<ShoppingHistoryEntry | null>(null);
@@ -51,7 +71,7 @@ export default function HistoryScreen() {
   // 選択した日付の履歴を取得
   const selectedDateHistories = useMemo(() => {
     return getHistoryByDate(selectedDate);
-  }, [selectedDate, getHistoryByDate]);
+  }, [selectedDate, getHistoryByDate, histories]);
   
   // 全履歴のフィルタリングとソート
   const filteredAndSortedHistories = useMemo(() => {
@@ -89,7 +109,7 @@ export default function HistoryScreen() {
   // 全体統計を取得
   const totalStats = useMemo(() => {
     return getTotalStats();
-  }, [getTotalStats]);
+  }, [getTotalStats, histories]);
   
   // 今月の履歴数を計算
   const thisMonthHistories = useMemo(() => {
@@ -147,7 +167,8 @@ export default function HistoryScreen() {
 
   // 日付をフォーマット
   const formatSelectedDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString('ja-JP', {
       year: 'numeric',
       month: 'long',
@@ -160,26 +181,24 @@ export default function HistoryScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background.primary }]}
     >
-      {/* 統計サマリー */}
-      <HistoryStatsCard
-        totalHistories={totalStats.totalHistories}
-        averageCompletionRate={totalStats.averageCompletionRate}
-        activeDays={markedDates.length}
-        thisMonthHistories={thisMonthHistories}
-      />
-
-      {/* カレンダー */}
-      <View style={styles.calendarContainer}>
-        <Calendar
-          onDateSelect={handleDateSelect}
-          selectedDate={selectedDate}
-          markedDates={markedDates}
-          maxDate={new Date()} // 今日まで
+      <ScrollView style={styles.mainScroll} showsVerticalScrollIndicator={false}>
+        {/* 統計サマリー */}
+        <HistoryStatsCard
+          totalHistories={totalStats.totalHistories}
+          thisMonthHistories={thisMonthHistories}
         />
-      </View>
 
-      {/* 選択した日付の履歴 */}
-      <View style={styles.historyContainer}>
+        {/* カレンダー */}
+        <View style={styles.calendarContainer}>
+          <Calendar
+            onDateSelect={handleDateSelect}
+            selectedDate={selectedDate}
+            markedDates={markedDates}
+          />
+        </View>
+
+        {/* 選択した日付の履歴 */}
+        <View style={styles.historyContainer}>
         <View
           style={[
             styles.historyHeader,
@@ -230,7 +249,7 @@ export default function HistoryScreen() {
           />
         )}
 
-        <ScrollView style={styles.historyList}>
+        <View style={styles.historyList}>
           {(showAllHistories ? filteredAndSortedHistories : selectedDateHistories).length === 0 ? (
             <View style={styles.emptyState}>
               <Ionicons
@@ -287,7 +306,7 @@ export default function HistoryScreen() {
                 </View>
 
                 <View style={styles.historyStats}>
-                  <View style={styles.statChip}>
+                  <View style={[styles.statChip, { backgroundColor: colors.background.secondary }]}>
                     <Text
                       style={[styles.statChipText, { color: colors.text.secondary }]}
                     >
@@ -305,6 +324,13 @@ export default function HistoryScreen() {
                             : history.completionRate >= 50
                             ? '#FF9500' + '20'
                             : '#FF3B30' + '20',
+                        borderWidth: 1,
+                        borderColor:
+                          history.completionRate >= 80
+                            ? '#34C759'
+                            : history.completionRate >= 50
+                            ? '#FF9500'
+                            : '#FF3B30',
                       }
                     ]}
                   >
@@ -318,6 +344,7 @@ export default function HistoryScreen() {
                               : history.completionRate >= 50
                               ? '#FF9500'
                               : '#FF3B30',
+                          fontWeight: '600',
                         }
                       ]}
                     >
@@ -337,7 +364,7 @@ export default function HistoryScreen() {
                             { color: colors.text.secondary }
                           ]}
                         >
-                          {category.categoryName}
+                          {getCategoryDisplayName(category.categoryName)}
                         </Text>
                         <Text
                           style={[
@@ -366,8 +393,9 @@ export default function HistoryScreen() {
               </Pressable>
             ))
           )}
-        </ScrollView>
-      </View>
+        </View>
+        </View>
+      </ScrollView>
       
       {/* 履歴詳細モーダル */}
       <HistoryDetailModal
@@ -383,13 +411,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  calendarContainer: {
+  mainScroll: {
     flex: 1,
-    maxHeight: 400,
+  },
+  calendarContainer: {
+    height: 380,
   },
   historyContainer: {
-    flex: 1,
-    minHeight: 200,
+    paddingBottom: 20,
   },
   historyHeader: {
     paddingHorizontal: 16,
@@ -411,7 +440,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   historyList: {
-    flex: 1,
+    paddingBottom: 20,
   },
   emptyState: {
     flex: 1,
@@ -459,7 +488,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
-    backgroundColor: '#F2F2F7',
   },
   statChipText: {
     fontSize: 12,

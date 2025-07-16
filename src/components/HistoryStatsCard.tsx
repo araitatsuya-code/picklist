@@ -9,15 +9,11 @@ import { useThemeContext } from './ThemeProvider';
 
 interface HistoryStatsCardProps {
   totalHistories: number;
-  averageCompletionRate: number;
-  activeDays: number;
   thisMonthHistories: number;
 }
 
 export const HistoryStatsCard: React.FC<HistoryStatsCardProps> = ({
   totalHistories,
-  averageCompletionRate,
-  activeDays,
   thisMonthHistories,
 }) => {
   const { colors } = useThemeContext();
@@ -28,18 +24,6 @@ export const HistoryStatsCard: React.FC<HistoryStatsCardProps> = ({
       label: '総履歴数',
       value: totalHistories.toString(),
       color: colors.accent.primary,
-    },
-    {
-      icon: 'checkmark-circle-outline',
-      label: '平均完了率',
-      value: `${averageCompletionRate}%`,
-      color: averageCompletionRate >= 80 ? '#34C759' : averageCompletionRate >= 50 ? '#FF9500' : '#FF3B30',
-    },
-    {
-      icon: 'calendar-outline',
-      label: '活動日数',
-      value: activeDays.toString(),
-      color: '#007AFF',
     },
     {
       icon: 'trending-up-outline',
@@ -59,26 +43,24 @@ export const HistoryStatsCard: React.FC<HistoryStatsCardProps> = ({
         }
       ]}
     >
-      <Text style={[styles.title, { color: colors.text.primary }]}>
-        統計サマリー
-      </Text>
-      
-      <View style={styles.statsGrid}>
+      <View style={styles.statsRow}>
         {stats.map((stat, index) => (
           <View key={index} style={styles.statItem}>
             <View style={[styles.statIcon, { backgroundColor: stat.color + '20' }]}>
               <Ionicons
-                name={stat.icon as 'list-outline' | 'checkmark-circle-outline' | 'calendar-outline' | 'trending-up-outline'}
-                size={24}
+                name={stat.icon as 'list-outline' | 'trending-up-outline'}
+                size={20}
                 color={stat.color}
               />
             </View>
-            <Text style={[styles.statValue, { color: colors.text.primary }]}>
-              {stat.value}
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.text.secondary }]}>
-              {stat.label}
-            </Text>
+            <View style={styles.statContent}>
+              <Text style={[styles.statValue, { color: colors.text.primary }]}>
+                {stat.value}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.text.secondary }]}>
+                {stat.label}
+              </Text>
+            </View>
           </View>
         ))}
       </View>
@@ -94,35 +76,34 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  statsGrid: {
+  statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
   statItem: {
+    flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    justifyContent: 'center',
   },
   statIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginRight: 8,
+  },
+  statContent: {
+    alignItems: 'flex-start',
   },
   statValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   statLabel: {
-    fontSize: 12,
-    textAlign: 'center',
+    fontSize: 11,
+    textAlign: 'left',
   },
 });

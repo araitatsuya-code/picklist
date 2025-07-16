@@ -103,7 +103,21 @@ type ShoppingHistoryActions = {
 // 日付フォーマット関数
 const formatDate = (timestamp: number): string => {
   const date = new Date(timestamp);
-  return date.toISOString().split('T')[0]; // YYYY-MM-DD
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`; // YYYY-MM-DD (ローカルタイムゾーン)
+};
+
+// カテゴリIDから日本語名へのマッピング
+const categoryNameMap: Record<string, string> = {
+  'vegetables': '野菜',
+  'meat-fish': '魚・肉',
+  'daily': '日用品',
+  'drink': '飲料',
+  'other': 'その他',
+  'uncategorized': 'その他',
+  'none': 'その他',
 };
 
 // カテゴリー別サマリー計算
@@ -112,7 +126,7 @@ const calculateCategoryBreakdown = (items: HistoryItem[]): CategorySummary[] => 
   
   items.forEach(item => {
     const categoryId = item.category || 'uncategorized';
-    const categoryName = item.category || 'その他';
+    const categoryName = categoryNameMap[categoryId] || categoryNameMap[item.category || ''] || 'その他';
     
     if (!categoryMap.has(categoryId)) {
       categoryMap.set(categoryId, { total: 0, completed: 0, name: categoryName });

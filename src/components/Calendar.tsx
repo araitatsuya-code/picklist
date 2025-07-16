@@ -4,7 +4,6 @@ import {
   Text,
   Pressable,
   StyleSheet,
-  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeContext } from './ThemeProvider';
@@ -26,6 +25,14 @@ interface DayInfo {
   hasHistory: boolean;
 }
 
+// ローカルタイムゾーンでの日付文字列を生成
+const formatLocalDate = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const Calendar: React.FC<CalendarProps> = ({
   onDateSelect,
   selectedDate,
@@ -38,7 +45,7 @@ export const Calendar: React.FC<CalendarProps> = ({
 
   // 今日の日付
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = formatLocalDate(today);
 
   // 現在の年月
   const currentYear = currentDate.getFullYear();
@@ -68,7 +75,7 @@ export const Calendar: React.FC<CalendarProps> = ({
     const current = new Date(startDate);
 
     while (current <= endDate) {
-      const dateStr = current.toISOString().split('T')[0];
+      const dateStr = formatLocalDate(current);
       const isCurrentMonth = current.getMonth() === currentMonth;
       const isToday = dateStr === todayStr;
       const isSelected = dateStr === selectedDate;
@@ -172,7 +179,7 @@ export const Calendar: React.FC<CalendarProps> = ({
       </View>
 
       {/* カレンダーグリッド */}
-      <ScrollView style={styles.calendarScroll}>
+      <View style={styles.calendarScroll}>
         <View style={styles.calendarGrid}>
           {calendarDays.map((dayInfo) => (
             <Pressable
@@ -226,7 +233,7 @@ export const Calendar: React.FC<CalendarProps> = ({
             </Pressable>
           ))}
         </View>
-      </ScrollView>
+      </View>
 
       {/* フッター情報 */}
       <View style={[styles.footer, { borderTopColor: colors.border.secondary }]}>
@@ -302,7 +309,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   calendarScroll: {
-    flex: 1,
+    height: 240,
   },
   calendarGrid: {
     flexDirection: 'row',

@@ -247,6 +247,8 @@ export default function FrequentProductsScreen() {
     new Set()
   );
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
+  const [sortMenuVisible, setSortMenuVisible] = useState<boolean>(false);
+  const [sortBy, setSortBy] = useState<'default' | 'addCount'>('default');
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set()
   );
@@ -266,7 +268,7 @@ export default function FrequentProductsScreen() {
     return [...categories].sort((a, b) => a.priority - b.priority);
   }, [categories]);
 
-  // 検索とカテゴリーフィルターを組み合わせて商品をフィルタリング
+  // 検索とカテゴリーフィルターを組み合わせて商品をフィルタリング・並び替え
   const filteredProducts = useMemo(() => {
     let filtered = searchQuery ? searchProducts(searchQuery) : products;
 
@@ -277,8 +279,16 @@ export default function FrequentProductsScreen() {
       );
     }
 
+    // 並び替え
+    if (sortBy === 'addCount') {
+      filtered = filtered.sort((a, b) => (b.addCount || 0) - (a.addCount || 0));
+    } else {
+      // デフォルト（作成順）
+      filtered = filtered.sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
+    }
+
     return filtered;
-  }, [products, searchQuery, selectedCategories, searchProducts]);
+  }, [products, searchQuery, selectedCategories, searchProducts, sortBy]);
 
   // Event handlers
   const toggleCategory = useCallback((categoryId: string) => {
@@ -519,6 +529,47 @@ export default function FrequentProductsScreen() {
                 ))}
               </Menu>
             )}
+
+            {/* Sort menu */}
+            <Menu
+              visible={sortMenuVisible}
+              onDismiss={() => setSortMenuVisible(false)}
+              contentStyle={{ backgroundColor: colors.background.primary }}
+              anchor={
+                <Pressable
+                  style={[
+                    styles.sortButton,
+                    { borderColor: colors.border.primary },
+                  ]}
+                  onPress={() => setSortMenuVisible(true)}
+                >
+                  <Ionicons
+                    name="swap-vertical"
+                    size={24}
+                    color={colors.accent.primary}
+                  />
+                </Pressable>
+              }
+            >
+              <Menu.Item
+                onPress={() => {
+                  setSortBy('default');
+                  setSortMenuVisible(false);
+                }}
+                title="作成順"
+                titleStyle={{ color: colors.text.primary }}
+                leadingIcon={sortBy === 'default' ? 'check' : undefined}
+              />
+              <Menu.Item
+                onPress={() => {
+                  setSortBy('addCount');
+                  setSortMenuVisible(false);
+                }}
+                title="追加回数順"
+                titleStyle={{ color: colors.text.primary }}
+                leadingIcon={sortBy === 'addCount' ? 'check' : undefined}
+              />
+            </Menu>
           </View>
 
           {/* Category chips */}
@@ -615,6 +666,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   filterButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 8,
+  },
+  sortButton: {
     width: 40,
     height: 40,
     justifyContent: 'center',
@@ -737,7 +796,7 @@ const styles = StyleSheet.create({
   },
   categoryArea: {
     height: 40,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   fabWrapper: {
     position: 'absolute',

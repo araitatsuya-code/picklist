@@ -261,19 +261,6 @@ export default function ListDetailScreen() {
                   />
                 </Pressable>
                 <View style={styles.headerActions}>
-                  <Pressable
-                    style={[
-                      styles.completeButton,
-                      { backgroundColor: '#34C759' }
-                    ]}
-                    onPress={handleCompleteList}
-                  >
-                    <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
-                    <Text style={[styles.completeButtonText, { color: '#fff' }]}>
-                      完了
-                    </Text>
-                  </Pressable>
-                  
                   <Menu
                     visible={menuVisible}
                     onDismiss={() => setMenuVisible(false)}
@@ -585,23 +572,58 @@ export default function ListDetailScreen() {
           </View>
         )}
 
-        <Pressable
-          style={[
-            styles.addFromFrequentButton,
-            {
-              backgroundColor: colors.accent.primary,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-            },
-          ]}
-          onPress={() => router.push(`/frequent-products?selectForList=${id}`)}
-        >
-          <Ionicons name="add-circle-outline" size={24} color="#fff" />
-          <Text style={{ color: '#fff', marginLeft: 8, fontWeight: '600' }}>
-            よく買う商品から追加
-          </Text>
-        </Pressable>
+        <View style={styles.bottomButtons}>
+          <Pressable
+            style={[
+              styles.addFromFrequentButton,
+              {
+                backgroundColor: colors.accent.primary,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+            ]}
+            onPress={() => router.push(`/frequent-products?selectForList=${id}`)}
+          >
+            <Ionicons 
+              name="add-circle-outline" 
+              size={20} 
+              color="#fff" 
+            />
+            <Text 
+              style={{ 
+                color: '#fff', 
+                marginLeft: 6, 
+                fontWeight: '600', 
+                fontSize: 14 
+              }}
+            >
+              よく買う商品から追加
+            </Text>
+          </Pressable>
+          
+          <Pressable
+            style={[
+              styles.completeBottomButton,
+              { 
+                backgroundColor: list.items.some(item => item.completed) 
+                  ? '#34C759' 
+                  : colors.control.inactive
+              }
+            ]}
+            onPress={list.items.length > 0 ? handleCompleteList : undefined}
+            disabled={list.items.length === 0}
+          >
+            <Ionicons 
+              name="checkmark-circle-outline" 
+              size={20} 
+              color="#fff" 
+            />
+            <Text style={[styles.completeBottomButtonText, { color: '#fff' }]}>
+              完了
+            </Text>
+          </Pressable>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -627,7 +649,7 @@ const styles = StyleSheet.create({
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 8,
   },
   titleContainer: {
     flex: 1,
@@ -640,9 +662,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   editNameContainer: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    marginRight: 8,
   },
   nameInput: {
     flex: 1,
@@ -652,11 +676,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   saveButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
+    minWidth: 50,
+    alignItems: 'center',
   },
   saveButtonText: {
+    fontSize: 14,
     fontWeight: '600',
   },
   itemContainer: {
@@ -692,19 +719,6 @@ const styles = StyleSheet.create({
   },
   deleteListButton: {
     padding: 8,
-  },
-  completeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
-    gap: 4,
-  },
-  completeButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
   },
   modalOverlay: {
     position: 'absolute',
@@ -789,16 +803,45 @@ const styles = StyleSheet.create({
   modalSaveButtonText: {
     fontWeight: '600',
   },
-  addFromFrequentButton: {
+  bottomButtons: {
     position: 'absolute',
     left: 16,
     right: 16,
     bottom: 8,
+    flexDirection: 'row',
+    gap: 12,
+  },
+  completeBottomButton: {
+    flex: 1,
     height: 48,
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+    gap: 6,
+  },
+  completeBottomButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  addFromFrequentButton: {
+    flex: 2,
+    height: 48,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  addFromFrequentButtonFull: {
+    height: 48,
+    borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,

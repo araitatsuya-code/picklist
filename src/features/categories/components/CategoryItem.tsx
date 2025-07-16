@@ -47,6 +47,12 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
                 primary: colors.accent.primary,
                 placeholder: secondaryTextColor,
                 background: 'transparent',
+                outline: isDark ? '#555555' : colors.border.primary,
+                outlineVariant: isDark ? '#444444' : colors.border.secondary,
+                surface: 'transparent',
+                surfaceVariant: 'transparent',
+                onSurface: textColor,
+                onSurfaceVariant: secondaryTextColor,
               },
             }}
           />
