@@ -46,10 +46,6 @@ const createMockPicklist = (
 describe('useShoppingHistoryStore', () => {
   beforeEach(() => {
     // 各テストの前にストアをリセット
-    const store = useShoppingHistoryStore.getState();
-    store.clearAllHistories();
-    
-    // ストアの状態を確認
     useShoppingHistoryStore.setState({ histories: [], isLoading: false });
   });
 
@@ -64,7 +60,9 @@ describe('useShoppingHistoryStore', () => {
       const store = useShoppingHistoryStore.getState();
       store.addHistory(mockList);
 
-      const histories = store.histories;
+      // ストアの状態を再取得
+      const updatedStore = useShoppingHistoryStore.getState();
+      const histories = updatedStore.histories;
       expect(histories).toHaveLength(1);
 
       const history = histories[0];
@@ -86,7 +84,9 @@ describe('useShoppingHistoryStore', () => {
       const store = useShoppingHistoryStore.getState();
       store.addHistory(mockList);
 
-      const history = store.histories[0];
+      // ストアの状態を再取得
+      const updatedStore = useShoppingHistoryStore.getState();
+      const history = updatedStore.histories[0];
       expect(history.completionRate).toBe(100);
     });
 
@@ -96,7 +96,9 @@ describe('useShoppingHistoryStore', () => {
       const store = useShoppingHistoryStore.getState();
       store.addHistory(mockList);
 
-      const history = store.histories[0];
+      // ストアの状態を再取得
+      const updatedStore = useShoppingHistoryStore.getState();
+      const history = updatedStore.histories[0];
       expect(history.totalItems).toBe(0);
       expect(history.completedItems).toBe(0);
       expect(history.completionRate).toBe(0);
@@ -209,11 +211,17 @@ describe('useShoppingHistoryStore', () => {
       const store = useShoppingHistoryStore.getState();
       
       store.addHistory(mockList);
-      expect(store.histories).toHaveLength(1);
       
-      const historyId = store.histories[0].id;
+      // ストアの状態を再取得
+      let updatedStore = useShoppingHistoryStore.getState();
+      expect(updatedStore.histories).toHaveLength(1);
+      
+      const historyId = updatedStore.histories[0].id;
       store.removeHistory(historyId);
-      expect(store.histories).toHaveLength(0);
+      
+      // 削除後の状態を再取得
+      updatedStore = useShoppingHistoryStore.getState();
+      expect(updatedStore.histories).toHaveLength(0);
     });
 
     it('全履歴をクリアできる', () => {
@@ -225,10 +233,16 @@ describe('useShoppingHistoryStore', () => {
       
       const store = useShoppingHistoryStore.getState();
       lists.forEach(list => store.addHistory(list));
-      expect(store.histories).toHaveLength(3);
+      
+      // ストアの状態を再取得
+      let updatedStore = useShoppingHistoryStore.getState();
+      expect(updatedStore.histories).toHaveLength(3);
       
       store.clearAllHistories();
-      expect(store.histories).toHaveLength(0);
+      
+      // クリア後の状態を再取得
+      updatedStore = useShoppingHistoryStore.getState();
+      expect(updatedStore.histories).toHaveLength(0);
     });
   });
 
@@ -244,7 +258,9 @@ describe('useShoppingHistoryStore', () => {
       const store = useShoppingHistoryStore.getState();
       store.addHistory(mockList);
 
-      const history = store.histories[0];
+      // ストアの状態を再取得
+      const updatedStore = useShoppingHistoryStore.getState();
+      const history = updatedStore.histories[0];
       const breakdown = history.categoryBreakdown;
       
       expect(breakdown).toHaveLength(3); // vegetables, meat, uncategorized
