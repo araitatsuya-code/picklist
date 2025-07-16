@@ -261,6 +261,19 @@ export default function ListDetailScreen() {
                   />
                 </Pressable>
                 <View style={styles.headerActions}>
+                  <Pressable
+                    style={[
+                      styles.completeButton,
+                      { backgroundColor: '#34C759' }
+                    ]}
+                    onPress={handleCompleteList}
+                  >
+                    <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
+                    <Text style={[styles.completeButtonText, { color: '#fff' }]}>
+                      完了
+                    </Text>
+                  </Pressable>
+                  
                   <Menu
                     visible={menuVisible}
                     onDismiss={() => setMenuVisible(false)}
@@ -719,6 +732,19 @@ const styles = StyleSheet.create({
   },
   deleteListButton: {
     padding: 8,
+  },
+  completeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
+    gap: 4,
+  },
+  completeButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   modalOverlay: {
     position: 'absolute',

@@ -3,7 +3,6 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picklist } from './usePicklistStore';
 
-// PicklistItem インターフェースを再定義（履歴用）
 export interface PicklistItem {
   id: string;
   productId: string;
@@ -107,23 +106,13 @@ const formatDate = (timestamp: number): string => {
   return date.toISOString().split('T')[0]; // YYYY-MM-DD
 };
 
-// カテゴリIDから日本語名へのマッピング
-const categoryNameMap: Record<string, string> = {
-  'vegetables': '野菜',
-  'meat-fish': '魚・肉',
-  'daily': '日用品',
-  'drink': '飲料',
-  'other': 'その他',
-  'uncategorized': 'その他',
-};
-
 // カテゴリー別サマリー計算
 const calculateCategoryBreakdown = (items: HistoryItem[]): CategorySummary[] => {
   const categoryMap = new Map<string, { total: number; completed: number; name: string }>();
   
   items.forEach(item => {
     const categoryId = item.category || 'uncategorized';
-    const categoryName = categoryNameMap[categoryId] || categoryNameMap[item.category || ''] || 'その他';
+    const categoryName = item.category || 'その他';
     
     if (!categoryMap.has(categoryId)) {
       categoryMap.set(categoryId, { total: 0, completed: 0, name: categoryName });
@@ -195,7 +184,6 @@ export const useShoppingHistoryStore = create<ShoppingHistoryState & ShoppingHis
       
       removeHistory: (id: string) => {
         set(state => ({
-          ...state,
           histories: state.histories.filter(history => history.id !== id),
         }));
       },

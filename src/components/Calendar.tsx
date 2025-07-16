@@ -4,6 +4,7 @@ import {
   Text,
   Pressable,
   StyleSheet,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeContext } from './ThemeProvider';
@@ -23,7 +24,6 @@ interface DayInfo {
   isToday: boolean;
   isSelected: boolean;
   hasHistory: boolean;
-  isDisabled?: boolean;
 }
 
 export const Calendar: React.FC<CalendarProps> = ({
@@ -59,7 +59,6 @@ export const Calendar: React.FC<CalendarProps> = ({
     const lastDay = new Date(currentYear, currentMonth + 1, 0);
     const startDate = new Date(firstDay);
     const endDate = new Date(lastDay);
-    
 
     // 週の最初を日曜日に合わせる
     startDate.setDate(startDate.getDate() - startDate.getDay());
@@ -69,11 +68,7 @@ export const Calendar: React.FC<CalendarProps> = ({
     const current = new Date(startDate);
 
     while (current <= endDate) {
-      // タイムゾーンを考慮した日付文字列生成
-      const year = current.getFullYear();
-      const month = String(current.getMonth() + 1).padStart(2, '0');
-      const day = String(current.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${day}`;
+      const dateStr = current.toISOString().split('T')[0];
       const isCurrentMonth = current.getMonth() === currentMonth;
       const isToday = dateStr === todayStr;
       const isSelected = dateStr === selectedDate;
@@ -84,16 +79,16 @@ export const Calendar: React.FC<CalendarProps> = ({
       if (minDate && current < minDate) isDisabled = true;
       if (maxDate && current > maxDate) isDisabled = true;
 
-      // 日付情報を追加（無効な日付も含む）
-      days.push({
-        date: dateStr,
-        day: current.getDate(),
-        isCurrentMonth,
-        isToday,
-        isSelected,
-        hasHistory,
-        isDisabled,
-      });
+      if (!isDisabled) {
+        days.push({
+          date: dateStr,
+          day: current.getDate(),
+          isCurrentMonth,
+          isToday,
+          isSelected,
+          hasHistory,
+        });
+      }
 
       current.setDate(current.getDate() + 1);
     }
@@ -177,64 +172,95 @@ export const Calendar: React.FC<CalendarProps> = ({
       </View>
 
       {/* カレンダーグリッド */}
-      <View style={styles.calendarGrid}>
-        {calendarDays.map((dayInfo) => (
-          <Pressable
-            key={dayInfo.date}
-            style={[
-              styles.dayContainer,
-              dayInfo.isSelected && {
-                backgroundColor: colors.accent.primary,
-              },
-              dayInfo.isToday && !dayInfo.isSelected && {
-                borderColor: colors.accent.primary,
-                borderWidth: 2,
-              },
-            ]}
-            onPress={() => handleDatePress(dayInfo)}
-            disabled={!dayInfo.isCurrentMonth || dayInfo.isDisabled}
-          >
-            {dayInfo.isCurrentMonth ? (
-              <>
-                <Text
+      <ScrollView style={styles.calendarScroll}>
+        <View style={styles.calendarGrid}>
+          {calendarDays.map((dayInfo) => (
+            <Pressable
+              key={dayInfo.date}
+              style={[
+                styles.dayContainer,
+                dayInfo.isSelected && {
+                  backgroundColor: colors.accent.primary,
+                },
+                dayInfo.isToday && !dayInfo.isSelected && {
+                  borderColor: colors.accent.primary,
+                  borderWidth: 2,
+                },
+              ]}
+              onPress={() => handleDatePress(dayInfo)}
+              disabled={!dayInfo.isCurrentMonth}
+            >
+              <Text
+                style={[
+                  styles.dayText,
+                  { color: colors.text.primary },
+                  !dayInfo.isCurrentMonth && {
+                    color: colors.text.tertiary,
+                  },
+                  dayInfo.isSelected && {
+                    color: colors.text.inverse,
+                    fontWeight: '600',
+                  },
+                  dayInfo.isToday && !dayInfo.isSelected && {
+                    color: colors.accent.primary,
+                    fontWeight: '600',
+                  },
+                ]}
+              >
+                {dayInfo.day}
+              </Text>
+              
+              {/* 履歴がある日付のマーク */}
+              {dayInfo.hasHistory && (
+                <View
                   style={[
-                    styles.dayText,
-                    { color: colors.text.primary },
-                    dayInfo.isDisabled && {
-                      color: colors.text.tertiary,
-                    },
-                    dayInfo.isSelected && {
-                      color: colors.text.inverse,
-                      fontWeight: '600',
-                    },
-                    dayInfo.isToday && !dayInfo.isSelected && {
-                      color: colors.accent.primary,
-                      fontWeight: '600',
+                    styles.historyDot,
+                    {
+                      backgroundColor: dayInfo.isSelected
+                        ? colors.text.inverse
+                        : colors.accent.primary,
                     },
                   ]}
-                >
-                  {dayInfo.day}
-                </Text>
-            
-                {/* 履歴がある日付のマーク */}
-                {dayInfo.hasHistory && (
-                  <View
-                    style={[
-                      styles.historyDot,
-                      {
-                        backgroundColor: dayInfo.isSelected
-                          ? colors.text.inverse
-                          : colors.accent.primary,
-                      },
-                    ]}
-                  />
-                )}
-              </>
-            ) : null}
-          </Pressable>
-        ))}
-      </View>
+                />
+              )}
+            </Pressable>
+          ))}
+        </View>
+      </ScrollView>
 
+      {/* フッター情報 */}
+      <View style={[styles.footer, { borderTopColor: colors.border.secondary }]}>
+        <View style={styles.legendContainer}>
+          <View style={styles.legendItem}>
+            <View
+              style={[
+                styles.legendDot,
+                { backgroundColor: colors.accent.primary },
+              ]}
+            />
+            <Text style={[styles.legendText, { color: colors.text.secondary }]}>
+              履歴あり
+            </Text>
+          </View>
+          
+          <View style={styles.legendItem}>
+            <View
+              style={[
+                styles.legendCircle,
+                { borderColor: colors.accent.primary },
+              ]}
+            />
+            <Text style={[styles.legendText, { color: colors.text.secondary }]}>
+              今日
+            </Text>
+          </View>
+        </View>
+        
+        {/* カレンダー操作説明 */}
+        <Text style={[styles.footerHint, { color: colors.text.tertiary }]}>
+          日付をタップして履歴を表示 • 月名をタップして今月に戻る
+        </Text>
+      </View>
     </View>
   );
 };
@@ -275,6 +301,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
+  calendarScroll: {
+    flex: 1,
+  },
   calendarGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -288,7 +317,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginVertical: 2,
     position: 'relative',
-    minHeight: 40,
   },
   dayText: {
     fontSize: 16,
@@ -329,5 +357,10 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 12,
+  },
+  footerHint: {
+    fontSize: 11,
+    textAlign: 'center',
+    marginTop: 8,
   },
 });
