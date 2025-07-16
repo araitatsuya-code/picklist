@@ -51,7 +51,7 @@ export default function HistoryScreen() {
   // 選択した日付の履歴を取得
   const selectedDateHistories = useMemo(() => {
     return getHistoryByDate(selectedDate);
-  }, [selectedDate, getHistoryByDate]);
+  }, [selectedDate, getHistoryByDate, histories]);
   
   // 全履歴のフィルタリングとソート
   const filteredAndSortedHistories = useMemo(() => {
@@ -89,7 +89,7 @@ export default function HistoryScreen() {
   // 全体統計を取得
   const totalStats = useMemo(() => {
     return getTotalStats();
-  }, [getTotalStats]);
+  }, [getTotalStats, histories]);
   
   // 今月の履歴数を計算
   const thisMonthHistories = useMemo(() => {
