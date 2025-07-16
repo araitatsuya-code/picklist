@@ -193,7 +193,6 @@ export default function HistoryScreen() {
             onDateSelect={handleDateSelect}
             selectedDate={selectedDate}
             markedDates={markedDates}
-            maxDate={new Date()} // 今日まで
           />
         </View>
 
