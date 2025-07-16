@@ -13,6 +13,7 @@ export interface CategoryColors {
   };
   border: {
     primary: string;
+    secondary: string;
   };
   state: {
     error: string;
