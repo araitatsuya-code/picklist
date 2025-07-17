@@ -43,7 +43,7 @@ export default function HistoryScreen() {
   } = useShoppingHistoryStore();
 
   // 画面サイズを取得
-  const { width, height } = Dimensions.get('window');
+  const { width } = Dimensions.get('window');
   const isTablet = width >= 768; // iPad等のタブレット判定
 
   const [selectedDate, setSelectedDate] = useState<string>(() => {
@@ -76,7 +76,7 @@ export default function HistoryScreen() {
   // 選択した日付の履歴を取得
   const selectedDateHistories = useMemo(() => {
     return getHistoryByDate(selectedDate);
-  }, [selectedDate, getHistoryByDate, histories]);
+  }, [selectedDate, getHistoryByDate]);
   
   // 全履歴のフィルタリングとソート
   const filteredAndSortedHistories = useMemo(() => {
@@ -114,7 +114,7 @@ export default function HistoryScreen() {
   // 全体統計を取得
   const totalStats = useMemo(() => {
     return getTotalStats();
-  }, [getTotalStats, histories]);
+  }, [getTotalStats]);
   
   // 今月の履歴数を計算
   const thisMonthHistories = useMemo(() => {
