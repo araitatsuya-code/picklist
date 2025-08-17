@@ -90,11 +90,21 @@ https://github.com/user-attachments/assets/96f6c529-898d-46f6-8bc3-5812914340b3
 
 ```
 picklist/
-├── app/                     # ルーティング
-├── src/                     # 共通コード
-├── assets/                  # リソース
+├── app/                     # ルーティング (Expo Router)
+│   ├── (tabs)/             # タブナビゲーション
+│   ├── (products)/         # 商品関連モーダル
+│   └── scanner.tsx         # バーコードスキャナー
+├── src/                     # ビジネスロジック層
+│   ├── components/         # UIコンポーネント
+│   ├── stores/             # 状態管理 (Zustand)
+│   ├── hooks/              # カスタムフック
+│   ├── utils/              # ユーティリティ
+│   └── features/           # 機能別モジュール
+├── assets/                  # 静的リソース
 └── docs/                    # ドキュメント
 ```
+
+詳細なディレクトリ構成については[こちら](docs/directory-structure.md)をご覧ください。
 
 ## 開発環境のセットアップ
 
