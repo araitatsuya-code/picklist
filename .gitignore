@@ -43,3 +43,6 @@ docs/requirements.md
 .cursorrules
 .cursorignore
 rules/
+
+# MCP (Model Context Protocol) settings
+.mcp.json
