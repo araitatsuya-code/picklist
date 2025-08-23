@@ -46,3 +46,4 @@ rules/
 
 # MCP (Model Context Protocol) settings
 .mcp.json
+.vscode/settings.json
